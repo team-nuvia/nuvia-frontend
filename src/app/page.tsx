@@ -1,5 +1,5 @@
-import { Stack } from "@mui/material";
+import Index from '@page/index';
 
-export default function Home() {
-  return <Stack>test</Stack>;
+export default async function Home() {
+  return <Index />;
 }
