@@ -64,7 +64,24 @@ import axios from 'axios';
 
 export const snapApi = axios.create({
   url: API_URL,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
+// snapApi.interceptors.request.use((config) => {
+//   const token = localStorage.getItem('token');
+//   if (token) {
+//     config.headers.Authorization = `Bearer ${token}`;
+//   }
+//   return config;
+// });
+
+// snapApi.interceptors.response.use((response) => {
+//   if (response.status === 401) {
+//     localStorage.removeItem('token');
+//     window.location.href = '/login';
+//   }
+//   return response;
+// });

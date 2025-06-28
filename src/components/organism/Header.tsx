@@ -20,7 +20,7 @@ const Header: React.FC<HeaderProps> = () => {
     () => [
       {
         label: 'Login',
-        to: '/',
+        to: '/login',
       },
     ],
     [],

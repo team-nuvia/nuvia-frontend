@@ -1,7 +1,8 @@
+import AuthenticationProvider from '@/context/AuthenticationContext';
 import { LoadingProvider } from '@/context/LodingContext';
+import { BRAND_NAME } from '@common/variables';
 import Loading from '@components/atom/Loading';
 import Header from '@components/organism/Header';
-import Sidebar from '@components/organism/Sidebar';
 import { CssBaseline, Stack, ThemeProvider } from '@mui/material';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import ReactQueryProvider from '@util/react-query-provider';
@@ -21,7 +22,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'SnapPoll - Quick Survey Platform',
+  title: `${BRAND_NAME} - Quick Survey Platform`,
   description: 'Create and manage surveys with ease',
 };
 
@@ -34,20 +35,21 @@ export default function RootLayout({
     <html lang="ko">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <ReactQueryProvider>
-          <AppRouterCacheProvider>
-            <LoadingProvider>
-              <CssBaseline />
+          <AuthenticationProvider>
+            <AppRouterCacheProvider>
               <ThemeProvider theme={lightTheme}>
-                {' '}
-                <Suspense fallback={<Loading />}>
-                  <Stack>
-                    <Header />
-                    {children}
-                  </Stack>
-                </Suspense>
+                <CssBaseline />
+                <LoadingProvider>
+                  <Suspense fallback={<Loading />}>
+                    <Stack>
+                      <Header />
+                      {children}
+                    </Stack>
+                  </Suspense>
+                </LoadingProvider>
               </ThemeProvider>
-            </LoadingProvider>
-          </AppRouterCacheProvider>
+            </AppRouterCacheProvider>
+          </AuthenticationProvider>
         </ReactQueryProvider>
       </body>
     </html>
