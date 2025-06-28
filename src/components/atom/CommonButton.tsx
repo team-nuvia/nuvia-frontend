@@ -1,11 +1,9 @@
 import { Button, ButtonProps } from '@mui/material';
 import styled from 'styled-components';
 
-const CommonButton = styled(Button).attrs<ButtonProps>(
-  ({ variant = 'contained' }) => ({
-    variant,
-  }),
-)<ButtonProps>`
+const CommonButton = styled(Button).attrs<ButtonProps>((props) => ({
+  ...props,
+}))<ButtonProps>`
   transition: all 150ms ease-in-out;
   &:hover {
     opacity: 0.8;

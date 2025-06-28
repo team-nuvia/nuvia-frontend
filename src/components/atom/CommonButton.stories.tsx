@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 import CommonButton from './CommonButton';
+import { decorators, parameters } from '.storybook/variables';
 
 const meta = {
   component: CommonButton,
@@ -11,10 +12,12 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
+  parameters,
+  decorators: [decorators],
   args: {
     variant: 'contained',
     children: 'Button',
-    color: 'primary',
+    color: 'white',
     shape: 'default',
   },
   argTypes: {

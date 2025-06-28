@@ -5,24 +5,16 @@ import RedirectionButton from '@components/atom/RedirectionButton';
 import StatisticsCard from '@components/molecular/StatisticsCard';
 import { Stack } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import LinkText from '@components/atom/LinkText';
 
-interface IndexProps {}
-const Index: React.FC<IndexProps> = () => {
+interface DashboardProps {}
+const Dashboard: React.FC<DashboardProps> = () => {
   // const { data: user, isError } = useUser();
   return (
     <Stack flex={1} gap={10} p={5}>
       {/* Section 1 */}
       <Stack gap={5}>
         <Stack gap={1}>
-          <LinkText
-            to="/dahsboard"
-            color="primary"
-            variant="h6"
-            thickness="bold"
-          >
-            대시보드
-          </LinkText>
+          <CommonText>대시보드</CommonText>
           <CommonText>오늘은 어떤 설문조사를 진행할까요?</CommonText>
         </Stack>
         <Stack direction="row" gap={3}>
@@ -47,4 +39,4 @@ const Index: React.FC<IndexProps> = () => {
   );
 };
 
-export default Index;
+export default Dashboard;

@@ -1,9 +1,14 @@
-import { CssBaseline, ThemeProvider } from '@mui/material';
+import { LoadingProvider } from '@/context/LodingContext';
+import Loading from '@components/atom/Loading';
+import Header from '@components/organism/Header';
+import Sidebar from '@components/organism/Sidebar';
+import { CssBaseline, Stack, ThemeProvider } from '@mui/material';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import ReactQueryProvider from '@util/react-query-provider';
 import { lightTheme } from '@util/theme';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
+import { Suspense } from 'react';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -30,8 +35,18 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <ReactQueryProvider>
           <AppRouterCacheProvider>
-            <CssBaseline />
-            <ThemeProvider theme={lightTheme}>{children}</ThemeProvider>
+            <LoadingProvider>
+              <CssBaseline />
+              <ThemeProvider theme={lightTheme}>
+                {' '}
+                <Suspense fallback={<Loading />}>
+                  <Stack>
+                    <Header />
+                    {children}
+                  </Stack>
+                </Suspense>
+              </ThemeProvider>
+            </LoadingProvider>
           </AppRouterCacheProvider>
         </ReactQueryProvider>
       </body>

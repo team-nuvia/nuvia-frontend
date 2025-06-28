@@ -29,14 +29,6 @@ const commonColor = {
     light: '#FF5252',
     dark: '#9B0000',
   },
-  black: {
-    main: '#1C1C1C',
-    contrastText: '#FFFFFF',
-  },
-  white: {
-    main: '#FFFFFF',
-    contrastText: '#1C1C1C',
-  },
 };
 
 const components: Components<Omit<Theme, 'components'>> = {
@@ -46,6 +38,7 @@ const components: Components<Omit<Theme, 'components'>> = {
         props: {
           shape: 'default',
         },
+        style: {},
         // style: {
         //   borderRadius: '999px',
         //   paddingLeft: '24px',
@@ -60,11 +53,41 @@ const components: Components<Omit<Theme, 'components'>> = {
         },
         style: {
           borderRadius: '999px',
-          paddingLeft: '24px',
-          paddingRight: '24px',
-          textTransform: 'none',
+          paddingLeft: '1rem',
+          paddingRight: '1rem',
           fontWeight: 600,
           textTransform: 'uppercase',
+        },
+      },
+    ],
+  },
+  MuiTypography: {
+    defaultProps: {
+      component: 'div',
+    },
+    variants: [
+      {
+        props: { thickness: 'thin' },
+        style: {
+          fontWeight: 300,
+        },
+      },
+      {
+        props: { thickness: 'regular' },
+        style: {
+          fontWeight: 400,
+        },
+      },
+      {
+        props: { thickness: 'medium' },
+        style: {
+          fontWeight: 500,
+        },
+      },
+      {
+        props: { thickness: 'bold' },
+        style: {
+          fontWeight: 700,
         },
       },
     ],
@@ -80,13 +103,21 @@ const lightTheme = createTheme({
   palette: {
     ...commonColor,
     background: {
-      default: '#FAFAFA',
-      paper: '#FFFFFF',
+      default: '#F1F1F1',
+      paper: '#FEFEFE',
     },
     text: {
       primary: '#1C1C1C',
       secondary: '#4D4D4D',
       disabled: '#BDBDBD',
+    },
+    black: {
+      main: '#1C1C1C',
+      contrastText: '#FFFFFF',
+    },
+    white: {
+      main: '#FFFFFF',
+      contrastText: '#1C1C1C',
     },
   },
 });
@@ -107,6 +138,14 @@ const darkTheme = createTheme({
       primary: '#FFFFFF',
       secondary: '#CCCCCC',
       disabled: '#666666',
+    },
+    black: {
+      main: '#FFFFFF',
+      contrastText: '#1C1C1C',
+    },
+    white: {
+      main: '#1C1C1C',
+      contrastText: '#FFFFFF',
     },
   },
 });
