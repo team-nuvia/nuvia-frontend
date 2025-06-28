@@ -3,20 +3,18 @@
 import { API_URL } from '@common/variables';
 import axios from 'axios';
 
-interface SnapApiProps extends RequestInit {
-  url: string;
-  errorMessage?: string;
-}
+// interface SnapApiProps extends RequestInit {
+//   url: string;
+//   errorMessage?: string;
+// }
 
-interface SnapApiWithBodyProps<T> extends Omit<SnapApiProps, 'body'> {
-  body?: T;
-}
+// interface SnapApiWithBodyProps<T> extends Omit<SnapApiProps, 'body'> {
+//   body?: T;
+// }
 
-const commonHeaders: Pick<RequestInit, 'headers' | 'credentials' | 'mode'> = {
-  headers: { 'Content-Type': 'application/json' },
-  credentials: 'include',
-  mode: 'no-cors',
-};
+// const commonHeaders: Pick<RequestInit, 'headers'> = {
+//   headers: { 'Content-Type': 'application/json' },
+// };
 
 // export const snapApi = {
 //   async get(options: SnapApiProps) {
@@ -66,5 +64,7 @@ const commonHeaders: Pick<RequestInit, 'headers' | 'credentials' | 'mode'> = {
 
 export const snapApi = axios.create({
   url: API_URL,
-  ...commonHeaders,
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });

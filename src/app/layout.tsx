@@ -1,5 +1,7 @@
+import { CssBaseline, ThemeProvider } from '@mui/material';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import ReactQueryProvider from '@util/react-query-provider';
+import { lightTheme } from '@util/theme';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 
@@ -24,10 +26,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="ko">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <ReactQueryProvider>
-          <AppRouterCacheProvider>{children}</AppRouterCacheProvider>
+          <AppRouterCacheProvider>
+            <CssBaseline />
+            <ThemeProvider theme={lightTheme}>{children}</ThemeProvider>
+          </AppRouterCacheProvider>
         </ReactQueryProvider>
       </body>
     </html>

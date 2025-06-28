@@ -5,7 +5,7 @@ import {
   QueryClient,
   QueryClientProvider,
 } from '@tanstack/react-query';
-import { ReactNode, useMemo, useState } from 'react';
+import { ReactNode, useMemo } from 'react';
 import { useErrorHandler } from './useErrorHandler';
 
 export default function ReactQueryProvider({
@@ -13,6 +13,7 @@ export default function ReactQueryProvider({
 }: {
   children: ReactNode;
 }) {
+  console.log('ReactQueryProvider');
   const { handleError } = useErrorHandler();
   const client = useMemo(
     () =>
