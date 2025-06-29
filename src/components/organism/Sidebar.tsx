@@ -1,12 +1,13 @@
 'use client';
 
 import SidebarMenuList from '@components/molecular/SidebarMenuList';
-import { Divider, Stack, Toolbar } from '@mui/material';
-import { useMemo } from 'react';
-import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard';
-import PollOutlinedIcon from '@mui/icons-material/PollOutlined';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
+import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
+import PollOutlinedIcon from '@mui/icons-material/PollOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
+import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard';
+import { Divider, IconButton, Stack } from '@mui/material';
+import { useMemo } from 'react';
 import UserCard from './UserCard';
 
 interface SidebarProps {}
@@ -56,6 +57,17 @@ const Sidebar: React.FC<SidebarProps> = () => {
       }}
     >
       <Stack px={2}>
+        <Stack
+          direction="row"
+          justifyContent="flex-end"
+          alignItems="center"
+          gap={1}
+          mb={2}
+        >
+          <IconButton>
+            <NotificationsOutlinedIcon color="primary" />
+          </IconButton>
+        </Stack>
         <UserCard />
       </Stack>
       <Divider />

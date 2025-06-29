@@ -24,14 +24,14 @@ const SidebarButton: React.FC<SidebarButtonProps & ButtonOwnProps> = ({
         justifyContent: 'flex-start',
         background:
           selected?.name === menu.name
-            ? (theme) => theme.palette.primary.light + '56'
+            ? (theme) => theme.palette.primary.main + '26'
             : 'transparent',
         px: '1rem !important',
         textTransform: 'capitalize',
         '&:hover': {
           background:
             selected?.name === menu.name
-              ? (theme) => theme.palette.primary.light + '56 !important'
+              ? (theme) => theme.palette.primary.main + '26 !important'
               : 'transparent !important',
           boxShadow: 'none !important',
           opacity: '1 !important',

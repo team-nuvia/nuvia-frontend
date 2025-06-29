@@ -37,7 +37,7 @@ const SidebarMenuList: React.FC<SidebarMenuListProps> = ({ menus }) => {
           menu={menu}
           selected={selected}
           onClick={onClick}
-          color="black"
+          color={selected?.name === menu.name ? 'primary' : 'black'}
         />
       ))}
     </Stack>

@@ -1,5 +1,5 @@
-import Index from '@page/index';
+import Home from '@components/template/Home';
 
-export default async function Home() {
-  return <Index />;
+export default async function Page() {
+  return <Home />;
 }

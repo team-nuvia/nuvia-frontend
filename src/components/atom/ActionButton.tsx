@@ -1,8 +1,8 @@
-import { ButtonOwnProps } from '@mui/material';
+import { ButtonProps } from '@mui/material';
 import CommonButton from './CommonButton';
 
 interface ActionButtonProps {}
-const ActionButton: React.FC<ActionButtonProps & ButtonOwnProps> = ({
+const ActionButton: React.FC<ActionButtonProps & ButtonProps> = ({
   children,
   ...props
 }) => {

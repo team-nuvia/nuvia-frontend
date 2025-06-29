@@ -13,11 +13,13 @@ declare module '@mui/material/styles' {
   interface Palette {
     black: Palette['primary'];
     white: Palette['primary'];
+    // parent: Palette['primary'];
   }
 
   interface PaletteOptions {
     black?: PaletteOptions['primary'];
     white?: PaletteOptions['primary'];
+    // parent?: PaletteOptions['primary'];
   }
 }
 
@@ -33,6 +35,7 @@ declare module '@mui/material/Button' {
   declare interface ButtonPropsColorOverrides {
     black: true;
     white: true;
+    // parent: true;
   }
 }
 

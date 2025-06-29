@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 const CommonButton = styled(Button).attrs<ButtonProps>((props) => ({
   ...props,
-}))<ButtonProps>`
+}))`
   transition: all 150ms ease-in-out;
   &:hover {
     opacity: 0.8;
