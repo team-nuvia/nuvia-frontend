@@ -13,7 +13,6 @@ export default function ReactQueryProvider({
 }: {
   children: ReactNode;
 }) {
-  console.log('ReactQueryProvider');
   const { handleError } = useErrorHandler();
   const client = useMemo(
     () =>

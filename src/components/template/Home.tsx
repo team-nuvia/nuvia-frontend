@@ -22,16 +22,16 @@ interface HomeProps {}
 
 const IntroSection = () => {
   return (
-    <Stack gap={2} alignItems="center" py={10} px={5}>
+    <Stack gap={4} alignItems="center" py={10} px={5}>
       {/* TODO: CommonText 등으로 대제목, 소제목, 일러스트 카드 */}
       <Showbox>
-        <CommonText variant="h3" align="center" thickness="bold">
-          설문, 만들기 너무 번거롭지 않나요?
+        <CommonText variant="h3" align="center" thickness="bold" gutterBottom>
+          설문, 가볍게 만들 수 있다면 얼마나 좋을까요?
         </CommonText>
       </Showbox>
       <Showbox>
         <CommonText align="center" color="text.secondary">
-          복잡하고 응답도 누락되기 일쑤였던 기존 설문툴들...
+          질문 하나로 시작되는 대화, 더 쉽게 만들 수 있다면?
         </CommonText>
       </Showbox>
       <Showbox>
@@ -67,11 +67,11 @@ const FeatureSection = () => {
   ];
 
   return (
-    <Stack gap={2} alignItems="center" py={10} px={5}>
+    <Stack gap={4} alignItems="center" py={10} px={5}>
       {/* TODO: CommonText, StatisticsCard, SettingItem 등으로 3가지 카드 */}
       <Showbox>
-        <CommonText variant="h3" align="center" thickness="bold">
-          누비아는 다릅니다
+        <CommonText variant="h3" align="center" thickness="bold" gutterBottom>
+          누비아는 설문을 더 쉽고, 더 빠르게 만듭니다
         </CommonText>
       </Showbox>
       <Showbox>
@@ -111,27 +111,27 @@ const SpecialFeatureSection = () => {
         <LockOpen sx={{ fontSize: 48, color: theme.palette.primary.main }} />
       ),
       title: '비회원 설문 가능',
-      desc: '회원가입 없이도 누구나 쉽게 참여할 수 있어요 🔓',
+      desc: '로그인 없이도 바로 시작할 수 있어요 🔓',
     },
     {
       icon: <Timer sx={{ fontSize: 48, color: theme.palette.primary.main }} />,
       title: '응답 제한 기능',
-      desc: '응답 수나 기간을 설정해서 효율적으로 관리하세요',
+      desc: '응답 수 제한도 직접 설정할 수 있어요',
     },
     {
       icon: (
         <BarChart sx={{ fontSize: 48, color: theme.palette.primary.main }} />
       ),
       title: '통계 자동 시각화',
-      desc: '복잡한 데이터도 한눈에 보기 쉽게 정리해드려요 📊',
+      desc: '설문 결과, 자동으로 정리해드릴게요 📊',
     },
   ];
 
   return (
-    <Stack gap={2} py={10} px={5}>
+    <Stack gap={4} py={10} px={5}>
       {/* TODO: 4가지 특별 기능 카드 */}
       <Showbox>
-        <CommonText variant="h3" align="center" thickness="bold">
+        <CommonText variant="h3" align="center" thickness="bold" gutterBottom>
           누비아만의 특별한 기능들
         </CommonText>
       </Showbox>
@@ -159,7 +159,7 @@ const ReviewSection = () => {
       av: 'Y',
     },
     {
-      txt: '이젠 구글폼 안 씁니다. 누비아가 훨씬 예쁘고 기능도 좋아요!',
+      txt: '예쁘고 기능도 좋아요!',
       who: '프리랜서 디자이너 김효*',
       av: 'K',
     },
@@ -171,10 +171,10 @@ const ReviewSection = () => {
   ];
 
   return (
-    <Stack gap={2} alignItems="center" py={10} px={5}>
+    <Stack gap={4} alignItems="center" py={10} px={5}>
       {/* TODO: ReviewCard 컴포넌트로 후기 4개 */}
       <Showbox>
-        <CommonText variant="h3" align="center" thickness="bold">
+        <CommonText variant="h3" align="center" thickness="bold" gutterBottom>
           사용자들의 생생한 후기
         </CommonText>
       </Showbox>
@@ -196,7 +196,7 @@ const CTASection = () => {
   return (
     <Showbox>
       <Stack
-        gap={2}
+        gap={3}
         alignItems="center"
         py={10}
         px={5}

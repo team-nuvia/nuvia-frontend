@@ -1,15 +1,8 @@
-'use client';
-
-import ActionButton from '@components/atom/ActionButton';
-import CommonText from '@components/atom/CommonText';
 import ActionForm from '@components/molecular/ActionForm';
 import { Stack, TextField } from '@mui/material';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 
-interface LoginProps {}
-const Login: React.FC<LoginProps> = () => {
-  const formRef = useRef<HTMLFormElement>(null);
-
+const Signup = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -30,7 +23,7 @@ const Login: React.FC<LoginProps> = () => {
   return (
     <Stack flex={1} gap={10} p={5} alignItems="center" justifyContent="center">
       <ActionForm
-        title="로그인"
+        title="회원가입"
         slots={
           <>
             <TextField
@@ -75,11 +68,11 @@ const Login: React.FC<LoginProps> = () => {
             />
           </>
         }
-        submitText="로그인"
+        submitText="회원가입"
         onSubmit={handleSubmit}
       />
     </Stack>
   );
 };
 
-export default Login;
+export default Signup;
