@@ -4,6 +4,7 @@ import ActionButton from '@components/atom/ActionButton';
 import CommonText from '@components/atom/CommonText';
 import ActionForm from '@components/molecular/ActionForm';
 import { Stack, TextField } from '@mui/material';
+import Image from 'next/image';
 import { useRef, useState } from 'react';
 
 interface LoginProps {}
@@ -30,7 +31,24 @@ const Login: React.FC<LoginProps> = () => {
   return (
     <Stack flex={1} gap={10} p={5} alignItems="center" justifyContent="center">
       <ActionForm
-        title="로그인"
+        title={
+          <Stack
+            direction="row"
+            gap={2}
+            alignItems="center"
+            justifyContent="center"
+          >
+            <Image
+              src="/nuvia_logo_only.png"
+              alt="logo"
+              width={50}
+              height={50}
+            />
+            <CommonText variant="h5" align="center">
+              로그인
+            </CommonText>
+          </Stack>
+        }
         slots={
           <>
             <TextField

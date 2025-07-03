@@ -1,10 +1,10 @@
 import ActionButton from '@components/atom/ActionButton';
 import CommonText from '@components/atom/CommonText';
-import { Stack, TextField } from '@mui/material';
+import { Stack } from '@mui/material';
 import { useState } from 'react';
 
 interface ActionFormProps {
-  title: string;
+  title: React.ReactNode;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   submitText: string;
   slots: React.ReactNode;
@@ -46,10 +46,7 @@ const ActionForm: React.FC<ActionFormProps> = ({
         onSubmit(e);
       }}
     >
-      <CommonText variant="h5" gutterBottom>
-        {title}
-      </CommonText>
-
+      {title}
       <Stack gap={2}>
         {slots}
         <ActionButton variant="contained" fullWidth type="submit">
