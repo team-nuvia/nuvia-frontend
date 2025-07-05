@@ -1,11 +1,14 @@
 import UserDescription from '@components/molecular/UserDescription';
 import { Stack } from '@mui/material';
 
-interface UserCardProps {}
-const UserCard: React.FC<UserCardProps> = () => {
+interface UserCardProps {
+  name: string;
+  plan: string;
+}
+const UserCard: React.FC<UserCardProps> = ({ name, plan }) => {
   return (
     <Stack>
-      <UserDescription name="John Doe" plan="Pro" />
+      <UserDescription name={name} plan={plan} />
     </Stack>
   );
 };

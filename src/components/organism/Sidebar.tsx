@@ -68,7 +68,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
             <NotificationsOutlinedIcon color="primary" />
           </IconButton>
         </Stack>
-        <UserCard />
+        <UserCard name="John Doe" plan="Free" />
       </Stack>
       <Divider />
       <SidebarMenuList menus={menus} />

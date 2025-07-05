@@ -8,6 +8,14 @@ export declare global {
     startIcon?: React.ReactNode;
     endIcon?: React.ReactNode;
   }
+
+  declare module '*.svg' {
+    import * as React from 'react';
+    const ReactComponent: React.FunctionComponent<
+      React.SVGProps<SVGSVGElement>
+    >;
+    export default ReactComponent;
+  }
 }
 declare module '@mui/material/styles' {
   interface Palette {
@@ -36,6 +44,10 @@ declare module '@mui/material/Button' {
     black: true;
     white: true;
     // parent: true;
+  }
+
+  declare interface ButtonPropsSizeOverrides {
+    xlarge: true;
   }
 }
 

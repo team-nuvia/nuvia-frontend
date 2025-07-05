@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
-import BrandHead from './BrandHead';
-import { BRAND_NAME, LOGO_ONLY } from '@common/variables';
 import { decorators, parameters } from '.storybook/variables';
+import { BRAND_NAME } from '@common/variables';
+import BrandHead from './BrandHead';
 
 const meta = {
   component: BrandHead,
@@ -13,11 +13,15 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  parameters,
+  parameters: {
+    ...parameters,
+    nextjs: {
+      appDirectory: true,
+    },
+  },
   decorators: [decorators],
   args: {
     title: BRAND_NAME,
-    logo: LOGO_ONLY,
     width: 45,
     height: 45,
   },

@@ -59,6 +59,15 @@ const components: Components<Omit<Theme, 'components'>> = {
           textTransform: 'uppercase',
         },
       },
+      {
+        props: {
+          size: 'xlarge',
+        },
+        style: {
+          padding: '0.5rem',
+          fontSize: '1.1rem',
+        },
+      },
     ],
   },
   MuiTypography: {

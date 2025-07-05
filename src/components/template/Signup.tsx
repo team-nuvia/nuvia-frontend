@@ -1,11 +1,21 @@
-import ActionForm from '@components/molecular/ActionForm';
-import { Stack, TextField } from '@mui/material';
-import { useState } from 'react';
+'use client';
 
-const Signup = () => {
+import { BRAND_NAME } from '@common/variables';
+import CommonText from '@components/atom/CommonText';
+import ActionForm from '@components/molecular/ActionForm';
+import { Box, Container, Stack, TextField } from '@mui/material';
+import Image from 'next/image';
+import { useRef, useState } from 'react';
+
+interface SignupProps {}
+const Signup: React.FC<SignupProps> = () => {
+  const formRef = useRef<HTMLFormElement>(null);
+
   const [formData, setFormData] = useState({
+    name: '',
     email: '',
     password: '',
+    passwordConfirm: '',
   });
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -21,57 +31,69 @@ const Signup = () => {
   };
 
   return (
-    <Stack flex={1} gap={10} p={5} alignItems="center" justifyContent="center">
-      <ActionForm
-        title="회원가입"
-        slots={
-          <>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        backgroundColor: (theme) => theme.palette.grey[100],
+      }}
+    >
+      <Container component="main" maxWidth="xs">
+        <ActionForm
+          title={
+            <Stack
+              gap={2}
+              alignItems="center"
+              justifyContent="center"
+              textAlign="center"
+            >
+              <Stack direction="row" alignItems="center" gap={1}>
+                <Image
+                  src="/nuvia_logo_only.png"
+                  alt="logo"
+                  width={60}
+                  height={60}
+                />
+                <CommonText variant="h4" component="h1" thickness="bold">
+                  {BRAND_NAME}
+                </CommonText>
+              </Stack>
+              <CommonText variant="body2" color="textSecondary">
+                회원가입을 위해 아래 정보를 입력해주세요.
+              </CommonText>
+            </Stack>
+          }
+          slots={Object.entries(formData).map(([key, value]) => (
             <TextField
-              name="email"
-              autoComplete="email"
-              size="small"
-              label="Email"
-              type="email"
-              value={formData.email}
+              name={key}
+              autoComplete={key}
+              size="medium"
+              required
               fullWidth
-              placeholder="이메일을 입력해주세요."
-              onChange={(e) => {
-                handleChange(e);
-              }}
+              label={key}
+              type={key === 'password' ? 'password' : 'text'}
+              value={value}
+              placeholder={`${key}을 입력해주세요.`}
+              onChange={handleChange}
               sx={{
                 '& .MuiOutlinedInput-input:autofill': {
                   WebkitBoxShadow: (theme) =>
-                    `0 0 0 1000px ${theme.palette.background.default} inset`,
+                    `0 0 0 1000px ${theme.palette.background.paper} inset`,
                   WebkitTextFillColor: (theme) => theme.palette.text.primary,
                 },
               }}
             />
-            <TextField
-              name="password"
-              autoComplete="current-password"
-              size="small"
-              label="Password"
-              type="password"
-              value={formData.password}
-              fullWidth
-              placeholder="비밀번호를 입력해주세요."
-              onChange={(e) => {
-                handleChange(e);
-              }}
-              sx={{
-                '& .MuiOutlinedInput-input:autofill': {
-                  WebkitBoxShadow: (theme) =>
-                    `0 0 0 1000px ${theme.palette.background.default} inset`,
-                  WebkitTextFillColor: (theme) => theme.palette.text.primary,
-                },
-              }}
-            />
-          </>
-        }
-        submitText="회원가입"
-        onSubmit={handleSubmit}
-      />
-    </Stack>
+          ))}
+          submitText="회원가입"
+          onSubmit={handleSubmit}
+          signupPath="/login"
+          signupText="이미 계정이 있으신가요?"
+        />
+      </Container>
+    </Box>
   );
 };
 

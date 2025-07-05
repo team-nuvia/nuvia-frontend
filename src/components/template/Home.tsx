@@ -194,44 +194,42 @@ const ReviewSection = () => {
 const CTASection = () => {
   const theme = useTheme();
   return (
-    <Showbox>
-      <Stack
-        gap={3}
-        alignItems="center"
-        py={10}
-        px={5}
-        sx={{
-          background: `linear-gradient(135deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.main} 100%)`,
-        }}
-      >
-        {/* TODO: CommonText, CommonButton 2개 */}
-        <CommonText color="white" variant="h4">
-          지금, 당신만의 설문을 만들어보세요
-        </CommonText>
-        <CommonText color="white" variant="body2">
-          5분이면 충분합니다. 지금 바로 시작해보세요!
-        </CommonText>
-        <Stack direction="row" gap={2}>
-          <CommonButton
-            variant="contained"
-            size="large"
-            color="white"
-            sx={{ color: (theme) => theme.palette.primary.main }}
-            startIcon={<Ballot />}
-          >
-            비회원으로 설문 만들기 시작하기
-          </CommonButton>
-          <CommonButton
-            variant="outlined"
-            size="large"
-            color="white"
-            startIcon={<PersonAdd />}
-          >
-            회원가입하고 통계 분석까지 받아보세요
-          </CommonButton>
-        </Stack>
+    <Stack
+      gap={3}
+      alignItems="center"
+      py={10}
+      px={5}
+      sx={{
+        background: `linear-gradient(135deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.main} 100%)`,
+      }}
+    >
+      {/* TODO: CommonText, CommonButton 2개 */}
+      <CommonText color="white" variant="h4">
+        지금, 당신만의 설문을 만들어보세요
+      </CommonText>
+      <CommonText color="white" variant="body2">
+        5분이면 충분합니다. 지금 바로 시작해보세요!
+      </CommonText>
+      <Stack direction="row" gap={2}>
+        <CommonButton
+          variant="contained"
+          size="large"
+          color="white"
+          sx={{ color: (theme) => theme.palette.primary.main }}
+          startIcon={<Ballot />}
+        >
+          비회원으로 설문 만들기 시작하기
+        </CommonButton>
+        <CommonButton
+          variant="outlined"
+          size="large"
+          color="white"
+          startIcon={<PersonAdd />}
+        >
+          회원가입하고 통계 분석까지 받아보세요
+        </CommonButton>
       </Stack>
-    </Showbox>
+    </Stack>
   );
 };
 

@@ -1,29 +1,38 @@
-import CommonText from '@components/atom/CommonText';
+import NuviaLogo from '@/assets/NuviaLogo';
 import LinkText from '@components/atom/LinkText';
-import { Stack } from '@mui/material';
-import Image from 'next/image';
+import { Stack, SvgIcon, useTheme } from '@mui/material';
 
 interface BrandHeadProps {
   title: string;
-  logo: string;
   width: number;
   height: number;
 }
-const BrandHead: React.FC<BrandHeadProps> = ({
-  title,
-  logo,
-  width,
-  height,
-}) => {
+const BrandHead: React.FC<BrandHeadProps> = ({ title, width, height }) => {
+  const theme = useTheme();
   return (
     <Stack direction="row" alignItems="center" gap={1}>
-      <Image src={logo} alt="logo" width={width} height={height} />
+      <SvgIcon
+        sx={{
+          width: width,
+          height: height,
+          color: theme.palette.primary.dark,
+        }}
+      >
+        <NuviaLogo />
+      </SvgIcon>
       <LinkText
         to="/"
-        variant="h6"
+        variant="h5"
         thickness="bold"
         color="text.primary"
         fontFamily="Noto Sans KR"
+        sx={{
+          color: theme.palette.text.primary,
+          background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+          backgroundClip: 'text',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+        }}
       >
         {title}
       </LinkText>

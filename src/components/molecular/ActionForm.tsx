@@ -8,12 +8,16 @@ interface ActionFormProps {
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   submitText: string;
   slots: React.ReactNode;
+  signupPath?: string;
+  signupText?: string;
 }
 const ActionForm: React.FC<ActionFormProps> = ({
   title,
   onSubmit,
   submitText,
   slots,
+  signupPath,
+  signupText,
 }) => {
   const [formData, setFormData] = useState<Partial<Record<string, any>>>({
     email: '',
@@ -49,9 +53,14 @@ const ActionForm: React.FC<ActionFormProps> = ({
       {title}
       <Stack gap={2}>
         {slots}
-        <ActionButton variant="contained" fullWidth type="submit">
+        <ActionButton size="xlarge" variant="contained" fullWidth type="submit">
           {submitText}
         </ActionButton>
+        {signupPath && (
+          <ActionButton size="xlarge" variant="text" fullWidth type="button">
+            {signupText}
+          </ActionButton>
+        )}
       </Stack>
     </Stack>
   );

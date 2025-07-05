@@ -1,7 +1,9 @@
 import AuthenticationProvider from '@/context/AuthenticationContext';
 import { LoadingProvider } from '@/context/LodingContext';
+import '@/styles/global.css';
 import { BRAND_NAME } from '@common/variables';
 import Loading from '@components/atom/Loading';
+import Footer from '@components/organism/Footer';
 import Header from '@components/organism/Header';
 import { CssBaseline, Stack, ThemeProvider } from '@mui/material';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
@@ -41,10 +43,9 @@ export default function RootLayout({
                 <CssBaseline />
                 <LoadingProvider>
                   <Suspense fallback={<Loading />}>
-                    <Stack>
-                      <Header />
-                      {children}
-                    </Stack>
+                    <Header />
+                    {children}
+                    <Footer />
                   </Suspense>
                 </LoadingProvider>
               </ThemeProvider>

@@ -19,12 +19,5 @@ export const Default: Story = {
     },
   },
   decorators: [decorators],
-  args: {
-    menus: [
-      {
-        label: 'Home',
-        to: '/',
-      },
-    ],
-  },
+  args: {},
 };

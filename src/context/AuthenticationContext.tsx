@@ -1,7 +1,9 @@
 'use client';
 
 import useUsersMe from '@hooks/getUsersMe';
-import { IUser } from '@models/iuser';
+import { IUser } from '@models/interface/iuser';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { createContext, useEffect, useState } from 'react';
 
 interface AuthenticationContextType {
@@ -29,7 +31,9 @@ const AuthenticationProvider = ({
 
   return (
     <AuthenticationContext.Provider value={{ user }}>
-      {children}
+      <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ko">
+        {children}
+      </LocalizationProvider>
     </AuthenticationContext.Provider>
   );
 };
