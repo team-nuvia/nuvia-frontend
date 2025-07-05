@@ -2,3 +2,7 @@
 	path = models
 	url = https://github.com/kkn1125/snappoll-models
 	branch = main
+[submodule "share"]
+	path = nuvia-models
+	url = https://github.com/kkn1125/nuvia-models.git
+	branch = main
