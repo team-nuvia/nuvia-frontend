@@ -22,6 +22,7 @@ export const Default: Story = {
   decorators: [decorators],
   args: {
     name: 'John Doe',
+    nameSize: 20,
     content: (
       <CommonText color="text.secondary" variant="caption" lineHeight={1}>
         Free

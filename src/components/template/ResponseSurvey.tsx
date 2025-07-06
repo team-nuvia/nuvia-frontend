@@ -26,6 +26,7 @@ import {
 import { useTheme } from '@mui/material/styles';
 import { TimeIcon } from '@mui/x-date-pickers/icons';
 import { IResponseSurvey } from '@share/dto/response-survey';
+import { InputType, QuestionType } from '@share/enums/question-type';
 import { AllQuestion } from '@share/interface/iquestion';
 import { isEmpty } from '@util/isEmpty';
 import axios from 'axios';
@@ -47,26 +48,20 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
-  const [answers, setAnswers] = useState<Map<number, any>>(new Map());
   const [success, setSuccess] = useState<string | null>(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [direction, setDirection] = useState<'next' | 'previous'>('next');
-  const [isSubmitted, setIsSubmitted] = useState(false);
 
   useEffect(() => {
     const totalQuestions = questions.length;
     const answeredQuestions = questions.filter(
       (question) =>
-        question.answers?.values().some((item) => !isEmpty(item)) &&
-        question.answers?.size > 0,
+        question.isAnswered ||
+        (question.answers?.values().some((item) => !isEmpty(item)) &&
+          question.answers?.size > 0),
     ).length;
     setProgress(Math.round((answeredQuestions / totalQuestions) * 100));
-
-    const newMap = new Map(
-      questions.map((question) => [question.id, question.answers]),
-    );
-    setAnswers(newMap);
   }, [questions, currentStep]);
 
   function handleOptionChange<T extends string>(
@@ -74,37 +69,23 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
     optionId: number,
     value: T,
   ) {
-    console.log('🚀 ~ optionId:', optionId);
-    console.log('🚀 ~ value:', value);
-    if (isEmpty(value)) {
-      setErrors((errors) => {
-        const newErrors = { ...errors };
-        delete newErrors[questionId];
-        return newErrors;
-      });
-    } else {
-      setErrors((errors) => {
-        const newErrors = { ...errors };
-        delete newErrors[questionId];
-        return newErrors;
-      });
-    }
-
-    // setAnswers((answers) => {
-    //   if (isEmpty(value)) {
-    //     answers.delete(optionId);
-    //   } else {
-    //     answers.set(optionId, value);
-    //   }
-    //   return answers;
-    // });
+    setErrors((errors) => {
+      const newErrors = { ...errors };
+      delete newErrors[questionId];
+      return newErrors;
+    });
     setQuestions((questions) =>
       questions.map((q) => {
         if (q.id === questionId) {
-          if (isEmpty(value)) {
-            q.answers.delete(optionId);
-          } else {
+          if (q.questionType === InputType.SingleChoice) {
+            q.answers.clear();
             q.answers.set(optionId, value);
+          } else {
+            if (isEmpty(value) || value.length === 0) {
+              q.answers.delete(optionId);
+            } else {
+              q.answers.set(optionId, value);
+            }
           }
           q.answers = new Map(q.answers);
         }
@@ -113,22 +94,29 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
     );
   }
 
-  const handleOptionClear = () => {
-    // setQuestions(
-    //   questions.map((q) => {
-    //     q.answers.clear();
-    //     return q;
-    //   }),
-    // );
-    setAnswers((answers) => {
-      const newAnswers = new Map(answers.entries());
-      newAnswers.clear();
-      return newAnswers;
-    });
-  };
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
-  const handleSubmit = async () => {
     console.log('🚀 ~ handleSubmit ~ questions:', questions);
+    const isAllAnswered = questions.every(
+      (item) =>
+        item.isAnswered ||
+        (item.answers.size > 0 &&
+          item.answers.values().some((item) => !isEmpty(item))),
+    );
+    if (!isAllAnswered) {
+      for (const q of questions) {
+        if (q.required && !q.isAnswered) {
+          setErrors((errors) => {
+            const newErrors = { ...errors };
+            newErrors[q.id] = '이 질문은 필수입니다';
+            return newErrors;
+          });
+        }
+      }
+      return false;
+    }
+
     setIsSubmitting(true);
     setError(null);
     setSuccess(null);
@@ -216,6 +204,8 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
 
   const handleNext = () => {
     if (validateCurrentQuestion()) {
+      questions[currentStep].isAnswered = true;
+      setQuestions(questions);
       setDirection('next');
       setTimeout(() => {
         setCurrentStep((prev) => prev + 1);
@@ -227,13 +217,24 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
     setDirection('previous');
     setTimeout(() => {
       setCurrentStep((prev) => Math.max(0, prev - 1));
+      if (!questions[currentStep - 1].required) {
+        if (
+          questions[currentStep - 1].answers
+            .values()
+            .some((item) => isEmpty(item)) ||
+          questions[currentStep - 1].answers.size === 0
+        ) {
+          questions[currentStep - 1].isAnswered = false;
+          setQuestions(questions);
+        }
+      }
     }, 50);
   };
 
   const currentQuestion = useMemo(() => {
     return questions[currentStep];
   }, [questions, currentStep]);
-  console.log('🚀 ~ currentQuestion ~ currentQuestion:', currentQuestion);
+  // console.log('🚀 ~ currentQuestion ~ currentQuestion:', currentQuestion);
   const isLastQuestion = currentStep === questions.length - 1;
 
   /* 질문당 40초 */
@@ -242,7 +243,15 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
   // --- RENDER ---
   return (
     <Container maxWidth="lg">
-      <Grid container spacing={2} mt={5}>
+      <Grid
+        component="form"
+        noValidate
+        autoComplete="off"
+        onSubmit={handleSubmit}
+        container
+        spacing={2}
+        mt={5}
+      >
         <Grid size={{ xs: 12 }}>
           <Paper
             sx={{
@@ -312,7 +321,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
                 exit={{ opacity: 0, x: direction === 'next' ? -100 : 100 }}
                 transition={{ duration: 0.3 }}
               >
-                <Paper component="form" noValidate autoComplete="off">
+                <Paper>
                   <ResponseCard
                     key={currentQuestion.id}
                     id={currentQuestion.id}
@@ -325,7 +334,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
                     options={currentQuestion.options}
                     answers={currentQuestion.answers}
                     handleOptionChange={handleOptionChange}
-                    handleOptionClear={handleOptionClear}
+                    // handleOptionClear={handleOptionClear}
                   />
                   {errors[currentQuestion.id] && (
                     <CommonText color="error" variant="body2" px={4} pb={4}>
@@ -397,7 +406,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
                     <SaveIcon />
                   )
                 }
-                onClick={handleSubmit}
+                type="submit"
                 disabled={isSubmitting}
                 sx={{ minWidth: 120 }}
               >

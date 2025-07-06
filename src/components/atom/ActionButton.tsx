@@ -1,8 +1,10 @@
 import { ButtonProps } from '@mui/material';
 import CommonButton from './CommonButton';
 
-interface ActionButtonProps {}
-const ActionButton: React.FC<ActionButtonProps & ButtonProps> = ({
+interface ActionButtonProps extends ButtonProps {
+  label?: string;
+}
+const ActionButton: React.FC<ActionButtonProps> = ({
   children,
   ...props
 }) => {

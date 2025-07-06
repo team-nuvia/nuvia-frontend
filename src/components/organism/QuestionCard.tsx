@@ -1,12 +1,12 @@
-import { QUESTION_DEFAULT_TYPE_LIST, QUESTION_TYPE_MAP } from '@common/global';
-import CommonText from '@components/atom/CommonText';
-import { DataType, InputType } from '@share/enums/question-type';
-import { IQuestion, IQuestionOption } from '@share/interface/iquestion';
+import { QUESTION_DEFAULT_TYPE_LIST } from '@common/global';
+import ActionButton from '@components/atom/ActionButton';
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditSquareIcon from '@mui/icons-material/EditSquare';
 import {
   Box,
   Button,
   Chip,
+  ChipProps,
   FormControl,
   FormControlLabel,
   Grid,
@@ -19,10 +19,9 @@ import {
   Stack,
   TextField,
 } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
-import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-import dayjs from 'dayjs';
+import { OverridableComponent } from '@mui/material/OverridableComponent';
+import { DataType, InputType } from '@share/enums/question-type';
+import { IQuestion, IQuestionOption } from '@share/interface/iquestion';
 import { useMemo } from 'react';
 
 const DATA_TYPE_MAP = {
@@ -308,8 +307,15 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             onChange={(e) => handleQuestionChange(id, 'title', e.target.value)}
             variant="standard"
           />
-          <Chip
-            color={required ? 'error' : 'default'}
+          <ActionButton
+            component={Chip}
+            startIcon={<EditSquareIcon />}
+            color={required ? 'error' : 'info'}
+            variant="contained"
+            onClick={() => handleQuestionChange(id, 'required', !required)}
+            shape="rounded"
+            size="small"
+            sx={{ p: 0, fontSize: '0.8rem' }}
             label={required ? '필수' : '선택'}
           />
         </Grid>

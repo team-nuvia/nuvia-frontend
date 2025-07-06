@@ -5,9 +5,12 @@ import {
   Box,
   Checkbox,
   Chip,
+  FormControl,
   FormControlLabel,
   FormGroup,
   Grid,
+  Radio,
+  RadioGroup,
   Rating,
   Stack,
   TextField,
@@ -47,7 +50,7 @@ interface ResponseCardProps {
     optionId: number,
     value: any,
   ) => void;
-  handleOptionClear: () => void;
+  // handleOptionClear: () => void;
 }
 const ResponseCard: React.FC<ResponseCardProps> = ({
   id,
@@ -60,7 +63,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
   answers,
   options,
   handleOptionChange,
-  handleOptionClear,
+  // handleOptionClear,
 }) => {
   const inputValueType = useMemo(() => {
     switch (dataType) {
@@ -92,13 +95,38 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
     if (dataType === DataType.Rating) {
       /* 설문 응답할 때 처리 */
       return (
-        <Rating
-          size="large"
-          value={answers?.get(1) ? Number(answers?.get(1)) : 0}
-          onChange={(_, value) =>
-            handleOptionChange(id, 1, value?.toString() || '1')
-          }
-        />
+        // <Rating
+        //   size="large"
+        //   value={answers?.get(1) ? Number(answers?.get(1)) : 0}
+        //   onChange={(_, value) =>
+        //     handleOptionChange(id, 1, value?.toString() || '1')
+        //   }
+        // />
+        <Box sx={{ textAlign: 'center' }}>
+          <Rating
+            size="large"
+            value={answers?.get(1) ? Number(answers?.get(1)) : 0}
+            onChange={(_, value) =>
+              handleOptionChange(id, 1, value?.toString() || '1')
+            }
+            sx={{ fontSize: '3rem', mb: 2 }}
+          />
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              maxWidth: 300,
+              mx: 'auto',
+            }}
+          >
+            <CommonText variant="caption" color="text.secondary">
+              매우 불만족
+            </CommonText>
+            <CommonText variant="caption" color="text.secondary">
+              매우 만족
+            </CommonText>
+          </Box>
+        </Box>
       );
     }
     if (dataType === DataType.Email) {
@@ -298,7 +326,77 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
             onChange={(e) => handleOptionChange(id, 1, e.target.value)}
           />
         )}
-        {(questionType === InputType.SingleChoice ||
+        {questionType === InputType.SingleChoice && (
+          <FormControl component="fieldset" fullWidth /* error={hasError} */>
+            <RadioGroup
+              value={answers?.get(1) || ''}
+              onChange={(e) => handleOptionChange(id, 1, e.target.value)}
+            >
+              {options?.map((option) => (
+                <FormControlLabel
+                  key={option.id}
+                  value={option.id}
+                  control={<Radio />}
+                  label={option.label}
+                  sx={{
+                    mb: 1,
+                    p: 2,
+                    border: '1px solid',
+                    borderColor:
+                      answers?.get(1) === option ? 'primary.main' : 'divider',
+                    borderRadius: 2,
+                    transition: 'all 0.2s',
+                    '&:hover': {
+                      backgroundColor: 'action.hover',
+                    },
+                  }}
+                />
+              ))}
+            </RadioGroup>
+          </FormControl>
+        )}
+        {questionType === InputType.MultipleChoice && (
+          <FormControl component="fieldset" fullWidth /* error={hasError} */>
+            <FormGroup>
+              {options?.map((option) => (
+                <FormControlLabel
+                  key={option.id}
+                  control={
+                    <Checkbox
+                      checked={(answers?.get(option.id) || []).includes(option)}
+                      onChange={(e) => {
+                        const currentAnswers = answers?.get(option.id) || [];
+                        const newAnswers = e.target.checked
+                          ? [...currentAnswers, option]
+                          : currentAnswers.filter(
+                              (a: IQuestionOption) => a.id !== option.id,
+                            );
+                        handleOptionChange(id, option.id, newAnswers);
+                      }}
+                    />
+                  }
+                  label={option.label}
+                  sx={{
+                    mb: 1,
+                    p: 2,
+                    border: '1px solid',
+                    borderColor: (answers?.get(option.id) || []).includes(
+                      option,
+                    )
+                      ? 'primary.main'
+                      : 'divider',
+                    borderRadius: 2,
+                    transition: 'all 0.2s',
+                    '&:hover': {
+                      backgroundColor: 'action.hover',
+                    },
+                  }}
+                />
+              ))}
+            </FormGroup>
+          </FormControl>
+        )}
+        {/* {(questionType === InputType.SingleChoice ||
           questionType === InputType.MultipleChoice) && (
           <FormGroup>
             {(options || []).map((option) => (
@@ -309,9 +407,9 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
                   <Checkbox
                     checked={answers?.get(option.id) ?? false}
                     onChange={(e) => {
-                      if (questionType === InputType.SingleChoice) {
-                        handleOptionClear();
-                      }
+                      // if (questionType === InputType.SingleChoice) {
+                      //   handleOptionClear();
+                      // }
                       handleOptionChange(id, option.id, e.target.checked);
                     }}
                   />
@@ -319,7 +417,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
               />
             ))}
           </FormGroup>
-        )}
+        )} */}
       </Box>
     </Box>
   );

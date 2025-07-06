@@ -44,6 +44,33 @@ export const Default: Story = {
         },
         {
           id: 2,
+          title: '자유입력입니다.2',
+          description: '자유롭게 입력해주세요.2',
+          questionType: InputType.LongText,
+          dataType: DataType.Text,
+          required: false,
+          options: [
+            {
+              id: 1,
+              label: '옵션 1',
+            },
+            {
+              id: 2,
+              label: '옵션 2',
+            },
+            {
+              id: 3,
+              label: '옵션 3',
+            },
+            {
+              id: 4,
+              label: '옵션 4',
+            },
+          ],
+          answers: new Map(),
+        },
+        {
+          id: 3,
           title: '선택해주세요.',
           description: '선택해주세요.',
           questionType: InputType.SingleChoice,
@@ -57,7 +84,7 @@ export const Default: Story = {
           answers: new Map(),
         },
         {
-          id: 3,
+          id: 4,
           title: '날짜 질문입니다.',
           description: '날짜 질문입니다.',
           questionType: InputType.ShortText,
@@ -67,7 +94,7 @@ export const Default: Story = {
           answers: new Map(),
         },
         {
-          id: 4,
+          id: 5,
           title: '별점 질문입니다.',
           description: '별점 질문입니다.',
           questionType: InputType.ShortText,
@@ -77,7 +104,7 @@ export const Default: Story = {
           answers: new Map(),
         },
         {
-          id: 5,
+          id: 6,
           title: '이미지 질문입니다.',
           description: '이미지 질문입니다.',
           questionType: InputType.ShortText,
@@ -87,13 +114,53 @@ export const Default: Story = {
           answers: new Map(),
         },
         {
-          id: 6,
+          id: 7,
           title: '링크 질문입니다.',
           description: '링크 질문입니다.',
           questionType: InputType.ShortText,
           dataType: DataType.Link,
           required: false,
           options: [{ id: 1, label: '옵션 1' }],
+          answers: new Map(),
+        },
+        {
+          id: 8,
+          title: '링크 질문입니다.',
+          description: '링크 질문입니다.',
+          questionType: InputType.SingleChoice,
+          dataType: DataType.Text,
+          required: false,
+          options: [
+            { id: 1, label: '옵션 1' },
+            {
+              id: 2,
+              label: '옵션 2',
+            },
+            {
+              id: 3,
+              label: '옵션 3',
+            },
+          ],
+          answers: new Map(),
+        },
+        {
+          id: 9,
+          title: '링크 질문입니다.',
+          description: '링크 질문입니다.',
+          questionType: InputType.MultipleChoice,
+          dataType: DataType.Text,
+          required: true,
+          options: [
+            { id: 1, label: '옵션 1' },
+            {
+              id: 2,
+              label: '옵션 2',
+            },
+            {
+              id: 3,
+              label: '옵션 3',
+            },
+          ],
           answers: new Map(),
         },
       ],
