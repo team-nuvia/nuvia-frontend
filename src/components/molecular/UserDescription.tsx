@@ -3,22 +3,25 @@ import { Avatar, Stack } from '@mui/material';
 
 interface UserDescriptionProps {
   name: string;
-  plan: string;
+  content: React.ReactNode;
+  nameSize?: number;
 }
-const UserDescription: React.FC<UserDescriptionProps> = ({ name, plan }) => {
+const UserDescription: React.FC<UserDescriptionProps> = ({
+  name,
+  content,
+  nameSize = 16,
+}) => {
   return (
-    <Stack direction="row" alignItems="center" gap={2}>
+    <Stack direction="row" alignItems="center" gap={2} mb={2}>
       <Avatar
         src="https://github.com/shadcn.png"
         sx={{ width: 45, height: 45 }}
       />
       <Stack direction="column" justifyContent="center" gap={0.5}>
-        <CommonText variant="overline" lineHeight={1}>
+        <CommonText lineHeight={1} fontSize={nameSize} thickness="bold">
           {name}
         </CommonText>
-        <CommonText color="text.secondary" variant="caption" lineHeight={1}>
-          {plan}
-        </CommonText>
+        {content}
       </Stack>
     </Stack>
   );

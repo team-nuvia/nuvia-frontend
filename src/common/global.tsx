@@ -1,4 +1,4 @@
-import { DataType, InputType } from '@models/enums/question-type';
+import { DataType, InputType } from '@share/enums/question-type';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked';
 import ShortTextIcon from '@mui/icons-material/ShortText';

@@ -8,7 +8,7 @@ interface UserCardProps {
 const UserCard: React.FC<UserCardProps> = ({ name, plan }) => {
   return (
     <Stack>
-      <UserDescription name={name} plan={plan} />
+      <UserDescription name={name} content={plan} />
     </Stack>
   );
 };

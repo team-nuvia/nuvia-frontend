@@ -1,7 +1,7 @@
 import CommonText from '@components/atom/CommonText';
 import { Container, IconButton, Paper, Stack } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { ISurvey } from '@models/interface/isurvey';
+import { ISurvey } from '@share/interface/isurvey';
 import QuestionCard from '@components/organism/QuestionCard';
 
 interface PreviewProps {

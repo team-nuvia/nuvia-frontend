@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 import UserDescription from './UserDescription';
 import { decorators, parameters } from '.storybook/variables';
+import CommonText from '@components/atom/CommonText';
 
 const meta = {
   component: UserDescription,
@@ -21,6 +22,10 @@ export const Default: Story = {
   decorators: [decorators],
   args: {
     name: 'John Doe',
-    plan: 'Free',
+    content: (
+      <CommonText color="text.secondary" variant="caption" lineHeight={1}>
+        Free
+      </CommonText>
+    ),
   },
 };

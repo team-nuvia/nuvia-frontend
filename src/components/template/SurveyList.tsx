@@ -1,7 +1,7 @@
 'use client';
 
 import LoadingContext from '@/context/LodingContext';
-import { SearchSurvey } from '@models/interface/search-survey';
+import { SearchSurvey } from '@share/interface/search-survey';
 import {
   Add,
   Analytics,

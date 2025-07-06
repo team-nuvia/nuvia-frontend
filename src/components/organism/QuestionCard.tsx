@@ -1,7 +1,7 @@
 import { QUESTION_DEFAULT_TYPE_LIST, QUESTION_TYPE_MAP } from '@common/global';
 import CommonText from '@components/atom/CommonText';
-import { DataType, InputType } from '@models/enums/question-type';
-import { IQuestion, IQuestionOption } from '@models/interface/iquestion';
+import { DataType, InputType } from '@share/enums/question-type';
+import { IQuestion, IQuestionOption } from '@share/interface/iquestion';
 import DeleteIcon from '@mui/icons-material/Delete';
 import {
   Box,

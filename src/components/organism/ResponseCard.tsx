@@ -1,6 +1,6 @@
 import CommonText from '@components/atom/CommonText';
-import { DataType, InputType } from '@models/enums/question-type';
-import { IQuestionOption } from '@models/interface/iquestion';
+import { DataType, InputType } from '@share/enums/question-type';
+import { IQuestionOption } from '@share/interface/iquestion';
 import {
   Box,
   Checkbox,
@@ -94,7 +94,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
       return (
         <Rating
           size="large"
-          value={answers?.get(0) ? Number(answers?.get(0)) : 0}
+          value={answers?.get(1) ? Number(answers?.get(1)) : 0}
           onChange={(_, value) =>
             handleOptionChange(id, 1, value?.toString() || '1')
           }
@@ -108,7 +108,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
           size="small"
           label="이메일"
           type="email"
-          value={answers?.get(0)}
+          value={answers?.get(1)}
           onChange={(e) => handleOptionChange(id, 1, e.target.value)}
         />
       );
@@ -120,7 +120,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
           size="small"
           label="링크"
           type="url"
-          value={answers?.get(0)}
+          value={answers?.get(1)}
           onChange={(e) => handleOptionChange(id, 1, e.target.value)}
         />
       );
@@ -129,7 +129,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
       return (
         <DatePicker
           label="날짜"
-          value={dayjs(answers?.get(0))}
+          value={dayjs(answers?.get(1))}
           onChange={(e) => handleOptionChange(id, 1, e?.toISOString() || '')}
           slotProps={{
             textField: {
@@ -143,7 +143,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
       return (
         <DateTimePicker
           label="날짜/시간"
-          value={dayjs(answers?.get(0))}
+          value={dayjs(answers?.get(1))}
           onChange={(e) => handleOptionChange(id, 1, e?.toISOString() || '')}
           // onChange={(e) => handleQuestionChange(id, 'value', e?.toISOString())}
           slotProps={{
@@ -158,7 +158,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
       return (
         <TimePicker
           label="시간"
-          value={dayjs(answers?.get(0))}
+          value={dayjs(answers?.get(1))}
           onChange={(e) => handleOptionChange(id, 1, e?.toISOString() || '')}
           // onChange={(e) => handleQuestionChange(id, 'value', e?.toISOString())}
           slotProps={{
@@ -177,7 +177,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
           size="small"
           label="파일"
           type="file"
-          value={answers?.get(0)}
+          value={answers?.get(1)}
           onChange={(e) => handleOptionChange(id, 1, e.target.value)}
           // onChange={(e) => handleQuestionChange(id, 'value', e.target.value)}
         />
@@ -196,7 +196,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
               accept: 'image/*',
             },
           }}
-          value={answers?.get(0)}
+          value={answers?.get(1)}
           onChange={(e) => handleOptionChange(id, 1, e.target.value)}
           // onChange={(e) => handleQuestionChange(id, 'value', e.target.value)}
         />
@@ -215,7 +215,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
               accept: 'video/*',
             },
           }}
-          value={answers?.get(0)}
+          value={answers?.get(1)}
           onChange={(e) => handleOptionChange(id, 1, e.target.value)}
           // onChange={(e) => handleQuestionChange(id, 'value', e.target.value)}
         />
@@ -236,7 +236,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
         size="small"
         label="단답형 답변"
         type={inputValueType}
-        value={answers?.get(0)}
+        value={answers?.get(1)}
         onChange={(e) => {
           handleOptionChange(id, 1, e.target.value);
         }}
@@ -248,7 +248,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
     <Box sx={{ p: 4, mt: 4 }}>
       <Grid container spacing={2} alignItems="center">
         <Grid
-          size={{ xs: 12, md: 8 }}
+          size={{ xs: 12 }}
           sx={{
             display: 'flex',
             justifyContent: 'space-between',
@@ -294,7 +294,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
             {...(dataType === DataType.Rating && {
               slotProps: { htmlInput: { min: 0, max: 5, step: 1 } },
             })}
-            value={answers?.get(0)}
+            value={answers?.get(1)}
             onChange={(e) => handleOptionChange(id, 1, e.target.value)}
           />
         )}

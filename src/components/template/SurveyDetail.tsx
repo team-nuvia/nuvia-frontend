@@ -38,7 +38,7 @@ import {
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams } from 'next/navigation';
-import { ISurvey } from '@models/interface/isurvey';
+import { ISurvey } from '@share/interface/isurvey';
 
 interface Question {
   id: string;

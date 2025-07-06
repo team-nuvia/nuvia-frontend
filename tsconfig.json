@@ -21,7 +21,7 @@
     ],
     "typeRoots": ["./node_modules/@types", "./types"],
     "paths": {
-      "@models/*": ["share/*"],
+      "@share/*": ["share/*"],
       "@common/*": ["src/common/*"],
       "@hooks/*": ["src/hooks/*"],
       "@api/*": ["src/api/*"],

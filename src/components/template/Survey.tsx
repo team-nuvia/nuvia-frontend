@@ -5,8 +5,8 @@ import {
 } from '@common/global';
 import Preview from '@components/organism/Preview';
 import QuestionCard from '@components/organism/QuestionCard';
-import { DataType, InputType } from '@models/enums/question-type';
-import { AllQuestion, IQuestion } from '@models/interface/iquestion';
+import { DataType, InputType } from '@share/enums/question-type';
+import { AllQuestion, IQuestion } from '@share/interface/iquestion';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import SaveIcon from '@mui/icons-material/Save';
 import {

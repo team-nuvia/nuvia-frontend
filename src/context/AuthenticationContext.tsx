@@ -1,7 +1,7 @@
 'use client';
 
 import useUsersMe from '@hooks/getUsersMe';
-import { IUser } from '@models/interface/iuser';
+import { IUser } from '@share/interface/iuser';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { createContext, useEffect, useState } from 'react';
