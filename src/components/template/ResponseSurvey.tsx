@@ -161,10 +161,6 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
   };
 
   const validateCurrentQuestion = () => {
-    console.log(
-      '🚀 ~ validateCurrentQuestion ~ currentQuestion:',
-      currentQuestion,
-    );
     if (!currentQuestion) return true;
 
     const answers = questions[currentStep].answers;

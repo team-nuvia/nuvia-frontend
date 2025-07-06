@@ -28,6 +28,7 @@
       "@util/*": ["src/util/*"],
       "@assets/*": ["src/assets/*"],
       "@components/*": ["src/components/*"],
+      "@context/*": ["src/context/*"],
       "@page/*": ["src/page/*"],
       "@/*": ["src/*"]
     }

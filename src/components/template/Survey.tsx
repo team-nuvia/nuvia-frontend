@@ -1,3 +1,5 @@
+'use client';
+
 import {
   QUESTION_DATA_TYPE_MAP,
   QUESTION_TYPE_ICONS,
@@ -5,8 +7,7 @@ import {
 } from '@common/global';
 import Preview from '@components/organism/Preview';
 import QuestionCard from '@components/organism/QuestionCard';
-import { DataType, InputType } from '@share/enums/question-type';
-import { AllQuestion, IQuestion } from '@share/interface/iquestion';
+import { LoadingContext } from '@context/LodingContext';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import SaveIcon from '@mui/icons-material/Save';
 import {
@@ -35,9 +36,11 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { DataType, InputType } from '@share/enums/question-type';
+import { AllQuestion, IQuestion } from '@share/interface/iquestion';
 import axios from 'axios';
 import dayjs from 'dayjs';
-import { useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 
 // --- HELPER FUNCTIONS ---
 const generatePassword = () => Math.random().toString(36).slice(-8);
@@ -57,6 +60,11 @@ const Survey: React.FC = () => {
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { setLoading } = useContext(LoadingContext);
+
+  useEffect(() => {
+    setLoading(false);
+  }, []);
 
   // --- HANDLERS ---
   const handleAddQuestion = (questionType: InputType, dataType?: DataType) => {
@@ -381,17 +389,15 @@ const Survey: React.FC = () => {
         <Preview
           survey={{
             title,
+            name: '',
             description,
+            category: '',
             expiresAt: expiresAt || '',
             isPublic,
+            participants: 0,
             questions,
-            managementPassword: '',
-            status: 'draft',
-            category: 'other',
             createdAt: new Date(),
             updatedAt: new Date(),
-            startDate: new Date(),
-            endDate: new Date(),
           }}
           handleClose={() => setIsPreview(false)}
         />

@@ -5,6 +5,7 @@ import CommonText from '@components/atom/CommonText';
 import Showbox from '@components/atom/Showbox';
 import ReviewCard from '@components/organism/ReviewCard';
 import SolutionCard from '@components/organism/SolutionCard';
+import { LoadingContext } from '@context/LodingContext';
 import {
   Analytics,
   Ballot,
@@ -17,6 +18,7 @@ import {
   Timer,
 } from '@mui/icons-material';
 import { Grid, Stack, useTheme } from '@mui/material';
+import { useContext, useEffect } from 'react';
 
 interface HomeProps {}
 
@@ -234,6 +236,12 @@ const CTASection = () => {
 };
 
 const Home: React.FC<HomeProps> = () => {
+  const { setLoading } = useContext(LoadingContext);
+
+  useEffect(() => {
+    setLoading(false);
+  }, []);
+
   return (
     <Stack flex={1} gap={10}>
       <IntroSection />

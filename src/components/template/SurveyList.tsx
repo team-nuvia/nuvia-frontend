@@ -1,7 +1,6 @@
 'use client';
 
 import LoadingContext from '@/context/LodingContext';
-import { SearchSurvey } from '@share/interface/search-survey';
 import {
   Add,
   Analytics,
@@ -33,7 +32,6 @@ import {
   Grid,
   IconButton,
   InputLabel,
-  LinearProgress,
   Menu,
   MenuItem,
   Select,
@@ -41,9 +39,11 @@ import {
   Tab,
   Tabs,
   TextField,
+  Tooltip,
   Typography,
   useTheme,
 } from '@mui/material';
+import { SearchSurvey } from '@share/interface/search-survey';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import type React from 'react';
@@ -441,7 +441,7 @@ export default function SurveyList() {
               <Button
                 variant="contained"
                 startIcon={<Add />}
-                onClick={() => router.push('/create')}
+                onClick={() => router.push('/survey/create')}
               >
                 설문 만들기
               </Button>
@@ -643,13 +643,15 @@ export default function SurveyList() {
       )}
 
       {/* FAB */}
-      <Fab
-        color="primary"
-        sx={{ position: 'fixed', bottom: 24, right: 24 }}
-        onClick={() => router.push('/create')}
-      >
-        <Add />
-      </Fab>
+      <Tooltip title="설문 만들기">
+        <Fab
+          color="primary"
+          sx={{ position: 'fixed', bottom: 24, right: 24 }}
+          onClick={() => router.push('/survey/create')}
+        >
+          <Add />
+        </Fab>
+      </Tooltip>
 
       {/* 메뉴 */}
       <Menu

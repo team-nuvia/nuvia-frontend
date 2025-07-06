@@ -368,7 +368,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
           //   />
           // )
         } */}
-        {questionType === InputType.LongText && (
+        {/* {questionType === InputType.LongText && (
           <TextField
             fullWidth
             multiline
@@ -380,7 +380,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             })}
             onChange={(e) => handleOptionChange(id, 1, e.target.value)}
           />
-        )}
+        )} */}
 
         {(questionType === InputType.SingleChoice ||
           questionType === InputType.MultipleChoice) && (

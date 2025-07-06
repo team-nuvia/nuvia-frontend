@@ -1,11 +1,11 @@
 import CommonText from '@components/atom/CommonText';
-import { Container, IconButton, Paper, Stack } from '@mui/material';
+import ResponseSurvey from '@components/template/ResponseSurvey';
 import CloseIcon from '@mui/icons-material/Close';
-import { ISurvey } from '@share/interface/isurvey';
-import QuestionCard from '@components/organism/QuestionCard';
+import { Container, IconButton, Paper, Stack } from '@mui/material';
+import { IResponseSurvey } from '@share/dto/response-survey';
 
 interface PreviewProps {
-  survey: ISurvey;
+  survey: IResponseSurvey;
   handleClose: () => void;
 }
 const Preview: React.FC<PreviewProps> = ({ survey, handleClose }) => {
@@ -20,6 +20,7 @@ const Preview: React.FC<PreviewProps> = ({ survey, handleClose }) => {
         right: 15,
         bottom: 15,
         zIndex: 1000,
+        overflow: 'auto',
       }}
     >
       <Container>
@@ -28,35 +29,12 @@ const Preview: React.FC<PreviewProps> = ({ survey, handleClose }) => {
           justifyContent="space-between"
           alignItems="center"
         >
-          <CommonText variant="h6">미리보기</CommonText>
+          <CommonText variant="h3">미리보기</CommonText>
           <IconButton onClick={handleClose}>
             <CloseIcon />
           </IconButton>
         </Stack>
-        <Stack>
-          <CommonText variant="h6">{survey.title}</CommonText>
-          <CommonText variant="body1">{survey.description}</CommonText>
-        </Stack>
-        <Stack>
-          {survey.questions.map((question, index) => (
-            <QuestionCard
-              key={question.id}
-              id={question.id}
-              index={index + 1}
-              title={question.title}
-              description={question.description}
-              questionType={question.questionType}
-              dataType={question.dataType}
-              required={question.required}
-              options={question.options}
-              handleQuestionChange={() => {}}
-              handleOptionChange={() => {}}
-              handleRemoveOption={() => {}}
-              handleAddOption={() => {}}
-              handleRemoveQuestion={() => {}}
-            />
-          ))}
-        </Stack>
+        <ResponseSurvey survey={survey} />
       </Container>
     </Paper>
   );
