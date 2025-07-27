@@ -1,25 +1,42 @@
 'use client';
 
+import { login } from '@api/login';
 import { BRAND_NAME } from '@common/variables';
 import CommonText from '@components/atom/CommonText';
 import ActionForm from '@components/molecular/ActionForm';
+import { AuthenticationContext } from '@context/AuthenticationContext';
+import LoadingContext from '@context/LodingContext';
 import { Box, Container, Grid, Link, Stack, TextField } from '@mui/material';
 import Image from 'next/image';
 import NextLink from 'next/link';
-import { useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useContext, useEffect, useRef, useState } from 'react';
 
 interface LoginProps {}
 const Login: React.FC<LoginProps> = () => {
+  const { setLoading } = useContext(LoadingContext);
+  const { fetchUser } = useContext(AuthenticationContext);
   const formRef = useRef<HTMLFormElement>(null);
-
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  useEffect(() => {
+    setLoading(false);
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(formData);
+    const response = await login(formData.email, formData.password);
+    if (response.ok) {
+      fetchUser();
+      router.push('/');
+    } else {
+      setError(response.message);
+    }
   };
 
   const handleChange = (
@@ -56,11 +73,7 @@ const Login: React.FC<LoginProps> = () => {
                   width={60}
                   height={60}
                 />
-                <CommonText
-                  variant="h4"
-                  component="h1"
-                  thickness="bold"
-                >
+                <CommonText variant="h4" component="h1" thickness="bold">
                   {BRAND_NAME}
                 </CommonText>
               </Stack>
@@ -71,6 +84,7 @@ const Login: React.FC<LoginProps> = () => {
           }
           slots={Object.entries(formData).map(([key, value]) => (
             <TextField
+              key={key}
               name={key}
               autoComplete={key}
               size="medium"

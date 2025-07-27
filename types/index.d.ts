@@ -1,6 +1,18 @@
-import type { Palette } from '@mui/material/styles';
+import '@mui/material/styles';
 
 export declare global {
+  interface Payload<T> {
+    payload: T | null;
+  }
+
+  interface ServerResponse<T extends any> extends Payload<T> {
+    ok: true;
+    httpStatus: 200;
+    name: 'GetUserMeResponseDto';
+    message: '사용자 정보 조회 성공';
+    reason: null;
+  }
+
   declare interface MenuModel {
     label: string;
     name: string;

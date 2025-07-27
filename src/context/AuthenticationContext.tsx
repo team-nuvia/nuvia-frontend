@@ -1,17 +1,21 @@
 'use client';
 
-import useUsersMe from '@hooks/getUsersMe';
-import { IUser } from '@share/interface/iuser';
+import { GetMeResponse } from '@/models/GetMeResponse';
+import { getUsersMe } from '@api/get-users-me';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { createContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useEffect, useState } from 'react';
 
 interface AuthenticationContextType {
-  user: IUser | null;
+  user: GetMeResponse | null;
+  setUser: (user: GetMeResponse) => void;
+  fetchUser: () => Promise<void>;
 }
 
-const AuthenticationContext = createContext<AuthenticationContextType>({
+export const AuthenticationContext = createContext<AuthenticationContextType>({
   user: null,
+  setUser: () => {},
+  fetchUser: async () => {},
 });
 
 const AuthenticationProvider = ({
@@ -19,18 +23,22 @@ const AuthenticationProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [user, setUser] = useState<IUser | null>(null);
-  const { data } = useUsersMe();
+  const [user, setUser] = useState<GetMeResponse | null>(null);
 
-  useEffect(() => {
-    console.log(data);
-    if (data) {
-      setUser(data);
+  const fetchUser = useCallback(async () => {
+    const response = await getUsersMe();
+    if (response.ok) {
+      console.log('🚀 ~ fetchUser ~ response.payload:', response.payload);
+      setUser(response.payload);
     }
   }, []);
 
+  useEffect(() => {
+    fetchUser();
+  }, []);
+
   return (
-    <AuthenticationContext.Provider value={{ user }}>
+    <AuthenticationContext.Provider value={{ user, setUser, fetchUser }}>
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ko">
         {children}
       </LocalizationProvider>

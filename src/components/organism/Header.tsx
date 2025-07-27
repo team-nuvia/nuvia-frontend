@@ -2,6 +2,7 @@
 
 import { BRAND_NAME, LOGO_ONLY } from '@common/variables';
 import BrandHead from '@components/molecular/BrandHead';
+import { AuthenticationContext } from '@context/AuthenticationContext';
 import {
   Avatar,
   IconButton,
@@ -12,10 +13,11 @@ import {
   Typography,
 } from '@mui/material';
 import { useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 
 interface HeaderProps {}
 const Header: React.FC<HeaderProps> = () => {
+  const { user } = useContext(AuthenticationContext);
   const commonMenus = useMemo(
     () => [
       {
@@ -35,12 +37,24 @@ const Header: React.FC<HeaderProps> = () => {
   );
 
   const menus = useMemo(
-    () => [
-      {
-        label: 'Login',
-        to: '/login',
-      },
-    ],
+    () =>
+      user
+        ? [
+            {
+              label: 'Profile',
+              to: '/user/profile',
+            },
+            {
+              label: 'Logout',
+              to: '/auth/logout',
+            },
+          ]
+        : [
+            {
+              label: 'Login',
+              to: '/auth/login',
+            },
+          ],
     [],
   );
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);

@@ -1,8 +1,11 @@
 'use client';
 
+import { GetMeResponse } from '@/models/GetMeResponse';
 import { snapApi } from '.';
 
-export const getUsersMe = async () => {
-  const response = await snapApi.get('/users/me');
+export async function getUsersMe(): Promise<ServerResponse<GetMeResponse>> {
+  const response = await snapApi.get<ServerResponse<GetMeResponse>>(
+    '/users/me',
+  );
   return response.data;
-};
+}

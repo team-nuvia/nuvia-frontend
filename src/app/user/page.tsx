@@ -1,8 +1,8 @@
-import Login from '@components/template/Login';
+import Profile from '@components/template/Profile';
 
 interface PageProps {}
 const Page: React.FC<PageProps> = () => {
-  return <Login />;
+  return <Profile />;
 };
 
 export default Page;
