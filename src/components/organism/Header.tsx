@@ -1,5 +1,6 @@
 'use client';
 
+import { logout } from '@api/logout';
 import { BRAND_NAME, LOGO_ONLY } from '@common/variables';
 import BrandHead from '@components/molecular/BrandHead';
 import { AuthenticationContext } from '@context/AuthenticationContext';
@@ -17,8 +18,9 @@ import { useContext, useMemo, useState } from 'react';
 
 interface HeaderProps {}
 const Header: React.FC<HeaderProps> = () => {
-  const { user } = useContext(AuthenticationContext);
-  const commonMenus = useMemo(
+  const { user, clearUser } = useContext(AuthenticationContext);
+
+  const commonMenus: MenuOption[] = useMemo(
     () => [
       {
         label: 'Nuvia란?',
@@ -33,10 +35,10 @@ const Header: React.FC<HeaderProps> = () => {
         to: '/survey',
       },
     ],
-    [],
+    [user],
   );
 
-  const menus = useMemo(
+  const menus: MenuOption[] = useMemo(
     () =>
       user
         ? [
@@ -46,7 +48,11 @@ const Header: React.FC<HeaderProps> = () => {
             },
             {
               label: 'Logout',
-              to: '/auth/logout',
+              to: '/',
+              request: async () => {
+                await logout();
+                clearUser();
+              },
             },
           ]
         : [
@@ -55,7 +61,7 @@ const Header: React.FC<HeaderProps> = () => {
               to: '/auth/login',
             },
           ],
-    [],
+    [user],
   );
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
   const router = useRouter();
@@ -92,7 +98,13 @@ const Header: React.FC<HeaderProps> = () => {
               key={menu.label}
               onClick={() => {
                 handleCloseUserMenu();
-                router.push(menu.to);
+                if (menu.request) {
+                  menu.request().then(() => {
+                    router.push(menu.to);
+                  });
+                } else {
+                  router.push(menu.to);
+                }
               }}
               sx={{
                 display: 'flex',
@@ -142,7 +154,13 @@ const Header: React.FC<HeaderProps> = () => {
               key={menu.label}
               onClick={() => {
                 handleCloseUserMenu();
-                router.push(menu.to);
+                if (menu.request) {
+                  menu.request().then(() => {
+                    router.push(menu.to);
+                  });
+                } else {
+                  router.push(menu.to);
+                }
               }}
             >
               <Typography sx={{ textAlign: 'center' }}>{menu.label}</Typography>

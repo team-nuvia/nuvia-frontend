@@ -13,6 +13,12 @@ export declare global {
     reason: null;
   }
 
+  interface MenuOption {
+    label: string;
+    to: string;
+    request?: () => Promise<void>;
+  }
+
   declare interface MenuModel {
     label: string;
     name: string;

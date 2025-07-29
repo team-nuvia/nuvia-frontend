@@ -32,8 +32,9 @@ const Login: React.FC<LoginProps> = () => {
     e.preventDefault();
     const response = await login(formData.email, formData.password);
     if (response.ok) {
-      fetchUser();
-      router.push('/');
+      fetchUser().then(() => {
+        router.push('/');
+      });
     } else {
       setError(response.message);
     }

@@ -8,13 +8,15 @@ import { createContext, useCallback, useEffect, useState } from 'react';
 
 interface AuthenticationContextType {
   user: GetMeResponse | null;
-  setUser: (user: GetMeResponse) => void;
+  setUser: (user: GetMeResponse | null) => void;
+  clearUser: () => void;
   fetchUser: () => Promise<void>;
 }
 
 export const AuthenticationContext = createContext<AuthenticationContextType>({
   user: null,
   setUser: () => {},
+  clearUser: () => {},
   fetchUser: async () => {},
 });
 
@@ -28,17 +30,22 @@ const AuthenticationProvider = ({
   const fetchUser = useCallback(async () => {
     const response = await getUsersMe();
     if (response.ok) {
-      console.log('🚀 ~ fetchUser ~ response.payload:', response.payload);
       setUser(response.payload);
     }
   }, []);
+
+  const clearUser = useCallback(() => {
+    setUser(null);
+  }, [user]);
 
   useEffect(() => {
     fetchUser();
   }, []);
 
   return (
-    <AuthenticationContext.Provider value={{ user, setUser, fetchUser }}>
+    <AuthenticationContext.Provider
+      value={{ user, setUser, clearUser, fetchUser }}
+    >
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ko">
         {children}
       </LocalizationProvider>
