@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
+import { decorators, parameters } from '.storybook/variables';
 import Login from './Login';
 
 const meta = {
@@ -11,5 +12,12 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: {}
+  parameters: {
+    ...parameters,
+    nextjs: {
+      appDirectory: true,
+    },
+  },
+  decorators: [decorators],
+  args: {},
 };

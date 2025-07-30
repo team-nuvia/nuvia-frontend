@@ -1,7 +1,7 @@
 import { UserRole } from '@share/enums/user-role';
 
 export interface GetMeResponse {
-  id: string;
+  id: number;
   email: string;
   name: string;
   role: UserRole;
