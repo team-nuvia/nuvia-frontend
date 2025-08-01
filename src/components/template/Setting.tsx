@@ -1,5 +1,6 @@
 'use client';
 
+import { getUserSettings } from '@api/get-user-settings';
 import CommonText from '@components/atom/CommonText';
 import SettingItem from '@components/molecular/SettingItem';
 import { AuthenticationContext } from '@context/AuthenticationContext';
@@ -17,10 +18,15 @@ const Setting: React.FC<SettingProps> = () => {
 
   useLayoutEffect(() => {
     setLoading(true, '설정 정보를 불러오는 중...');
-    if (isNil(user)) {
-      router.push('/auth/login');
-    }
-    setLoading(false);
+    getUserSettings()
+      .then(() => {
+        if (isNil(user)) {
+          router.push('/auth/login');
+        }
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [user, router]);
 
   return (
