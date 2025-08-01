@@ -36,7 +36,8 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
-import { DataType, InputType } from '@share/enums/question-type';
+import { DataType } from '@share/enums/data-type';
+import { InputType } from '@share/enums/input-type';
 import { AllQuestion, IQuestion } from '@share/interface/iquestion';
 import axios from 'axios';
 import dayjs from 'dayjs';

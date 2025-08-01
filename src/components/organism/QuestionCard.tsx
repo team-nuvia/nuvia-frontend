@@ -6,7 +6,6 @@ import {
   Box,
   Button,
   Chip,
-  ChipProps,
   FormControl,
   FormControlLabel,
   Grid,
@@ -17,10 +16,10 @@ import {
   RadioGroup,
   Select,
   Stack,
-  TextField,
+  TextField
 } from '@mui/material';
-import { OverridableComponent } from '@mui/material/OverridableComponent';
-import { DataType, InputType } from '@share/enums/question-type';
+import { DataType } from '@share/enums/data-type';
+import { InputType } from '@share/enums/input-type';
 import { IQuestion, IQuestionOption } from '@share/interface/iquestion';
 import { useMemo } from 'react';
 
@@ -48,16 +47,8 @@ interface QuestionCardProps {
   required: boolean;
   value?: string;
   options?: IQuestionOption[];
-  handleQuestionChange: (
-    id: number,
-    field: keyof IQuestion,
-    value: any,
-  ) => void;
-  handleOptionChange: (
-    questionId: number,
-    optionId: number,
-    value: string,
-  ) => void;
+  handleQuestionChange: (id: number, field: keyof IQuestion, value: any) => void;
+  handleOptionChange: (questionId: number, optionId: number, value: string) => void;
   handleRemoveOption: (questionId: number, optionId: number) => void;
   handleAddOption: (questionId: number) => void;
   handleRemoveQuestion: (questionId: number) => void;
@@ -295,10 +286,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   return (
     <Paper key={id} elevation={3} sx={{ p: 4, mt: 4 }}>
       <Grid container spacing={2} alignItems="center">
-        <Grid
-          size={{ xs: 12, md: 8 }}
-          sx={{ display: 'flex', gap: 1, alignItems: 'center' }}
-        >
+        <Grid size={{ xs: 12, md: 8 }} sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
           <TextField
             fullWidth
             size="small"
@@ -324,13 +312,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             fullWidth
             size="small"
             value={questionType || InputType.ShortText}
-            onChange={(e) =>
-              handleQuestionChange(
-                id,
-                'questionType',
-                e.target.value as InputType,
-              )
-            }
+            onChange={(e) => handleQuestionChange(id, 'questionType', e.target.value as InputType)}
           >
             {Object.entries(QUESTION_DEFAULT_TYPE_LIST).map(([key, value]) => (
               <MenuItem key={key} value={key}>
@@ -346,9 +328,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             rows={3}
             label="설문 설명"
             value={description}
-            onChange={(e) =>
-              handleQuestionChange(id, 'description', e.target.value)
-            }
+            onChange={(e) => handleQuestionChange(id, 'description', e.target.value)}
           />
         </Grid>
       </Grid>
@@ -382,8 +362,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
           />
         )} */}
 
-        {(questionType === InputType.SingleChoice ||
-          questionType === InputType.MultipleChoice) && (
+        {(questionType === InputType.SingleChoice || questionType === InputType.MultipleChoice) && (
           <Box>
             {(options || []).map((option, optIndex) => (
               <Grid container spacing={1} key={option.id} alignItems="center">
@@ -393,18 +372,13 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                     size="small"
                     label={`옵션 ${optIndex + 1}`}
                     value={option.label}
-                    onChange={(e) =>
-                      handleOptionChange(id, option.id, e.target.value)
-                    }
+                    onChange={(e) => handleOptionChange(id, option.id, e.target.value)}
                     variant="standard"
                     type={inputValueType}
                   />
                 </Grid>
                 <Grid size={{ xs: 1 }}>
-                  <IconButton
-                    onClick={() => handleRemoveOption(id, option.id)}
-                    size="small"
-                  >
+                  <IconButton onClick={() => handleRemoveOption(id, option.id)} size="small">
                     <DeleteIcon />
                   </IconButton>
                 </Grid>
@@ -417,24 +391,10 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
         )}
       </Box>
 
-      <Stack
-        direction="row"
-        gap={1}
-        mt={2}
-        alignItems="center"
-        justifyContent={
-          questionType === InputType.ShortText ? 'space-between' : 'flex-end'
-        }
-      >
+      <Stack direction="row" gap={1} mt={2} alignItems="center" justifyContent={questionType === InputType.ShortText ? 'space-between' : 'flex-end'}>
         {questionType === InputType.ShortText && (
           <FormControl>
-            <RadioGroup
-              row
-              value={dataType}
-              onChange={(e) =>
-                handleQuestionChange(id, 'dataType', e.target.value)
-              }
-            >
+            <RadioGroup row value={dataType} onChange={(e) => handleQuestionChange(id, 'dataType', e.target.value)}>
               {Object.values(DataType).map((value) => (
                 <FormControlLabel
                   key={value}

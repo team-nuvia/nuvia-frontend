@@ -5,7 +5,9 @@ import { BRAND_NAME } from '@common/variables';
 import Loading from '@components/atom/Loading';
 import Footer from '@components/organism/Footer';
 import Header from '@components/organism/Header';
-import { CssBaseline, Stack, ThemeProvider } from '@mui/material';
+import { GlobalSnackbar } from '@context/GlobalSnackbar';
+import { GlobalSnackbarSettingProvider } from '@context/GlobalSnackbarSettingProvider';
+import { CssBaseline, ThemeProvider } from '@mui/material';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import ReactQueryProvider from '@util/react-query-provider';
 import { lightTheme } from '@util/theme';
@@ -41,13 +43,17 @@ export default function RootLayout({
             <AppRouterCacheProvider>
               <ThemeProvider theme={lightTheme}>
                 <CssBaseline />
-                <LoadingProvider>
-                  <Suspense fallback={<Loading />}>
-                    <Header />
-                    {children}
-                    <Footer />
-                  </Suspense>
-                </LoadingProvider>
+                <GlobalSnackbarSettingProvider>
+                  <GlobalSnackbar>
+                    <LoadingProvider>
+                      <Suspense fallback={<Loading />}>
+                        <Header />
+                        {children}
+                        <Footer />
+                      </Suspense>
+                    </LoadingProvider>
+                  </GlobalSnackbar>
+                </GlobalSnackbarSettingProvider>
               </ThemeProvider>
             </AppRouterCacheProvider>
           </AuthenticationProvider>

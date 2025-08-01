@@ -1,18 +1,19 @@
-import { DataType, InputType } from '@share/enums/question-type';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import EmailIcon from '@mui/icons-material/Email';
+import EventIcon from '@mui/icons-material/Event';
+import ImageIcon from '@mui/icons-material/Image';
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import LinkIcon from '@mui/icons-material/Link';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
 import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked';
 import ShortTextIcon from '@mui/icons-material/ShortText';
-import SubjectIcon from '@mui/icons-material/Subject';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import LinkIcon from '@mui/icons-material/Link';
-import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
-import ImageIcon from '@mui/icons-material/Image';
-import EventIcon from '@mui/icons-material/Event';
-import EmailIcon from '@mui/icons-material/Email';
-import VideoCameraFrontIcon from '@mui/icons-material/VideoCameraFront';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
 import StarIcon from '@mui/icons-material/Star';
+import SubjectIcon from '@mui/icons-material/Subject';
+import VideoCameraFrontIcon from '@mui/icons-material/VideoCameraFront';
+import { DataType } from '@share/enums/data-type';
+import { InputType } from '@share/enums/input-type';
 
 export const QUESTION_DEFAULT_TYPE_LIST: {
   [key in InputType]: string;

@@ -1,16 +1,9 @@
 'use client';
 
+import ActionButton from '@components/atom/ActionButton';
 import { AuthenticationContext } from '@context/AuthenticationContext';
 import LoadingContext from '@context/LodingContext';
-import {
-  AccountCircle,
-  CalendarToday,
-  Edit,
-  Email,
-  Person,
-  Settings,
-  VerifiedUser,
-} from '@mui/icons-material';
+import { AccountCircle, CalendarToday, Edit, Email, Person, Settings, VerifiedUser } from '@mui/icons-material';
 import {
   Avatar,
   Box,
@@ -30,7 +23,10 @@ import {
   useTheme,
 } from '@mui/material';
 import { UserRole } from '@share/enums/user-role';
-import { useContext, useEffect, useState } from 'react';
+import { DateFormat } from '@util/dateFormat';
+import { isNil } from '@util/isNil';
+import { useRouter } from 'next/navigation';
+import { useContext, useLayoutEffect, useState } from 'react';
 
 interface ProfileProps {}
 
@@ -44,13 +40,7 @@ function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
 
   return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`profile-tabpanel-${index}`}
-      aria-labelledby={`profile-tab-${index}`}
-      {...other}
-    >
+    <div role="tabpanel" hidden={value !== index} id={`profile-tabpanel-${index}`} aria-labelledby={`profile-tab-${index}`} {...other}>
       {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
     </div>
   );
@@ -68,52 +58,45 @@ const Profile: React.FC<ProfileProps> = () => {
   const { setLoading } = useContext(LoadingContext);
   const theme = useTheme();
   const [tabValue, setTabValue] = useState(0);
+  const router = useRouter();
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setLoading(true, '프로필 정보를 불러오는 중...');
-    const loadProfile = async () => {
-      try {
-        // Mock API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      } catch (error) {
-        console.error('Failed to load profile:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadProfile();
-  }, [setLoading]);
+    if (isNil(user)) {
+      router.push('/auth/login');
+    }
+    setLoading(false);
+  }, [user, router]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
 
-  const getRoleColor = (role: UserRole): ChipOwnProps['color'] => {
+  const getRoleColor = (role: UserRole | undefined): ChipOwnProps['color'] => {
     switch (role) {
-      case UserRole.Admin:
+      case UserRole.Owner:
         return 'info';
-      case UserRole.Manager:
+      case UserRole.Admin:
         return 'warning';
-      case UserRole.Master:
+      case UserRole.Editor:
         return 'secondary';
-      case UserRole.User:
+      case UserRole.Viewer:
       default:
         return 'default';
     }
   };
 
-  const getRoleLabel = (role: UserRole) => {
+  const getRoleLabel = (role: UserRole | undefined) => {
     switch (role) {
+      case UserRole.Owner:
+        return '소유자';
       case UserRole.Admin:
         return '관리자';
-      case UserRole.Manager:
-        return '매니저';
-      case UserRole.Master:
-        return '마스터';
-      case UserRole.User:
+      case UserRole.Editor:
+        return '편집자';
+      case UserRole.Viewer:
       default:
-        return '사용자';
+        return '뷰어';
     }
   };
 
@@ -132,9 +115,9 @@ const Profile: React.FC<ProfileProps> = () => {
           <Typography variant="h4" component="h1" fontWeight="bold">
             프로필
           </Typography>
-          <Button variant="outlined" startIcon={<Settings />} size="large">
+          <ActionButton variant="outlined" startIcon={<Settings />} size="large" onClick={() => router.push('/user/settings')}>
             설정
-          </Button>
+          </ActionButton>
         </Box>
 
         <Grid container spacing={4}>
@@ -156,12 +139,12 @@ const Profile: React.FC<ProfileProps> = () => {
 
                   <Stack alignItems="center" spacing={1}>
                     <Typography variant="h5" fontWeight="bold">
-                      {user?.name || '사용자'}
+                      {user?.name}
                     </Typography>
                     <Chip
                       icon={<VerifiedUser />}
-                      label={getRoleLabel(user?.role || UserRole.User)}
-                      color={getRoleColor(user?.role || UserRole.User)}
+                      label={getRoleLabel(user?.role || UserRole.Viewer)}
+                      color={getRoleColor(user?.role || UserRole.Viewer)}
                       size="small"
                     />
                   </Stack>
@@ -172,33 +155,26 @@ const Profile: React.FC<ProfileProps> = () => {
                     <Stack direction="row" alignItems="center" spacing={2}>
                       <Email color="action" />
                       <Typography variant="body2" color="text.secondary">
-                        {user?.email || 'email@example.com'}
+                        {user?.email}
                       </Typography>
                     </Stack>
 
                     <Stack direction="row" alignItems="center" spacing={2}>
                       <CalendarToday color="action" />
                       <Typography variant="body2" color="text.secondary">
-                        가입일:{' '}
-                        {user?.createdAt?.toLocaleDateString() || '2024-01-01'}
+                        가입일: {DateFormat.toKST('YYYY-MM-dd HH:mm', user?.createdAt)}
                       </Typography>
                     </Stack>
 
                     <Stack direction="row" alignItems="center" spacing={2}>
                       <Person color="action" />
                       <Typography variant="body2" color="text.secondary">
-                        최근 접속:{' '}
-                        {user?.updatedAt?.toLocaleDateString() || '2024-01-01'}
+                        최근 접속: {DateFormat.toKST('YYYY-MM-dd HH:mm', user?.updatedAt)}
                       </Typography>
                     </Stack>
                   </Stack>
 
-                  <Button
-                    variant="contained"
-                    startIcon={<Edit />}
-                    fullWidth
-                    size="large"
-                  >
+                  <Button variant="contained" startIcon={<Edit />} fullWidth size="large">
                     프로필 편집
                   </Button>
                 </Stack>
@@ -210,12 +186,7 @@ const Profile: React.FC<ProfileProps> = () => {
           <Grid size={{ xs: 12, md: 8 }}>
             <Paper elevation={2}>
               <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                <Tabs
-                  value={tabValue}
-                  onChange={handleTabChange}
-                  aria-label="profile tabs"
-                  sx={{ px: 3 }}
-                >
+                <Tabs value={tabValue} onChange={handleTabChange} aria-label="profile tabs" sx={{ px: 3 }}>
                   <Tab label="개요" {...a11yProps(0)} />
                   <Tab label="활동" {...a11yProps(1)} />
                   <Tab label="보안" {...a11yProps(2)} />
@@ -227,12 +198,7 @@ const Profile: React.FC<ProfileProps> = () => {
                   <Grid container spacing={3}>
                     <Grid size={{ xs: 12, sm: 6 }}>
                       <Card elevation={1} sx={{ p: 3 }}>
-                        <Stack
-                          direction="row"
-                          alignItems="center"
-                          spacing={2}
-                          mb={2}
-                        >
+                        <Stack direction="row" alignItems="center" spacing={2} mb={2}>
                           <Box
                             sx={{
                               p: 1,
@@ -253,7 +219,7 @@ const Profile: React.FC<ProfileProps> = () => {
                               이름
                             </Typography>
                             <Typography variant="body1" fontWeight="medium">
-                              {user?.name || '사용자'}
+                              {user?.name}
                             </Typography>
                           </Box>
                           <Box>
@@ -261,18 +227,14 @@ const Profile: React.FC<ProfileProps> = () => {
                               이메일
                             </Typography>
                             <Typography variant="body1" fontWeight="medium">
-                              {user?.email || 'email@example.com'}
+                              {user?.email}
                             </Typography>
                           </Box>
                           <Box>
                             <Typography variant="body2" color="text.secondary">
                               권한
                             </Typography>
-                            <Chip
-                              label={getRoleLabel(user?.role || UserRole.User)}
-                              color={getRoleColor(user?.role || UserRole.User)}
-                              size="small"
-                            />
+                            <Chip label={getRoleLabel(user?.role)} color={getRoleColor(user?.role)} size="small" />
                           </Box>
                         </Stack>
                       </Card>
@@ -280,12 +242,7 @@ const Profile: React.FC<ProfileProps> = () => {
 
                     <Grid size={{ xs: 12, sm: 6 }}>
                       <Card elevation={1} sx={{ p: 3 }}>
-                        <Stack
-                          direction="row"
-                          alignItems="center"
-                          spacing={2}
-                          mb={2}
-                        >
+                        <Stack direction="row" alignItems="center" spacing={2} mb={2}>
                           <Box
                             sx={{
                               p: 1,
@@ -306,8 +263,7 @@ const Profile: React.FC<ProfileProps> = () => {
                               가입일
                             </Typography>
                             <Typography variant="body1" fontWeight="medium">
-                              {user?.createdAt?.toLocaleDateString() ||
-                                '2024-01-01'}
+                              {DateFormat.toKST('YYYY-MM-dd', user?.createdAt)}
                             </Typography>
                           </Box>
                           <Box>
@@ -315,8 +271,7 @@ const Profile: React.FC<ProfileProps> = () => {
                               최근 접속
                             </Typography>
                             <Typography variant="body1" fontWeight="medium">
-                              {user?.updatedAt?.toLocaleDateString() ||
-                                '2024-01-01'}
+                              {DateFormat.toKST('YYYY-MM-dd HH:mm', user?.updatedAt)}
                             </Typography>
                           </Box>
                           <Box>
@@ -340,11 +295,7 @@ const Profile: React.FC<ProfileProps> = () => {
                   <Stack spacing={2}>
                     {[1, 2, 3].map((item) => (
                       <Card key={item} elevation={1} sx={{ p: 3 }}>
-                        <Stack
-                          direction="row"
-                          justifyContent="space-between"
-                          alignItems="center"
-                        >
+                        <Stack direction="row" justifyContent="space-between" alignItems="center">
                           <Stack spacing={1}>
                             <Typography variant="body1" fontWeight="medium">
                               설문 응답 완료
@@ -370,11 +321,7 @@ const Profile: React.FC<ProfileProps> = () => {
                   </Typography>
                   <Stack spacing={3}>
                     <Card elevation={1} sx={{ p: 3 }}>
-                      <Stack
-                        direction="row"
-                        justifyContent="space-between"
-                        alignItems="center"
-                      >
+                      <Stack direction="row" justifyContent="space-between" alignItems="center">
                         <Stack spacing={1}>
                           <Typography variant="body1" fontWeight="medium">
                             비밀번호 변경
@@ -390,11 +337,7 @@ const Profile: React.FC<ProfileProps> = () => {
                     </Card>
 
                     <Card elevation={1} sx={{ p: 3 }}>
-                      <Stack
-                        direction="row"
-                        justifyContent="space-between"
-                        alignItems="center"
-                      >
+                      <Stack direction="row" justifyContent="space-between" alignItems="center">
                         <Stack spacing={1}>
                           <Typography variant="body1" fontWeight="medium">
                             이중 인증
@@ -410,11 +353,7 @@ const Profile: React.FC<ProfileProps> = () => {
                     </Card>
 
                     <Card elevation={1} sx={{ p: 3 }}>
-                      <Stack
-                        direction="row"
-                        justifyContent="space-between"
-                        alignItems="center"
-                      >
+                      <Stack direction="row" justifyContent="space-between" alignItems="center">
                         <Stack spacing={1}>
                           <Typography variant="body1" fontWeight="medium">
                             로그인 세션

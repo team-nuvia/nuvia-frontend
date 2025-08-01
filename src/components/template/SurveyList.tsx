@@ -1,6 +1,7 @@
 'use client';
 
 import LoadingContext from '@/context/LodingContext';
+import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import {
   Add,
   Analytics,
@@ -35,7 +36,6 @@ import {
   Menu,
   MenuItem,
   Select,
-  Snackbar,
   Tab,
   Tabs,
   TextField,
@@ -142,19 +142,15 @@ export default function SurveyList() {
   const theme = useTheme();
   const router = useRouter();
   const [surveys, setSurveys] = useState<SearchSurvey[]>([]);
-  // const [loading, setLoading] = useState(true);
   const { setLoading } = useContext(LoadingContext);
   const [selectedTab, setSelectedTab] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [selectedSurvey, setSelectedSurvey] = useState<SearchSurvey | null>(
-    null,
-  );
+  const [selectedSurvey, setSelectedSurvey] = useState<SearchSurvey | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const { addNotice } = useContext(GlobalSnackbarContext);
 
   useEffect(() => {
     setLoading(true, '설문 목록을 불러오는 중...');
@@ -173,10 +169,7 @@ export default function SurveyList() {
     loadSurveys();
   }, []);
 
-  const handleMenuClick = (
-    event: React.MouseEvent<HTMLElement>,
-    survey: SearchSurvey,
-  ) => {
+  const handleMenuClick = (event: React.MouseEvent<HTMLElement>, survey: SearchSurvey) => {
     setAnchorEl(event.currentTarget);
     setSelectedSurvey(survey);
   };
@@ -212,19 +205,10 @@ export default function SurveyList() {
 
   const handleToggleStatus = () => {
     if (selectedSurvey) {
-      const newStatus =
-        selectedSurvey.status === 'active' ? 'closed' : 'active';
-      setSurveys(
-        surveys.map((s) =>
-          s.id === selectedSurvey.id
-            ? { ...s, status: newStatus as SearchSurvey['status'] }
-            : s,
-        ),
-      );
-      setSnackbarMessage(
-        `설문이 ${newStatus === 'active' ? '활성화' : '비활성화'}되었습니다`,
-      );
-      setSnackbarOpen(true);
+      const newStatus = selectedSurvey.status === 'active' ? 'closed' : 'active';
+      setSurveys(surveys.map((s) => (s.id === selectedSurvey.id ? { ...s, status: newStatus as SearchSurvey['status'] } : s)));
+      addNotice(`설문이 ${newStatus === 'active' ? '활성화' : '비활성화'}되었습니다`);
+      // setSnackbarOpen(true);
     }
     handleMenuClose();
   };
@@ -232,8 +216,8 @@ export default function SurveyList() {
   const confirmDelete = () => {
     if (selectedSurvey) {
       setSurveys(surveys.filter((s) => s.id !== selectedSurvey.id));
-      setSnackbarMessage('설문이 삭제되었습니다');
-      setSnackbarOpen(true);
+      addNotice('설문이 삭제되었습니다');
+      // setSnackbarOpen(true);
     }
     setDeleteDialogOpen(false);
     setSelectedSurvey(null);
@@ -243,8 +227,8 @@ export default function SurveyList() {
     if (selectedSurvey) {
       const link = `${window.location.origin}/survey/${selectedSurvey.id}`;
       navigator.clipboard.writeText(link);
-      setSnackbarMessage('링크가 복사되었습니다');
-      setSnackbarOpen(true);
+      addNotice('링크가 복사되었습니다', 'success');
+      // setSnackbarOpen(true);
     }
     setShareDialogOpen(false);
   };
@@ -277,10 +261,8 @@ export default function SurveyList() {
 
   const filteredSurveys = surveys.filter((survey) => {
     const matchesSearch =
-      survey.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      survey.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus =
-      filterStatus === 'all' || survey.status === filterStatus;
+      survey.title.toLowerCase().includes(searchQuery.toLowerCase()) || survey.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = filterStatus === 'all' || survey.status === filterStatus;
     const matchesTab =
       selectedTab === 0 ||
       (selectedTab === 1 && survey.status === 'active') ||
@@ -290,10 +272,7 @@ export default function SurveyList() {
     return matchesSearch && matchesStatus && matchesTab;
   });
 
-  const totalResponses = surveys.reduce(
-    (sum, survey) => sum + survey.responses,
-    0,
-  );
+  const totalResponses = surveys.reduce((sum, survey) => sum + survey.responses, 0);
   const activeSurveys = surveys.filter((s) => s.status === 'active').length;
   const totalViews = surveys.reduce((sum, survey) => sum + survey.views, 0);
 
@@ -385,9 +364,7 @@ export default function SurveyList() {
               onChange={(e) => setSearchQuery(e.target.value)}
               slotProps={{
                 input: {
-                  startAdornment: (
-                    <Search sx={{ mr: 1, color: 'text.secondary' }} />
-                  ),
+                  startAdornment: <Search sx={{ mr: 1, color: 'text.secondary' }} />,
                 },
               }}
               sx={{ minWidth: 300, flexGrow: 1 }}
@@ -395,11 +372,7 @@ export default function SurveyList() {
 
             <FormControl size="small" sx={{ minWidth: 120 }}>
               <InputLabel>상태</InputLabel>
-              <Select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                label="상태"
-              >
+              <Select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} label="상태">
                 <MenuItem value="all">전체</MenuItem>
                 <MenuItem value="active">진행중</MenuItem>
                 <MenuItem value="draft">초안</MenuItem>
@@ -412,10 +385,7 @@ export default function SurveyList() {
 
       {/* 탭 */}
       <Box sx={{ mb: 3 }}>
-        <Tabs
-          value={selectedTab}
-          onChange={(_, newValue) => setSelectedTab(newValue)}
-        >
+        <Tabs value={selectedTab} onChange={(_, newValue) => setSelectedTab(newValue)}>
           <Tab label="전체" />
           <Tab label="진행중" />
           <Tab label="초안" />
@@ -428,21 +398,13 @@ export default function SurveyList() {
         <Card>
           <CardContent sx={{ textAlign: 'center', py: 8 }}>
             <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
-              {searchQuery || filterStatus !== 'all'
-                ? '검색 결과가 없습니다'
-                : '아직 생성된 설문이 없습니다'}
+              {searchQuery || filterStatus !== 'all' ? '검색 결과가 없습니다' : '아직 생성된 설문이 없습니다'}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
-              {searchQuery || filterStatus !== 'all'
-                ? '다른 검색어나 필터를 시도해보세요'
-                : '첫 번째 설문을 만들어보세요'}
+              {searchQuery || filterStatus !== 'all' ? '다른 검색어나 필터를 시도해보세요' : '첫 번째 설문을 만들어보세요'}
             </Typography>
             {!searchQuery && filterStatus === 'all' && (
-              <Button
-                variant="contained"
-                startIcon={<Add />}
-                onClick={() => router.push('/survey/create')}
-              >
+              <Button variant="contained" startIcon={<Add />} onClick={() => router.push('/survey/create')}>
                 설문 만들기
               </Button>
             )}
@@ -489,34 +451,20 @@ export default function SurveyList() {
                             gap: 1,
                           }}
                         >
-                          <Chip
-                            label={getStatusText(survey.status)}
-                            color={getStatusColor(survey.status) as any}
-                            size="small"
-                          />
+                          <Chip label={getStatusText(survey.status)} color={getStatusColor(survey.status) as any} size="small" />
                           {survey.isPublic ? (
-                            <Visibility
-                              sx={{ fontSize: 16, color: 'text.secondary' }}
-                            />
+                            <Visibility sx={{ fontSize: 16, color: 'text.secondary' }} />
                           ) : (
-                            <VisibilityOff
-                              sx={{ fontSize: 16, color: 'text.secondary' }}
-                            />
+                            <VisibilityOff sx={{ fontSize: 16, color: 'text.secondary' }} />
                           )}
                         </Box>
-                        <IconButton
-                          size="small"
-                          onClick={(e) => handleMenuClick(e, survey)}
-                        >
+                        <IconButton size="small" onClick={(e) => handleMenuClick(e, survey)}>
                           <MoreVert />
                         </IconButton>
                       </Box>
 
                       {/* 제목 및 설명 */}
-                      <Typography
-                        variant="h6"
-                        sx={{ mb: 1, fontWeight: 600, lineHeight: 1.3 }}
-                      >
+                      <Typography variant="h6" sx={{ mb: 1, fontWeight: 600, lineHeight: 1.3 }}>
                         {survey.title}
                       </Typography>
                       <Typography
@@ -543,9 +491,7 @@ export default function SurveyList() {
                               gap: 1,
                             }}
                           >
-                            <People
-                              sx={{ fontSize: 16, color: 'text.secondary' }}
-                            />
+                            <People sx={{ fontSize: 16, color: 'text.secondary' }} />
                             <Typography variant="body2" color="text.secondary">
                               {survey.responses}명 응답
                             </Typography>
@@ -559,9 +505,7 @@ export default function SurveyList() {
                               gap: 1,
                             }}
                           >
-                            <TrendingUp
-                              sx={{ fontSize: 16, color: 'text.secondary' }}
-                            />
+                            <TrendingUp sx={{ fontSize: 16, color: 'text.secondary' }} />
                             <Typography variant="body2" color="text.secondary">
                               {survey.views}회 조회
                             </Typography>
@@ -575,9 +519,7 @@ export default function SurveyList() {
                               gap: 1,
                             }}
                           >
-                            <Schedule
-                              sx={{ fontSize: 16, color: 'text.secondary' }}
-                            />
+                            <Schedule sx={{ fontSize: 16, color: 'text.secondary' }} />
                             <Typography variant="body2" color="text.secondary">
                               약 {estimatedTime}분
                             </Typography>
@@ -591,17 +533,11 @@ export default function SurveyList() {
                       </Grid>
 
                       {/* 카테고리 */}
-                      <Chip
-                        label={survey.category}
-                        size="small"
-                        variant="outlined"
-                        sx={{ mb: 2 }}
-                      />
+                      <Chip label={survey.category} size="small" variant="outlined" sx={{ mb: 2 }} />
 
                       {/* 날짜 */}
                       <Typography variant="caption" color="text.secondary">
-                        생성일:{' '}
-                        {new Date(survey.createdAt).toLocaleDateString()}
+                        생성일: {new Date(survey.createdAt).toLocaleDateString()}
                       </Typography>
                     </CardContent>
 
@@ -612,9 +548,7 @@ export default function SurveyList() {
                           size="small"
                           variant="outlined"
                           startIcon={<Edit />}
-                          onClick={() =>
-                            router.push(`/create?edit=${survey.id}`)
-                          }
+                          onClick={() => router.push(`/create?edit=${survey.id}`)}
                           sx={{ flexGrow: 1 }}
                         >
                           편집
@@ -624,9 +558,7 @@ export default function SurveyList() {
                             size="small"
                             variant="contained"
                             startIcon={<Analytics />}
-                            onClick={() =>
-                              router.push(`/survey/${survey.id}/results`)
-                            }
+                            onClick={() => router.push(`/survey/${survey.id}/results`)}
                             sx={{ flexGrow: 1 }}
                           >
                             결과보기
@@ -644,21 +576,13 @@ export default function SurveyList() {
 
       {/* FAB */}
       <Tooltip title="설문 만들기">
-        <Fab
-          color="primary"
-          sx={{ position: 'fixed', bottom: 24, right: 24 }}
-          onClick={() => router.push('/survey/create')}
-        >
+        <Fab color="primary" sx={{ position: 'fixed', bottom: 24, right: 24 }} onClick={() => router.push('/survey/create')}>
           <Add />
         </Fab>
       </Tooltip>
 
       {/* 메뉴 */}
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-      >
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
         <MenuItem onClick={handleEdit}>
           <Edit sx={{ mr: 2 }} />
           편집
@@ -693,10 +617,7 @@ export default function SurveyList() {
       </Menu>
 
       {/* 삭제 확인 다이얼로그 */}
-      <Dialog
-        open={deleteDialogOpen}
-        onClose={() => setDeleteDialogOpen(false)}
-      >
+      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
         <DialogTitle>설문 삭제</DialogTitle>
         <DialogContent>
           <Typography>
@@ -714,12 +635,7 @@ export default function SurveyList() {
       </Dialog>
 
       {/* 공유 다이얼로그 */}
-      <Dialog
-        open={shareDialogOpen}
-        onClose={() => setShareDialogOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
+      <Dialog open={shareDialogOpen} onClose={() => setShareDialogOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>설문 공유</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
@@ -727,11 +643,7 @@ export default function SurveyList() {
           </Typography>
           <TextField
             fullWidth
-            value={
-              selectedSurvey
-                ? `${window.location.origin}/survey/${selectedSurvey.id}`
-                : ''
-            }
+            value={selectedSurvey ? `${window.location.origin}/survey/${selectedSurvey.id}` : ''}
             slotProps={{
               input: {
                 readOnly: true,
@@ -752,13 +664,12 @@ export default function SurveyList() {
         </DialogActions>
       </Dialog>
 
-      {/* 스낵바 */}
-      <Snackbar
+      {/* <Snackbar
         open={snackbarOpen}
         autoHideDuration={3000}
         onClose={() => setSnackbarOpen(false)}
         message={snackbarMessage}
-      />
+      /> */}
     </Container>
   );
 }

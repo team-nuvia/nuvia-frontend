@@ -2,31 +2,13 @@ import CommonText from '@components/atom/CommonText';
 import SurveyProgress from '@components/molecular/SurveyProgress';
 import UserDescription from '@components/molecular/UserDescription';
 import ResponseCard from '@components/organism/ResponseCard';
-import {
-  ArrowBack,
-  ArrowForward,
-  Category,
-  People,
-  Send,
-} from '@mui/icons-material';
+import { ArrowBack, ArrowForward, Category, People } from '@mui/icons-material';
 import SaveIcon from '@mui/icons-material/Save';
-import {
-  Alert,
-  Box,
-  Button,
-  Chip,
-  CircularProgress,
-  Container,
-  Grid,
-  Paper,
-  Snackbar,
-  Stack,
-  useMediaQuery,
-} from '@mui/material';
+import { Alert, Box, Button, Chip, CircularProgress, Container, Grid, Paper, Snackbar, Stack, useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { TimeIcon } from '@mui/x-date-pickers/icons';
 import { IResponseSurvey } from '@share/dto/response-survey';
-import { InputType, QuestionType } from '@share/enums/question-type';
+import { InputType } from '@share/enums/input-type';
 import { AllQuestion } from '@share/interface/iquestion';
 import { isEmpty } from '@util/isEmpty';
 import axios from 'axios';
@@ -56,19 +38,12 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
   useEffect(() => {
     const totalQuestions = questions.length;
     const answeredQuestions = questions.filter(
-      (question) =>
-        question.isAnswered ||
-        (question.answers?.values().some((item) => !isEmpty(item)) &&
-          question.answers?.size > 0),
+      (question) => question.isAnswered || (question.answers?.values().some((item) => !isEmpty(item)) && question.answers?.size > 0),
     ).length;
     setProgress(Math.round((answeredQuestions / totalQuestions) * 100));
   }, [questions, currentStep]);
 
-  function handleOptionChange<T extends string>(
-    questionId: number,
-    optionId: number,
-    value: T,
-  ) {
+  function handleOptionChange<T extends string>(questionId: number, optionId: number, value: T) {
     setErrors((errors) => {
       const newErrors = { ...errors };
       delete newErrors[questionId];
@@ -99,10 +74,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
 
     console.log('🚀 ~ handleSubmit ~ questions:', questions);
     const isAllAnswered = questions.every(
-      (item) =>
-        item.isAnswered ||
-        (item.answers.size > 0 &&
-          item.answers.values().some((item) => !isEmpty(item))),
+      (item) => item.isAnswered || (item.answers.size > 0 && item.answers.values().some((item) => !isEmpty(item))),
     );
     if (!isAllAnswered) {
       for (const q of questions) {
@@ -214,12 +186,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
     setTimeout(() => {
       setCurrentStep((prev) => Math.max(0, prev - 1));
       if (!questions[currentStep - 1].required) {
-        if (
-          questions[currentStep - 1].answers
-            .values()
-            .some((item) => isEmpty(item)) ||
-          questions[currentStep - 1].answers.size === 0
-        ) {
+        if (questions[currentStep - 1].answers.values().some((item) => isEmpty(item)) || questions[currentStep - 1].answers.size === 0) {
           questions[currentStep - 1].isAnswered = false;
           setQuestions(questions);
         }
@@ -239,15 +206,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
   // --- RENDER ---
   return (
     <Container maxWidth="lg">
-      <Grid
-        component="form"
-        noValidate
-        autoComplete="off"
-        onSubmit={handleSubmit}
-        container
-        spacing={2}
-        mt={5}
-      >
+      <Grid component="form" noValidate autoComplete="off" onSubmit={handleSubmit} container spacing={2} mt={5}>
         <Grid size={{ xs: 12 }}>
           <Paper
             sx={{
@@ -259,26 +218,10 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
               content={
                 <Stack direction="row" alignItems="center" gap={1}>
                   <Stack direction="row" alignItems="center" gap={1}>
-                    <Chip
-                      size="small"
-                      icon={<Category />}
-                      label={survey.category}
-                    />
-                    <Chip
-                      size="small"
-                      icon={<TimeIcon />}
-                      label={survey.expiresAt}
-                    />
-                    <Chip
-                      size="small"
-                      icon={<TimeIcon />}
-                      label={estimatedTime}
-                    />
-                    <Chip
-                      size="small"
-                      icon={<People />}
-                      label={`${survey.participants}명`}
-                    />
+                    <Chip size="small" icon={<Category />} label={survey.category} />
+                    <Chip size="small" icon={<TimeIcon />} label={survey.expiresAt} />
+                    <Chip size="small" icon={<TimeIcon />} label={estimatedTime} />
+                    <Chip size="small" icon={<People />} label={`${survey.participants}명`} />
                   </Stack>
                 </Stack>
               }
@@ -286,13 +229,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
             <CommonText variant="h4" thickness="bold" mb={2}>
               {survey.title}
             </CommonText>
-            <CommonText
-              variant="h6"
-              color="textSecondary"
-              thickness="regular"
-              mb={2}
-              mt={2}
-            >
+            <CommonText variant="h6" color="textSecondary" thickness="regular" mb={2} mt={2}>
               {survey.description}
             </CommonText>
           </Paper>
@@ -366,13 +303,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
               alignItems: 'center',
             }}
           >
-            <Button
-              variant="outlined"
-              startIcon={<ArrowBack />}
-              onClick={handlePrevious}
-              disabled={currentStep === 0}
-              sx={{ minWidth: 120 }}
-            >
+            <Button variant="outlined" startIcon={<ArrowBack />} onClick={handlePrevious} disabled={currentStep === 0} sx={{ minWidth: 120 }}>
               이전
             </Button>
 
@@ -384,8 +315,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
                     width: 8,
                     height: 8,
                     borderRadius: '50%',
-                    backgroundColor:
-                      index <= currentStep ? 'primary.main' : 'action.disabled',
+                    backgroundColor: index <= currentStep ? 'primary.main' : 'action.disabled',
                     transition: 'all 0.3s',
                   }}
                 />
@@ -395,13 +325,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
             {isLastQuestion ? (
               <Button
                 variant="contained"
-                startIcon={
-                  isSubmitting ? (
-                    <CircularProgress size={20} color="inherit" />
-                  ) : (
-                    <SaveIcon />
-                  )
-                }
+                startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
                 type="submit"
                 disabled={isSubmitting}
                 sx={{ minWidth: 120 }}
@@ -409,12 +333,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
                 {isSubmitting ? '제출 중...' : '제출하기'}
               </Button>
             ) : (
-              <Button
-                variant="contained"
-                endIcon={<ArrowForward />}
-                onClick={handleNext}
-                sx={{ minWidth: 120 }}
-              >
+              <Button variant="contained" endIcon={<ArrowForward />} onClick={handleNext} sx={{ minWidth: 120 }}>
                 다음
               </Button>
             )}
@@ -422,31 +341,13 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
         </Grid>
       </Grid>
 
-      <Snackbar
-        open={!!error}
-        autoHideDuration={6000}
-        onClose={() => setError(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert
-          onClose={() => setError(null)}
-          severity="error"
-          sx={{ width: '100%' }}
-        >
+      <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+        <Alert onClose={() => setError(null)} severity="error" sx={{ width: '100%' }}>
           {error}
         </Alert>
       </Snackbar>
-      <Snackbar
-        open={!!success}
-        autoHideDuration={6000}
-        onClose={() => setSuccess(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert
-          onClose={() => setSuccess(null)}
-          severity="success"
-          sx={{ width: '100%' }}
-        >
+      <Snackbar open={!!success} autoHideDuration={6000} onClose={() => setSuccess(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+        <Alert onClose={() => setSuccess(null)} severity="success" sx={{ width: '100%' }}>
           {success}
         </Alert>
       </Snackbar>

@@ -1,25 +1,17 @@
 'use client';
 
-import { logout } from '@api/logout';
 import { BRAND_NAME, LOGO_ONLY } from '@common/variables';
 import BrandHead from '@components/molecular/BrandHead';
 import { AuthenticationContext } from '@context/AuthenticationContext';
-import {
-  Avatar,
-  IconButton,
-  Menu,
-  MenuItem,
-  Stack,
-  Tooltip,
-  Typography,
-} from '@mui/material';
+import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
+import { Avatar, IconButton, Menu, MenuItem, Stack, Tooltip, Typography } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useContext, useMemo, useState } from 'react';
 
 interface HeaderProps {}
 const Header: React.FC<HeaderProps> = () => {
   const { user, clearUser } = useContext(AuthenticationContext);
-
+  const { addNotice } = useContext(GlobalSnackbarContext);
   const commonMenus: MenuOption[] = useMemo(
     () => [
       {
@@ -44,14 +36,15 @@ const Header: React.FC<HeaderProps> = () => {
         ? [
             {
               label: 'Profile',
-              to: '/user/profile',
+              to: '/user',
             },
             {
               label: 'Logout',
               to: '/',
               request: async () => {
-                await logout();
-                clearUser();
+                clearUser().finally(() => {
+                  addNotice('로그아웃 되었습니다.', 'success');
+                });
               },
             },
           ]
@@ -127,11 +120,7 @@ const Header: React.FC<HeaderProps> = () => {
 
         <Tooltip title="Profile">
           <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-            <Avatar
-              src={LOGO_ONLY}
-              alt={BRAND_NAME}
-              sx={{ width: 35, height: 35 }}
-            />
+            <Avatar src={LOGO_ONLY} alt={BRAND_NAME} sx={{ width: 35, height: 35 }} />
           </IconButton>
         </Tooltip>
 

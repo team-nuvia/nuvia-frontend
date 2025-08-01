@@ -16,7 +16,8 @@ import {
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-import { DataType, InputType } from '@share/enums/question-type';
+import { DataType } from '@share/enums/data-type';
+import { InputType } from '@share/enums/input-type';
 import { IQuestionOption } from '@share/interface/iquestion';
 import dayjs from 'dayjs';
 import { useMemo } from 'react';

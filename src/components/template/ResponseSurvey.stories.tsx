@@ -1,9 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
-import ResponseSurvey from './ResponseSurvey';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DataType, InputType } from '@share/enums/question-type';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DataType } from '@share/enums/data-type';
+import { InputType } from '@share/enums/input-type';
+import ResponseSurvey from './ResponseSurvey';
 
 const meta = {
   component: ResponseSurvey,

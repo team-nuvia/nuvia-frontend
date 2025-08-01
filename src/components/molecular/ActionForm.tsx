@@ -1,7 +1,5 @@
 import ActionButton from '@components/atom/ActionButton';
-import CommonText from '@components/atom/CommonText';
 import { Stack } from '@mui/material';
-import { useState } from 'react';
 
 interface ActionFormProps {
   title: React.ReactNode;
@@ -11,30 +9,12 @@ interface ActionFormProps {
   signupPath?: string;
   signupText?: string;
 }
-const ActionForm: React.FC<ActionFormProps> = ({
-  title,
-  onSubmit,
-  submitText,
-  slots,
-  signupPath,
-  signupText,
-}) => {
-  const [formData, setFormData] = useState<Partial<Record<string, any>>>({
-    email: '',
-    password: '',
-  });
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
+const ActionForm: React.FC<ActionFormProps> = ({ title, onSubmit, submitText, slots, signupPath, signupText }) => {
   return (
     <Stack
       p={5}
       component="form"
+      noValidate
       gap={2}
       sx={{
         borderWidth: 1,
@@ -42,13 +22,7 @@ const ActionForm: React.FC<ActionFormProps> = ({
         borderStyle: 'solid',
         borderRadius: 4,
       }}
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (Object.values(formData).some(Boolean)) {
-          return false;
-        }
-        onSubmit(e);
-      }}
+      onSubmit={onSubmit}
     >
       {title}
       <Stack gap={2}>

@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
+import { DataType } from '@share/enums/data-type';
+import { InputType } from '@share/enums/input-type';
 import ResponseCard from './ResponseCard';
-import { DataType, InputType } from '@share/enums/question-type';
 
 const meta = {
   component: ResponseCard,
@@ -24,9 +25,6 @@ export const Default: Story = {
     options: [],
     handleOptionChange: (questionId, optionId, value) => {
       console.log('🚀 ~ handleOptionChange:', questionId, optionId, value);
-    },
-    handleOptionClear: () => {
-      console.log('🚀 ~ handleOptionClear:');
     },
   },
 };

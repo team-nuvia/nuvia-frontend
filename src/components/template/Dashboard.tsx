@@ -1,31 +1,26 @@
 'use client';
 
+import ActionButton from '@components/atom/ActionButton';
+import { Add, BarChart, CheckCircleOutline, DonutLarge, PeopleAlt } from '@mui/icons-material';
 import {
   Box,
+  Card,
+  Chip,
   Container,
   Grid,
+  Link,
   Paper,
-  Typography,
-  Card,
-  CardContent,
-  Button,
-  TableContainer,
+  Stack,
   Table,
+  TableBody,
+  TableCell,
+  TableContainer,
   TableHead,
   TableRow,
-  TableCell,
-  TableBody,
-  Chip,
-  Link,
-  Stack,
+  Typography,
 } from '@mui/material';
-import {
-  BarChart,
-  CheckCircleOutline,
-  DonutLarge,
-  PeopleAlt,
-} from '@mui/icons-material';
 import NextLink from 'next/link';
+import { useRouter } from 'next/navigation';
 
 // --- Mock Data ---
 const kpiData = [
@@ -93,6 +88,8 @@ const recentSurveys = [
 ];
 
 const Dashboard = () => {
+  const router = useRouter();
+
   return (
     <Box sx={{ flexGrow: 1, bgcolor: 'grey.50', p: 4 }}>
       <Container maxWidth="lg">
@@ -108,24 +105,25 @@ const Dashboard = () => {
           <Typography variant="h4" component="h1" fontWeight="bold">
             대시보드
           </Typography>
-          <Button variant="contained" color="primary" size="large">
+          <ActionButton
+            variant="contained"
+            color="primary"
+            size="large"
+            startIcon={<Add />}
+            onClick={() => {
+              router.push('/survey/create');
+            }}
+          >
             새 설문 만들기
-          </Button>
+          </ActionButton>
         </Box>
 
         {/* KPI Cards */}
         <Grid container spacing={4}>
           {kpiData.map((item, index) => (
             <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index}>
-              <Card
-                elevation={2}
-                sx={{ display: 'flex', alignItems: 'center', p: 2 }}
-              >
-                <Stack
-                  sx={{ mr: 2, color: item.color, fontSize: 40, width: 40 }}
-                  justifyContent="center"
-                  alignItems="center"
-                >
+              <Card elevation={2} sx={{ display: 'flex', alignItems: 'center', p: 2 }}>
+                <Stack sx={{ mr: 2, color: item.color, fontSize: 40, width: 40 }} justifyContent="center" alignItems="center">
                   {item.icon}
                 </Stack>
                 <Stack direction="column">
@@ -135,18 +133,10 @@ const Dashboard = () => {
                     </Typography>
                   ) : item.type === 'percentage' ? (
                     <Stack direction="row" alignItems="center" gap={1}>
-                      <Typography
-                        variant="h6"
-                        component="div"
-                        fontWeight="bold"
-                      >
+                      <Typography variant="h6" component="div" fontWeight="bold">
                         {((item.value / (item.total ?? 1)) * 100).toFixed(1)}%
                       </Typography>
-                      <Typography
-                        variant="caption"
-                        component="div"
-                        color="text.secondary"
-                      >
+                      <Typography variant="caption" component="div" color="text.secondary">
                         {item.value}/{item.total}
                       </Typography>
                     </Stack>
@@ -207,11 +197,7 @@ const Dashboard = () => {
                     {recentSurveys.map((survey) => (
                       <TableRow hover key={survey.id}>
                         <TableCell>
-                          <Link
-                            component={NextLink}
-                            href={`/surveys/${survey.id}`}
-                            underline="hover"
-                          >
+                          <Link component={NextLink} href={`/surveys/${survey.id}`} underline="hover">
                             {survey.title}
                           </Link>
                         </TableCell>
@@ -219,13 +205,7 @@ const Dashboard = () => {
                           <Chip
                             label={survey.status}
                             size="small"
-                            color={
-                              survey.status === '진행중'
-                                ? 'success'
-                                : survey.status === '마감'
-                                ? 'default'
-                                : 'warning'
-                            }
+                            color={survey.status === '진행중' ? 'success' : survey.status === '마감' ? 'default' : 'warning'}
                           />
                         </TableCell>
                         <TableCell align="right">{survey.responses}</TableCell>
