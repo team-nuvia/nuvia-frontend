@@ -23,9 +23,7 @@ const Signup: React.FC<SignupProps> = () => {
     console.log(formData);
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
@@ -44,19 +42,9 @@ const Signup: React.FC<SignupProps> = () => {
       <Container component="main" maxWidth="xs">
         <ActionForm
           title={
-            <Stack
-              gap={2}
-              alignItems="center"
-              justifyContent="center"
-              textAlign="center"
-            >
+            <Stack gap={2} alignItems="center" justifyContent="center" textAlign="center">
               <Stack direction="row" alignItems="center" gap={1}>
-                <Image
-                  src="/nuvia_logo_only.png"
-                  alt="logo"
-                  width={60}
-                  height={60}
-                />
+                <Image src="/nuvia_logo_only.png" alt="logo" width={60} height={60} />
                 <CommonText variant="h4" component="h1" thickness="bold">
                   {BRAND_NAME}
                 </CommonText>
@@ -68,6 +56,7 @@ const Signup: React.FC<SignupProps> = () => {
           }
           slots={Object.entries(formData).map(([key, value]) => (
             <TextField
+              key={key}
               name={key}
               autoComplete={key}
               size="medium"
@@ -80,8 +69,7 @@ const Signup: React.FC<SignupProps> = () => {
               onChange={handleChange}
               sx={{
                 '& .MuiOutlinedInput-input:autofill': {
-                  WebkitBoxShadow: (theme) =>
-                    `0 0 0 1000px ${theme.palette.background.paper} inset`,
+                  WebkitBoxShadow: (theme) => `0 0 0 1000px ${theme.palette.background.paper} inset`,
                   WebkitTextFillColor: (theme) => theme.palette.text.primary,
                 },
               }}

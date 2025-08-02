@@ -40,7 +40,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
     const answeredQuestions = questions.filter(
       (question) => question.isAnswered || (question.answers?.values().some((item) => !isEmpty(item)) && question.answers?.size > 0),
     ).length;
-    setProgress(Math.round((answeredQuestions / totalQuestions) * 100));
+    setProgress(Math.round((answeredQuestions / totalQuestions) * 100) || 0);
   }, [questions, currentStep]);
 
   function handleOptionChange<T extends string>(questionId: number, optionId: number, value: T) {

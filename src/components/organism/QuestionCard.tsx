@@ -16,11 +16,12 @@ import {
   RadioGroup,
   Select,
   Stack,
-  TextField
+  TextField,
 } from '@mui/material';
 import { DataType } from '@share/enums/data-type';
 import { InputType } from '@share/enums/input-type';
 import { IQuestion, IQuestionOption } from '@share/interface/iquestion';
+import { useFormikContext } from 'formik';
 import { useMemo } from 'react';
 
 const DATA_TYPE_MAP = {
@@ -47,27 +48,13 @@ interface QuestionCardProps {
   required: boolean;
   value?: string;
   options?: IQuestionOption[];
-  handleQuestionChange: (id: number, field: keyof IQuestion, value: any) => void;
-  handleOptionChange: (questionId: number, optionId: number, value: string) => void;
-  handleRemoveOption: (questionId: number, optionId: number) => void;
-  handleAddOption: (questionId: number) => void;
-  handleRemoveQuestion: (questionId: number) => void;
 }
-const QuestionCard: React.FC<QuestionCardProps> = ({
-  id,
-  index,
-  title,
-  description,
-  questionType,
-  dataType,
-  required,
-  options,
-  handleQuestionChange,
-  handleOptionChange,
-  handleRemoveOption,
-  handleAddOption,
-  handleRemoveQuestion,
-}) => {
+
+const QuestionCard: React.FC<QuestionCardProps> = ({ id, index, title, description, questionType, dataType, required, options }) => {
+  const { setFieldValue, values } = useFormikContext<{
+    questions: IQuestion[];
+  }>();
+
   const inputValueType = useMemo(() => {
     switch (dataType) {
       case DataType.Image:
@@ -94,194 +81,69 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
     }
   }, [dataType]);
 
-  // const dynamicField = useMemo(() => {
-  //   if (dataType === DataType.Rating) {
-  //     /* 설문 응답할 때 처리 */
-  //     return (
-  //       <CommonText variant="caption" color="error">
-  //         설문응답 시 표시됩니다.
-  //       </CommonText>
-  //     );
-  //     // return (
-  //     //   <Rating
-  //     //     size="large"
-  //     //     value={value ? Number(value) : 0}
-  //     //     onChange={(_, value) => handleQuestionChange(id, 'value', value)}
-  //     //   />
-  //     // );
-  //   }
-  //   if (dataType === DataType.Email) {
-  //     return (
-  //       <TextField
-  //         fullWidth
-  //         size="small"
-  //         label="이메일"
-  //         type="email"
-  //         value={value}
-  //         onChange={(e) => handleQuestionChange(id, 'value', e.target.value)}
-  //       />
-  //     );
-  //   }
-  //   if (dataType === DataType.Link) {
-  //     return (
-  //       <TextField
-  //         fullWidth
-  //         size="small"
-  //         label="링크"
-  //         type="url"
-  //         value={value}
-  //         onChange={(e) => handleQuestionChange(id, 'value', e.target.value)}
-  //       />
-  //     );
-  //   }
-  //   if (dataType === DataType.Date) {
-  //     return (
-  //       <DatePicker
-  //         label="날짜"
-  //         value={dayjs(value)}
-  //         onChange={(e) => handleQuestionChange(id, 'value', e?.toISOString())}
-  //         slotProps={{
-  //           textField: {
-  //             size: 'small',
-  //           },
-  //         }}
-  //       />
-  //       // <TextField
-  //       //   fullWidth
-  //       //   size="small"
-  //       //   label="날짜"
-  //       //   type="date"
-  //       //   value={value}
-  //       //   onChange={(e) => handleQuestionChange(id, 'value', e.target.value)}
-  //       // />
-  //     );
-  //   }
-  //   if (dataType === DataType.DateTime) {
-  //     return (
-  //       <DateTimePicker
-  //         label="날짜/시간"
-  //         value={dayjs(value)}
-  //         onChange={(e) => handleQuestionChange(id, 'value', e?.toISOString())}
-  //         slotProps={{
-  //           textField: {
-  //             size: 'small',
-  //           },
-  //         }}
-  //       />
-  //       // <TextField
-  //       //   fullWidth
-  //       //   size="small"
-  //       //   label="날짜/시간"
-  //       //   type="datetime-local"
-  //       //   value={value}
-  //       //   onChange={(e) => handleQuestionChange(id, 'value', e.target.value)}
-  //       // />
-  //     );
-  //   }
-  //   if (dataType === DataType.Time) {
-  //     return (
-  //       <TimePicker
-  //         label="시간"
-  //         value={dayjs(value)}
-  //         onChange={(e) => handleQuestionChange(id, 'value', e?.toISOString())}
-  //         slotProps={{
-  //           textField: {
-  //             size: 'small',
-  //           },
-  //         }}
-  //       />
-  //       // <TextField
-  //       //   fullWidth
-  //       //   size="small"
-  //       //   label="시간"
-  //       //   type="time"
-  //       //   value={value}
-  //       //   onChange={(e) => handleQuestionChange(id, 'value', e.target.value)}
-  //       // />
-  //     );
-  //   }
-  //   if (dataType === DataType.File) {
-  //     /* 설문 응답할 때 처리 */
-  //     return (
-  //       <CommonText variant="caption" color="error">
-  //         설문응답 시 표시됩니다.
-  //       </CommonText>
-  //     );
-  //     // return (
-  //     //   <TextField
-  //     //     fullWidth
-  //     //     size="small"
-  //     //     label="파일"
-  //     //     type="file"
-  //     //     value={value}
-  //     //     onChange={(e) => handleQuestionChange(id, 'value', e.target.value)}
-  //     //   />
-  //     // );
-  //   }
-  //   if (dataType === DataType.Image) {
-  //     /* 설문 응답할 때 처리 */
-  //     return (
-  //       <CommonText variant="caption" color="error">
-  //         설문응답 시 표시됩니다.
-  //       </CommonText>
-  //     );
-  //     // return (
-  //     //   <TextField
-  //     //     fullWidth
-  //     //     size="small"
-  //     //     label="이미지"
-  //     //     type="file"
-  //     //     slotProps={{
-  //     //       htmlInput: {
-  //     //         accept: 'image/*',
-  //     //       },
-  //     //     }}
-  //     //     value={value}
-  //     //     onChange={(e) => handleQuestionChange(id, 'value', e.target.value)}
-  //     //   />
-  //     // );
-  //   }
-  //   if (dataType === DataType.Video) {
-  //     /* 설문 응답할 때 처리 */
-  //     return (
-  //       <CommonText variant="caption" color="error">
-  //         설문응답 시 표시됩니다.
-  //       </CommonText>
-  //     );
-  //     // return (
-  //     //   <TextField
-  //     //     fullWidth
-  //     //     size="small"
-  //     //     label="비디오"
-  //     //     type="file"
-  //     //     slotProps={{
-  //     //       htmlInput: {
-  //     //         accept: 'video/*',
-  //     //       },
-  //     //     }}
-  //     //     value={value}
-  //     //     onChange={(e) => handleQuestionChange(id, 'value', e.target.value)}
-  //     //   />
-  //     // );
-  //   }
-  //   if (dataType === DataType.Location) {
-  //     /* 설문 응답할 때 처리 */
-  //     return (
-  //       <CommonText variant="caption" color="error">
-  //         설문응답 시 표시됩니다.
-  //       </CommonText>
-  //     );
-  //   }
-  //   return (
-  //     <TextField
-  //       fullWidth
-  //       size="small"
-  //       label="단답형 답변"
-  //       type={inputValueType}
-  //       value={value}
-  //     />
-  //   );
-  // }, [dataType, handleQuestionChange, id, value]);
+  // Formik과 직접 연동된 핸들러들
+  const handleQuestionChange = (field: keyof IQuestion, value: any) => {
+    const questionIndex = values.questions.findIndex((q) => q.id === id);
+    if (questionIndex !== -1) {
+      const updatedQuestions = [...values.questions];
+      updatedQuestions[questionIndex] = {
+        ...updatedQuestions[questionIndex],
+        [field]: value,
+      };
+      setFieldValue('questions', updatedQuestions);
+    }
+  };
+
+  const handleOptionChange = (optionId: number, value: string) => {
+    const questionIndex = values.questions.findIndex((q) => q.id === id);
+    if (questionIndex !== -1) {
+      const updatedQuestions = [...values.questions];
+      const question = updatedQuestions[questionIndex];
+      const optionIndex = question.options?.findIndex((opt) => opt.id === optionId);
+
+      if (optionIndex !== -1 && question.options) {
+        question.options[optionIndex] = {
+          ...question.options[optionIndex],
+          label: value,
+        };
+        setFieldValue('questions', updatedQuestions);
+      }
+    }
+  };
+
+  const handleAddOption = () => {
+    const questionIndex = values.questions.findIndex((q) => q.id === id);
+    if (questionIndex !== -1) {
+      const updatedQuestions = [...values.questions];
+      const question = updatedQuestions[questionIndex];
+      const newOption = { id: Date.now(), label: '' };
+
+      updatedQuestions[questionIndex] = {
+        ...question,
+        options: [...(question.options || []), newOption],
+      };
+      setFieldValue('questions', updatedQuestions);
+    }
+  };
+
+  const handleRemoveOption = (optionId: number) => {
+    const questionIndex = values.questions.findIndex((q) => q.id === id);
+    if (questionIndex !== -1) {
+      const updatedQuestions = [...values.questions];
+      const question = updatedQuestions[questionIndex];
+
+      updatedQuestions[questionIndex] = {
+        ...question,
+        options: (question.options || []).filter((opt) => opt.id !== optionId),
+      };
+      setFieldValue('questions', updatedQuestions);
+    }
+  };
+
+  const handleRemoveQuestion = () => {
+    const filteredQuestions = values.questions.filter((q) => q.id !== id);
+    setFieldValue('questions', filteredQuestions);
+  };
 
   return (
     <Paper key={id} elevation={3} sx={{ p: 4, mt: 4 }}>
@@ -292,7 +154,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             size="small"
             label={`질문 ${index}`}
             value={title}
-            onChange={(e) => handleQuestionChange(id, 'title', e.target.value)}
+            onChange={(e) => handleQuestionChange('title', e.target.value)}
             variant="standard"
           />
           <ActionButton
@@ -300,7 +162,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             startIcon={<EditSquareIcon />}
             color={required ? 'error' : 'info'}
             variant="contained"
-            onClick={() => handleQuestionChange(id, 'required', !required)}
+            onClick={() => handleQuestionChange('required', !required)}
             shape="rounded"
             size="small"
             sx={{ p: 0, fontSize: '0.8rem' }}
@@ -312,7 +174,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             fullWidth
             size="small"
             value={questionType || InputType.ShortText}
-            onChange={(e) => handleQuestionChange(id, 'questionType', e.target.value as InputType)}
+            onChange={(e) => handleQuestionChange('questionType', e.target.value as InputType)}
           >
             {Object.entries(QUESTION_DEFAULT_TYPE_LIST).map(([key, value]) => (
               <MenuItem key={key} value={key}>
@@ -328,40 +190,12 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             rows={3}
             label="설문 설명"
             value={description}
-            onChange={(e) => handleQuestionChange(id, 'description', e.target.value)}
+            onChange={(e) => handleQuestionChange('description', e.target.value)}
           />
         </Grid>
       </Grid>
 
       <Box sx={{ mt: 3 }}>
-        {/* {
-          questionType === InputType.ShortText && dynamicField
-          // (
-          //   <TextField
-          //     fullWidth
-          //     size="small"
-          //     label="단답형 답변"
-          //     type={inputValueType}
-          //     {...(dataType === DataType.Rating && {
-          //       slotProps: { htmlInput: { min: 0, max: 5, step: 1 } },
-          //     })}
-          //   />
-          // )
-        } */}
-        {/* {questionType === InputType.LongText && (
-          <TextField
-            fullWidth
-            multiline
-            rows={3}
-            label="장문형 답변"
-            type={inputValueType}
-            {...(dataType === DataType.Rating && {
-              slotProps: { htmlInput: { min: 0, max: 5, step: 1 } },
-            })}
-            onChange={(e) => handleOptionChange(id, 1, e.target.value)}
-          />
-        )} */}
-
         {(questionType === InputType.SingleChoice || questionType === InputType.MultipleChoice) && (
           <Box>
             {(options || []).map((option, optIndex) => (
@@ -372,19 +206,19 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                     size="small"
                     label={`옵션 ${optIndex + 1}`}
                     value={option.label}
-                    onChange={(e) => handleOptionChange(id, option.id, e.target.value)}
+                    onChange={(e) => handleOptionChange(option.id, e.target.value)}
                     variant="standard"
                     type={inputValueType}
                   />
                 </Grid>
                 <Grid size={{ xs: 1 }}>
-                  <IconButton onClick={() => handleRemoveOption(id, option.id)} size="small">
+                  <IconButton onClick={() => handleRemoveOption(option.id)} size="small">
                     <DeleteIcon />
                   </IconButton>
                 </Grid>
               </Grid>
             ))}
-            <Button onClick={() => handleAddOption(id)} sx={{ mt: 1 }}>
+            <Button onClick={handleAddOption} sx={{ mt: 1 }}>
               옵션 추가
             </Button>
           </Box>
@@ -394,7 +228,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       <Stack direction="row" gap={1} mt={2} alignItems="center" justifyContent={questionType === InputType.ShortText ? 'space-between' : 'flex-end'}>
         {questionType === InputType.ShortText && (
           <FormControl>
-            <RadioGroup row value={dataType} onChange={(e) => handleQuestionChange(id, 'dataType', e.target.value)}>
+            <RadioGroup row value={dataType} onChange={(e) => handleQuestionChange('dataType', e.target.value as DataType)}>
               {Object.values(DataType).map((value) => (
                 <FormControlLabel
                   key={value}
@@ -408,40 +242,10 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                   }}
                 />
               ))}
-              {/* <FormControlLabel
-                value={DataType.Text}
-                control={<Radio />}
-                label="텍스트"
-              />
-              <FormControlLabel
-                value={DataType.Image}
-                control={<Radio />}
-                label="이미지"
-              />
-              <FormControlLabel
-                value={DataType.Video}
-                control={<Radio />}
-                label="비디오"
-              />
-              <FormControlLabel
-                value={DataType.File}
-                control={<Radio />}
-                label="파일"
-              />
-              <FormControlLabel
-                value={DataType.Location}
-                control={<Radio />}
-                label="위치"
-              />
-              <FormControlLabel
-                value={DataType.Rating}
-                control={<Radio />}
-                label="평점"
-              /> */}
             </RadioGroup>
           </FormControl>
         )}
-        <IconButton onClick={() => handleRemoveQuestion(id)}>
+        <IconButton onClick={handleRemoveQuestion}>
           <DeleteIcon />
         </IconButton>
       </Stack>

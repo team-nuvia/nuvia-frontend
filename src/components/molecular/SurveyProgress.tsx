@@ -4,14 +4,9 @@ import { LinearProgress, Stack } from '@mui/material';
 interface SurveyProgressProps {
   progress: number;
 }
-const SurveyProgress: React.FC<SurveyProgressProps> = ({ progress }) => {
+const SurveyProgress: React.FC<SurveyProgressProps> = ({ progress = 0 }) => {
   return (
-    <Stack
-      role="progressbar"
-      aria-label={`${progress}%`}
-      aria-valuenow={progress}
-      aria-labelledby="progress-label"
-    >
+    <Stack role="progressbar" aria-label={`${progress}%`} aria-valuenow={progress} aria-labelledby="progress-label">
       <Stack direction="row" justifyContent="space-between">
         <CommonText>진행률</CommonText>
         <CommonText>{progress}%</CommonText>
