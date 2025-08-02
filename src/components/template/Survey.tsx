@@ -1,13 +1,9 @@
 'use client';
 
-import {
-  QUESTION_DATA_TYPE_MAP,
-  QUESTION_TYPE_ICONS,
-  QUESTION_TYPE_MAP,
-} from '@common/global';
+import { QUESTION_DATA_TYPE_MAP, QUESTION_TYPE_ICONS, QUESTION_TYPE_MAP } from '@common/global';
 import Preview from '@components/organism/Preview';
 import QuestionCard from '@components/organism/QuestionCard';
-import { LoadingContext } from '@context/LodingContext';
+import LoadingContext from '@context/LodingContext';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import SaveIcon from '@mui/icons-material/Save';
 import {
@@ -41,13 +37,14 @@ import { InputType } from '@share/enums/input-type';
 import { AllQuestion, IQuestion } from '@share/interface/iquestion';
 import axios from 'axios';
 import dayjs from 'dayjs';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useLayoutEffect, useState } from 'react';
 
 // --- HELPER FUNCTIONS ---
 const generatePassword = () => Math.random().toString(36).slice(-8);
 
 // --- COMPONENT ---
 const Survey: React.FC = () => {
+  const { endLoading } = useContext(LoadingContext);
   // --- STATE ---
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -61,10 +58,10 @@ const Survey: React.FC = () => {
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { setLoading } = useContext(LoadingContext);
 
-  useEffect(() => {
-    setLoading(false);
+
+  useLayoutEffect(() => {
+    endLoading();
   }, []);
 
   // --- HANDLERS ---
@@ -83,14 +80,8 @@ const Survey: React.FC = () => {
     setQuestions([...questions, newQuestion]);
   };
 
-  const handleQuestionChange = (
-    id: number,
-    field: keyof IQuestion,
-    value: any,
-  ) => {
-    setQuestions(
-      questions.map((q) => (q.id === id ? { ...q, [field]: value } : q)),
-    );
+  const handleQuestionChange = (id: number, field: keyof IQuestion, value: any) => {
+    setQuestions(questions.map((q) => (q.id === id ? { ...q, [field]: value } : q)));
   };
 
   const handleRemoveQuestion = (id: number) => {
@@ -109,19 +100,13 @@ const Survey: React.FC = () => {
     );
   };
 
-  const handleOptionChange = (
-    questionId: number,
-    optionId: number,
-    label: string,
-  ) => {
+  const handleOptionChange = (questionId: number, optionId: number, label: string) => {
     setQuestions(
       questions.map((q) => {
         if (q.id === questionId) {
           return {
             ...q,
-            options: (q.options || []).map((opt) =>
-              opt.id === optionId ? { ...opt, label } : opt,
-            ),
+            options: (q.options || []).map((opt) => (opt.id === optionId ? { ...opt, label } : opt)),
           };
         }
         return q;
@@ -206,14 +191,7 @@ const Survey: React.FC = () => {
               설문 제작
             </Typography>
             <Box component="form" noValidate autoComplete="off">
-              <TextField
-                fullWidth
-                label="설문 제목"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                margin="dense"
-                required
-              />
+              <TextField fullWidth label="설문 제목" value={title} onChange={(e) => setTitle(e.target.value)} margin="dense" required />
               <TextField
                 fullWidth
                 label="설문 설명 (선택)"
@@ -235,15 +213,7 @@ const Survey: React.FC = () => {
                   },
                 }}
               />
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={isPublic}
-                    onChange={(e) => setIsPublic(e.target.checked)}
-                  />
-                }
-                label="응답 공개 여부"
-              />
+              <FormControlLabel control={<Switch checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} />} label="응답 공개 여부" />
             </Box>
           </Paper>
 
@@ -267,29 +237,14 @@ const Survey: React.FC = () => {
           ))}
 
           <Box sx={{ mt: 4, display: 'flex', justifyContent: 'space-between' }}>
-            <Button
-              variant="outlined"
-              startIcon={<AddCircleOutlineIcon />}
-              onClick={() => handleAddQuestion(InputType.ShortText)}
-            >
+            <Button variant="outlined" startIcon={<AddCircleOutlineIcon />} onClick={() => handleAddQuestion(InputType.ShortText)}>
               질문 추가
             </Button>
             <Stack direction="row" gap={2} alignItems="center">
-              <Button
-                variant="outlined"
-                startIcon={<AddCircleOutlineIcon />}
-                onClick={handlePreview}
-                disabled={isSubmitting}
-              >
+              <Button variant="outlined" startIcon={<AddCircleOutlineIcon />} onClick={handlePreview} disabled={isSubmitting}>
                 미리보기
               </Button>
-              <Button
-                variant="contained"
-                startIcon={<SaveIcon />}
-                color="primary"
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-              >
+              <Button variant="contained" startIcon={<SaveIcon />} color="primary" onClick={handleSubmit} disabled={isSubmitting}>
                 {isSubmitting ? <CircularProgress size={24} /> : '설문 저장'}
               </Button>
             </Stack>
@@ -297,10 +252,7 @@ const Survey: React.FC = () => {
         </Grid>
         {!isMobile && (
           <Grid size={{ xs: 12, md: 4 }}>
-            <Paper
-              elevation={3}
-              sx={{ p: 2, mt: 4, position: 'sticky', top: 20 }}
-            >
+            <Paper elevation={3} sx={{ p: 2, mt: 4, position: 'sticky', top: 20 }}>
               <Typography variant="h6" gutterBottom>
                 질문 유형
               </Typography>
@@ -312,15 +264,12 @@ const Survey: React.FC = () => {
                     onClick={() =>
                       handleAddQuestion(
                         QUESTION_DATA_TYPE_MAP[key as InputType | DataType].key,
-                        QUESTION_DATA_TYPE_MAP[key as InputType | DataType]
-                          .type,
+                        QUESTION_DATA_TYPE_MAP[key as InputType | DataType].type,
                       )
                     }
                   >
                     <ListItemButton>
-                      <ListItemIcon>
-                        {QUESTION_TYPE_ICONS[key as InputType]}
-                      </ListItemIcon>
+                      <ListItemIcon>{QUESTION_TYPE_ICONS[key as InputType]}</ListItemIcon>
                       <ListItemText primary={value} />
                     </ListItemButton>
                   </ListItem>
@@ -332,11 +281,7 @@ const Survey: React.FC = () => {
       </Grid>
 
       {isMobile && (
-        <SpeedDial
-          ariaLabel="Add Question Speed Dial"
-          sx={{ position: 'fixed', bottom: 16, right: 16 }}
-          icon={<SpeedDialIcon />}
-        >
+        <SpeedDial ariaLabel="Add Question Speed Dial" sx={{ position: 'fixed', bottom: 16, right: 16 }} icon={<SpeedDialIcon />}>
           {Object.entries(QUESTION_TYPE_ICONS)
             .toReversed()
             .map(([key, icon]) => (
@@ -347,41 +292,20 @@ const Survey: React.FC = () => {
                   tooltip: { title: QUESTION_TYPE_MAP[key as InputType] },
                 }}
                 onClick={() =>
-                  handleAddQuestion(
-                    QUESTION_DATA_TYPE_MAP[key as InputType | DataType].key,
-                    QUESTION_DATA_TYPE_MAP[key as InputType | DataType].type,
-                  )
+                  handleAddQuestion(QUESTION_DATA_TYPE_MAP[key as InputType | DataType].key, QUESTION_DATA_TYPE_MAP[key as InputType | DataType].type)
                 }
               />
             ))}
         </SpeedDial>
       )}
 
-      <Snackbar
-        open={!!error}
-        autoHideDuration={6000}
-        onClose={() => setError(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert
-          onClose={() => setError(null)}
-          severity="error"
-          sx={{ width: '100%' }}
-        >
+      <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+        <Alert onClose={() => setError(null)} severity="error" sx={{ width: '100%' }}>
           {error}
         </Alert>
       </Snackbar>
-      <Snackbar
-        open={!!success}
-        autoHideDuration={6000}
-        onClose={() => setSuccess(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert
-          onClose={() => setSuccess(null)}
-          severity="success"
-          sx={{ width: '100%' }}
-        >
+      <Snackbar open={!!success} autoHideDuration={6000} onClose={() => setSuccess(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+        <Alert onClose={() => setSuccess(null)} severity="success" sx={{ width: '100%' }}>
           {success}
         </Alert>
       </Snackbar>

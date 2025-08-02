@@ -1,56 +1,39 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import LoadingContext from '@context/LodingContext';
+import { ArrowBack, ArrowForward, CheckCircle, Person, PhotoCamera, Schedule, Send, ThumbUp } from '@mui/icons-material';
 import {
+  Alert,
+  Avatar,
   Box,
-  Container,
-  Typography,
+  Button,
   Card,
   CardContent,
-  TextField,
-  Button,
-  FormControl,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
-  Rating,
-  LinearProgress,
-  Chip,
-  useTheme,
   Checkbox,
-  FormGroup,
-  Slider,
-  Alert,
-  Fade,
+  Chip,
   CircularProgress,
-  Avatar,
+  Container,
   Divider,
+  Fade,
+  FormControl,
+  FormControlLabel,
+  FormGroup,
+  LinearProgress,
+  Radio,
+  RadioGroup,
+  Rating,
+  Slider,
+  TextField,
+  Typography,
+  useTheme,
 } from '@mui/material';
-import {
-  Send,
-  CheckCircle,
-  ArrowBack,
-  ArrowForward,
-  PhotoCamera,
-  ThumbUp,
-  Schedule,
-  Person,
-} from '@mui/icons-material';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useParams } from 'next/navigation';
-import { ISurvey } from '@share/interface/isurvey';
+import { useContext, useEffect, useState } from 'react';
 
 interface Question {
   id: string;
-  type:
-    | 'text'
-    | 'choice'
-    | 'multiple'
-    | 'rating'
-    | 'slider'
-    | 'image'
-    | 'email'
-    | 'phone';
+  type: 'text' | 'choice' | 'multiple' | 'rating' | 'slider' | 'image' | 'email' | 'phone';
   title: string;
   description?: string;
   options?: string[];
@@ -103,14 +86,7 @@ const mockSurvey: Survey = {
       type: 'choice',
       title: '저희 서비스를 어떻게 알게 되셨나요?',
       description: '가장 주된 경로를 선택해주세요',
-      options: [
-        '검색엔진 (구글, 네이버 등)',
-        '소셜미디어 (인스타그램, 페이스북 등)',
-        '지인 추천',
-        '온라인 광고',
-        '블로그/리뷰',
-        '기타',
-      ],
+      options: ['검색엔진 (구글, 네이버 등)', '소셜미디어 (인스타그램, 페이스북 등)', '지인 추천', '온라인 광고', '블로그/리뷰', '기타'],
       required: true,
     },
     {
@@ -124,14 +100,7 @@ const mockSurvey: Survey = {
       id: '3',
       type: 'multiple',
       title: '어떤 기능들을 주로 사용하시나요? (복수 선택 가능)',
-      options: [
-        '설문 생성',
-        '응답 수집',
-        '통계 분석',
-        '데이터 내보내기',
-        '팀 협업',
-        '템플릿 사용',
-      ],
+      options: ['설문 생성', '응답 수집', '통계 분석', '데이터 내보내기', '팀 협업', '템플릿 사용'],
       required: false,
     },
     {
@@ -147,16 +116,14 @@ const mockSurvey: Survey = {
     {
       id: '5',
       type: 'text',
-      title:
-        '개선이 필요한 부분이나 추가하고 싶은 기능이 있다면 자유롭게 작성해주세요',
+      title: '개선이 필요한 부분이나 추가하고 싶은 기능이 있다면 자유롭게 작성해주세요',
       description: '구체적인 의견일수록 서비스 개선에 큰 도움이 됩니다',
       required: false,
     },
     {
       id: '6',
       type: 'email',
-      title:
-        '추후 서비스 업데이트 소식을 받고 싶으시다면 이메일을 입력해주세요',
+      title: '추후 서비스 업데이트 소식을 받고 싶으시다면 이메일을 입력해주세요',
       description: '선택사항이며, 마케팅 목적으로만 사용됩니다',
       required: false,
     },
@@ -167,26 +134,19 @@ export default function SurveyDetail() {
   const { id = 1 } = params;
   const theme = useTheme();
   const [survey, setSurvey] = useState<Survey | null>(null);
-  const [loading, setLoading] = useState(true);
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [startTime] = useState(Date.now());
+  const { loading, endLoading } = useContext(LoadingContext);
 
   // Load survey data
   useEffect(() => {
     const loadSurvey = async () => {
-      try {
-        // Mock API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        setSurvey(mockSurvey);
-      } catch (error) {
-        console.error('Failed to load survey:', error);
-      } finally {
-        setLoading(false);
-      }
+      setSurvey(mockSurvey);
+      endLoading();
     };
 
     loadSurvey();
@@ -194,9 +154,7 @@ export default function SurveyDetail() {
 
   const currentQuestion = survey?.questions[currentStep];
   const isLastQuestion = currentStep === (survey?.questions.length || 0) - 1;
-  const progress = survey
-    ? ((currentStep + 1) / survey.questions.length) * 100
-    : 0;
+  const progress = survey ? ((currentStep + 1) / survey.questions.length) * 100 : 0;
 
   const handleAnswerChange = (questionId: string, value: any) => {
     setAnswers({ ...answers, [questionId]: value });
@@ -213,11 +171,7 @@ export default function SurveyDetail() {
     const newErrors = { ...errors };
 
     if (currentQuestion.required) {
-      if (
-        answer === undefined ||
-        answer === '' ||
-        (Array.isArray(answer) && answer.length === 0)
-      ) {
+      if (answer === undefined || answer === '' || (Array.isArray(answer) && answer.length === 0)) {
         newErrors[currentQuestion.id] = '이 질문은 필수입니다';
         setErrors(newErrors);
         return false;
@@ -289,10 +243,7 @@ export default function SurveyDetail() {
       case 'choice':
         return (
           <FormControl component="fieldset" fullWidth error={hasError}>
-            <RadioGroup
-              value={answer || ''}
-              onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-            >
+            <RadioGroup value={answer || ''} onChange={(e) => handleAnswerChange(question.id, e.target.value)}>
               {question.options?.map((option) => (
                 <FormControlLabel
                   key={option}
@@ -328,9 +279,7 @@ export default function SurveyDetail() {
                       checked={(answer || []).includes(option)}
                       onChange={(e) => {
                         const currentAnswers = answer || [];
-                        const newAnswers = e.target.checked
-                          ? [...currentAnswers, option]
-                          : currentAnswers.filter((a: string) => a !== option);
+                        const newAnswers = e.target.checked ? [...currentAnswers, option] : currentAnswers.filter((a: string) => a !== option);
                         handleAnswerChange(question.id, newAnswers);
                       }}
                     />
@@ -340,9 +289,7 @@ export default function SurveyDetail() {
                     mb: 1,
                     p: 2,
                     border: '1px solid',
-                    borderColor: (answer || []).includes(option)
-                      ? 'primary.main'
-                      : 'divider',
+                    borderColor: (answer || []).includes(option) ? 'primary.main' : 'divider',
                     borderRadius: 2,
                     transition: 'all 0.2s',
                     '&:hover': {
@@ -386,11 +333,7 @@ export default function SurveyDetail() {
         return (
           <Box sx={{ px: 2 }}>
             <Box sx={{ textAlign: 'center', mb: 4 }}>
-              <Typography
-                variant="h2"
-                color="primary.main"
-                sx={{ fontWeight: 'bold' }}
-              >
+              <Typography variant="h2" color="primary.main" sx={{ fontWeight: 'bold' }}>
                 {answer || question.min || 0}
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -490,9 +433,7 @@ export default function SurveyDetail() {
               },
             }}
           >
-            <PhotoCamera
-              sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }}
-            />
+            <PhotoCamera sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
             <Typography variant="body1" color="text.secondary">
               이미지를 업로드하려면 클릭하세요
             </Typography>
@@ -537,11 +478,7 @@ export default function SurveyDetail() {
   if (isSubmitted) {
     return (
       <Container maxWidth="md" sx={{ py: 8 }}>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-        >
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }}>
           <Card
             sx={{
               textAlign: 'center',
@@ -549,33 +486,19 @@ export default function SurveyDetail() {
               background: `linear-gradient(135deg, ${theme.palette.primary.light}, ${theme.palette.secondary.light})`,
             }}
           >
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-            >
-              <CheckCircle
-                sx={{ fontSize: 100, color: 'success.main', mb: 3 }}
-              />
+            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}>
+              <CheckCircle sx={{ fontSize: 100, color: 'success.main', mb: 3 }} />
             </motion.div>
 
-            <Typography
-              variant="h3"
-              sx={{ mb: 2, fontWeight: 600, color: 'white' }}
-            >
+            <Typography variant="h3" sx={{ mb: 2, fontWeight: 600, color: 'white' }}>
               응답이 완료되었습니다!
             </Typography>
 
-            <Typography
-              variant="h6"
-              sx={{ mb: 4, color: 'rgba(255,255,255,0.9)' }}
-            >
+            <Typography variant="h6" sx={{ mb: 4, color: 'rgba(255,255,255,0.9)' }}>
               소중한 의견을 주셔서 감사합니다
             </Typography>
 
-            <Box
-              sx={{ display: 'flex', justifyContent: 'center', gap: 2, mb: 4 }}
-            >
+            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mb: 4 }}>
               <Chip
                 icon={<Person />}
                 label={`총 ${survey.totalResponses + 1}명 참여`}
@@ -618,28 +541,14 @@ export default function SurveyDetail() {
       <Card sx={{ mb: 4, overflow: 'visible' }}>
         <CardContent sx={{ p: 4 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-            <Avatar
-              sx={{ bgcolor: 'primary.main', mr: 2, width: 48, height: 48 }}
-            >
-              {survey.author.avatar}
-            </Avatar>
+            <Avatar sx={{ bgcolor: 'primary.main', mr: 2, width: 48, height: 48 }}>{survey.author.avatar}</Avatar>
             <Box>
               <Typography variant="h6" sx={{ fontWeight: 600 }}>
                 {survey.author.name}
               </Typography>
-              <Box
-                sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 0.5 }}
-              >
-                <Chip
-                  icon={<Schedule />}
-                  label={`약 ${survey.estimatedTime}분`}
-                  size="small"
-                />
-                <Chip
-                  icon={<Person />}
-                  label={`${survey.totalResponses}명 참여`}
-                  size="small"
-                />
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 0.5 }}>
+                <Chip icon={<Schedule />} label={`약 ${survey.estimatedTime}분`} size="small" />
+                <Chip icon={<Person />} label={`${survey.totalResponses}명 참여`} size="small" />
               </Box>
             </Box>
           </Box>
@@ -648,11 +557,7 @@ export default function SurveyDetail() {
             {survey.title}
           </Typography>
 
-          <Typography
-            variant="body1"
-            color="text.secondary"
-            sx={{ lineHeight: 1.6 }}
-          >
+          <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.6 }}>
             {survey.description}
           </Typography>
         </CardContent>
@@ -714,23 +619,14 @@ export default function SurveyDetail() {
                       mb: 2,
                     }}
                   >
-                    <Typography
-                      variant="h5"
-                      sx={{ fontWeight: 600, flexGrow: 1 }}
-                    >
+                    <Typography variant="h5" sx={{ fontWeight: 600, flexGrow: 1 }}>
                       {currentStep + 1}. {currentQuestion.title}
                     </Typography>
-                    {currentQuestion.required && (
-                      <Chip label="필수" size="small" color="primary" />
-                    )}
+                    {currentQuestion.required && <Chip label="필수" size="small" color="primary" />}
                   </Box>
 
                   {currentQuestion.description && (
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ mb: 3 }}
-                    >
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
                       {currentQuestion.description}
                     </Typography>
                   )}
@@ -759,13 +655,7 @@ export default function SurveyDetail() {
           alignItems: 'center',
         }}
       >
-        <Button
-          variant="outlined"
-          startIcon={<ArrowBack />}
-          onClick={handlePrevious}
-          disabled={currentStep === 0}
-          sx={{ minWidth: 120 }}
-        >
+        <Button variant="outlined" startIcon={<ArrowBack />} onClick={handlePrevious} disabled={currentStep === 0} sx={{ minWidth: 120 }}>
           이전
         </Button>
 
@@ -777,8 +667,7 @@ export default function SurveyDetail() {
                 width: 8,
                 height: 8,
                 borderRadius: '50%',
-                backgroundColor:
-                  index <= currentStep ? 'primary.main' : 'action.disabled',
+                backgroundColor: index <= currentStep ? 'primary.main' : 'action.disabled',
                 transition: 'all 0.3s',
               }}
             />
@@ -788,13 +677,7 @@ export default function SurveyDetail() {
         {isLastQuestion ? (
           <Button
             variant="contained"
-            startIcon={
-              isSubmitting ? (
-                <CircularProgress size={20} color="inherit" />
-              ) : (
-                <Send />
-              )
-            }
+            startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : <Send />}
             onClick={handleSubmit}
             disabled={isSubmitting}
             sx={{ minWidth: 120 }}
@@ -802,12 +685,7 @@ export default function SurveyDetail() {
             {isSubmitting ? '제출 중...' : '제출하기'}
           </Button>
         ) : (
-          <Button
-            variant="contained"
-            endIcon={<ArrowForward />}
-            onClick={handleNext}
-            sx={{ minWidth: 120 }}
-          >
+          <Button variant="contained" endIcon={<ArrowForward />} onClick={handleNext} sx={{ minWidth: 120 }}>
             다음
           </Button>
         )}

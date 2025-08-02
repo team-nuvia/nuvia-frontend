@@ -1,6 +1,7 @@
 'use client';
 
 import { GetMeResponse } from '@/models/GetMeResponse';
+import { LogoutResponse } from '@/models/LogoutResponse';
 import { getUsersMe } from '@api/get-users-me';
 import { getVerify } from '@api/get-verify';
 import { logout } from '@api/logout';
@@ -12,7 +13,7 @@ import { createContext, useCallback, useEffect, useState } from 'react';
 interface AuthenticationContextType {
   user: GetMeResponse | null;
   setUser: (user: GetMeResponse | null) => void;
-  clearUser: () => Promise<void>;
+  clearUser: () => PromiseServerResponse<LogoutResponse>;
   fetchUser: () => Promise<void>;
 }
 
@@ -47,8 +48,8 @@ const AuthenticationProvider = ({ children }: { children: React.ReactNode }) => 
   }, []);
 
   const clearUser = useCallback(async () => {
-    await logout();
     setUser(null);
+    return await logout();
   }, [user]);
 
   useEffect(() => {

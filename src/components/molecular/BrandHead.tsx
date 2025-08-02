@@ -1,21 +1,22 @@
 import NuviaLogo from '@/assets/NuviaLogo';
 import LinkText from '@components/atom/LinkText';
-import { Stack, SvgIcon, useTheme } from '@mui/material';
+import { Stack, SvgIcon } from '@mui/material';
 
 interface BrandHeadProps {
   title: string;
   width: number;
   height: number;
+  primaryColor: string;
+  secondaryColor: string;
 }
-const BrandHead: React.FC<BrandHeadProps> = ({ title, width, height }) => {
-  const theme = useTheme();
+const BrandHead: React.FC<BrandHeadProps> = ({ title, width, height, primaryColor, secondaryColor }) => {
   return (
     <Stack direction="row" alignItems="center" gap={1}>
       <SvgIcon
         sx={{
           width: width,
           height: height,
-          color: theme.palette.primary.dark,
+          color: primaryColor,
         }}
       >
         <NuviaLogo />
@@ -27,8 +28,8 @@ const BrandHead: React.FC<BrandHeadProps> = ({ title, width, height }) => {
         color="text.primary"
         fontFamily="Noto Sans KR"
         sx={{
-          color: theme.palette.text.primary,
-          background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+          color: primaryColor,
+          background: `linear-gradient(45deg, ${primaryColor}, ${secondaryColor})`,
           backgroundClip: 'text',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',

@@ -47,7 +47,7 @@ import { SearchSurvey } from '@share/interface/search-survey';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import type React from 'react';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useLayoutEffect, useState } from 'react';
 
 // interface Survey {
 //   id: string
@@ -142,7 +142,7 @@ export default function SurveyList() {
   const theme = useTheme();
   const router = useRouter();
   const [surveys, setSurveys] = useState<SearchSurvey[]>([]);
-  const { setLoading } = useContext(LoadingContext);
+  const { endLoading } = useContext(LoadingContext);
   const [selectedTab, setSelectedTab] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -152,8 +152,7 @@ export default function SurveyList() {
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const { addNotice } = useContext(GlobalSnackbarContext);
 
-  useEffect(() => {
-    setLoading(true, '설문 목록을 불러오는 중...');
+  useLayoutEffect(() => {
     const loadSurveys = async () => {
       try {
         // Mock API call
@@ -162,7 +161,7 @@ export default function SurveyList() {
       } catch (error) {
         console.error('Failed to load surveys:', error);
       } finally {
-        setLoading(false);
+        endLoading();
       }
     };
 

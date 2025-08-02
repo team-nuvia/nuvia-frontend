@@ -55,17 +55,16 @@ function a11yProps(index: number) {
 
 const Profile: React.FC<ProfileProps> = () => {
   const { user } = useContext(AuthenticationContext);
-  const { setLoading } = useContext(LoadingContext);
+  const { endLoading } = useContext(LoadingContext);
   const theme = useTheme();
   const [tabValue, setTabValue] = useState(0);
   const router = useRouter();
 
   useLayoutEffect(() => {
-    setLoading(true, '프로필 정보를 불러오는 중...');
     if (isNil(user)) {
       router.push('/auth/login');
     }
-    setLoading(false);
+    endLoading();
   }, [user, router]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {

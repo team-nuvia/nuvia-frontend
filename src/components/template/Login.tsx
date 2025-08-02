@@ -8,12 +8,13 @@ import { AuthenticationContext } from '@context/AuthenticationContext';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import LoadingContext from '@context/LodingContext';
 import { Box, Container, Grid, Link, Stack, TextField } from '@mui/material';
+import { isNil } from '@util/isNil';
 import { AxiosError } from 'axios';
 import { useFormik } from 'formik';
 import Image from 'next/image';
 import NextLink from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useLayoutEffect } from 'react';
 import * as yup from 'yup';
 
 const validationSchema = yup.object().shape({
@@ -23,8 +24,8 @@ const validationSchema = yup.object().shape({
 
 interface LoginProps {}
 const Login: React.FC<LoginProps> = () => {
-  const { setLoading } = useContext(LoadingContext);
-  const { fetchUser } = useContext(AuthenticationContext);
+  const { startLoading, endLoading } = useContext(LoadingContext);
+  const { fetchUser, user } = useContext(AuthenticationContext);
   const { addNotice } = useContext(GlobalSnackbarContext);
   const router = useRouter();
   const formik = useFormik<{ email: string; password: string }>({
@@ -38,27 +39,27 @@ const Login: React.FC<LoginProps> = () => {
     },
   });
 
+  useLayoutEffect(() => {
+    startLoading('페이지 로드 중...');
+  }, []);
+
   useEffect(() => {
-    setLoading(false);
+    if (!isNil(user)) {
+      addNotice('이미 로그인한 상태입니다.', 'warning');
+      router.push('/');
+    } else {
+      endLoading();
+    }
   }, []);
 
   async function handleSubmit(values: { email: string; password: string }) {
-    const errors = await formik.validateForm(values);
-    if (Object.keys(errors).length > 0) {
-      formik.setErrors(errors);
-      return;
-    }
-
     try {
       const response = await login(values.email, values.password);
+      console.log('🚀 ~ handleSubmit ~ response:', response);
       if (response.ok) {
-        fetchUser()
-          .then(() => {
-            router.push('/');
-          })
-          .finally(() => {
-            addNotice(response.message, 'success');
-          });
+        await fetchUser();
+        router.push('/');
+        addNotice(response.message, 'success');
       } else {
         addNotice(response.message, 'error');
       }
@@ -67,20 +68,14 @@ const Login: React.FC<LoginProps> = () => {
     }
   }
 
-  // const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-  //   const { name, value } = e.target;
-  //   setFormData({ ...formData, [name]: value });
-  // };
-
   return (
     <Box
       sx={{
+        mt: 10,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        minHeight: '100vh',
-        backgroundColor: (theme) => theme.palette.grey[100],
       }}
     >
       <Container component="main" maxWidth="xs">

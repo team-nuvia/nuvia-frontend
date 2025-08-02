@@ -19,6 +19,8 @@ export declare global {
     request?: () => Promise<void>;
   }
 
+  type PromiseServerResponse<T extends any> = Promise<ServerResponse<T> | void>;
+
   declare interface MenuModel {
     label: string;
     name: string;
@@ -29,9 +31,7 @@ export declare global {
 
   declare module '*.svg' {
     import * as React from 'react';
-    const ReactComponent: React.FunctionComponent<
-      React.SVGProps<SVGSVGElement>
-    >;
+    const ReactComponent: React.FunctionComponent<React.SVGProps<SVGSVGElement>>;
     export default ReactComponent;
   }
 }

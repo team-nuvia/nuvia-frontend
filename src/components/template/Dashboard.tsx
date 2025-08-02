@@ -1,6 +1,7 @@
 'use client';
 
 import ActionButton from '@components/atom/ActionButton';
+import LoadingContext from '@context/LodingContext';
 import { Add, BarChart, CheckCircleOutline, DonutLarge, PeopleAlt } from '@mui/icons-material';
 import {
   Box,
@@ -21,6 +22,7 @@ import {
 } from '@mui/material';
 import NextLink from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useContext, useLayoutEffect } from 'react';
 
 // --- Mock Data ---
 const kpiData = [
@@ -89,6 +91,11 @@ const recentSurveys = [
 
 const Dashboard = () => {
   const router = useRouter();
+  const { endLoading } = useContext(LoadingContext);
+
+  useLayoutEffect(() => {
+    endLoading();
+  }, []);
 
   return (
     <Box sx={{ flexGrow: 1, bgcolor: 'grey.50', p: 4 }}>
@@ -197,7 +204,7 @@ const Dashboard = () => {
                     {recentSurveys.map((survey) => (
                       <TableRow hover key={survey.id}>
                         <TableCell>
-                          <Link component={NextLink} href={`/surveys/${survey.id}`} underline="hover">
+                          <Link component={NextLink} href={`/survey/${survey.id}`} underline="hover">
                             {survey.title}
                           </Link>
                         </TableCell>

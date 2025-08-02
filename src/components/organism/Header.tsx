@@ -4,29 +4,39 @@ import { BRAND_NAME, LOGO_ONLY } from '@common/variables';
 import BrandHead from '@components/molecular/BrandHead';
 import { AuthenticationContext } from '@context/AuthenticationContext';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
-import { Avatar, IconButton, Menu, MenuItem, Stack, Tooltip, Typography } from '@mui/material';
+import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded';
+import { Avatar, IconButton, Menu, MenuItem, Stack, Tooltip, Typography, useTheme } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useContext, useMemo, useState } from 'react';
 
 interface HeaderProps {}
 const Header: React.FC<HeaderProps> = () => {
+  const theme = useTheme();
   const { user, clearUser } = useContext(AuthenticationContext);
   const { addNotice } = useContext(GlobalSnackbarContext);
   const commonMenus: MenuOption[] = useMemo(
-    () => [
-      {
-        label: 'Nuvia란?',
-        to: '/about',
-      },
-      {
-        label: '커뮤니티',
-        to: '/community',
-      },
-      {
-        label: '설문 모아보기',
-        to: '/survey',
-      },
-    ],
+    () =>
+      user
+        ? [
+            {
+              label: 'Nuvia란?',
+              to: '/about',
+            },
+            {
+              label: '커뮤니티',
+              to: '/community',
+            },
+            {
+              label: '설문 모아보기',
+              to: '/survey',
+            },
+          ]
+        : [
+            {
+              label: 'Nuvia란?',
+              to: '/about',
+            },
+          ],
     [user],
   );
 
@@ -42,9 +52,8 @@ const Header: React.FC<HeaderProps> = () => {
               label: 'Logout',
               to: '/',
               request: async () => {
-                clearUser().finally(() => {
-                  addNotice('로그아웃 되었습니다.', 'success');
-                });
+                await clearUser();
+                addNotice('로그아웃 되었습니다.', 'success');
               },
             },
           ]
@@ -82,7 +91,7 @@ const Header: React.FC<HeaderProps> = () => {
         p: '1rem',
       }}
     >
-      <BrandHead title={BRAND_NAME} width={45} height={45} />
+      <BrandHead title={BRAND_NAME} width={45} height={45} primaryColor={theme.palette.primary.main} secondaryColor={theme.palette.secondary.main} />
 
       <Stack direction="row" alignItems="center" gap={2}>
         <Stack direction="row" alignItems="center" gap={1}>
@@ -120,7 +129,11 @@ const Header: React.FC<HeaderProps> = () => {
 
         <Tooltip title="Profile">
           <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-            <Avatar src={LOGO_ONLY} alt={BRAND_NAME} sx={{ width: 35, height: 35 }} />
+            {user ? (
+              <Avatar src={user.profileImageUrl ?? LOGO_ONLY} alt={BRAND_NAME} sx={{ width: 35, height: 35 }} />
+            ) : (
+              <AccountCircleRoundedIcon sx={{ width: 35, height: 35 }} />
+            )}
           </IconButton>
         </Tooltip>
 

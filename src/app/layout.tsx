@@ -2,9 +2,9 @@ import AuthenticationProvider from '@/context/AuthenticationContext';
 import { LoadingProvider } from '@/context/LodingContext';
 import '@/styles/global.css';
 import { BRAND_NAME } from '@common/variables';
-import Loading from '@components/atom/Loading';
 import Footer from '@components/organism/Footer';
 import Header from '@components/organism/Header';
+import WrapChildren from '@components/organism/WrapChildren';
 import { GlobalSnackbar } from '@context/GlobalSnackbar';
 import { GlobalSnackbarSettingProvider } from '@context/GlobalSnackbarSettingProvider';
 import { CssBaseline, ThemeProvider } from '@mui/material';
@@ -13,7 +13,6 @@ import ReactQueryProvider from '@util/react-query-provider';
 import { lightTheme } from '@util/theme';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
-import { Suspense } from 'react';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -46,11 +45,11 @@ export default function RootLayout({
                 <GlobalSnackbarSettingProvider>
                   <GlobalSnackbar>
                     <LoadingProvider>
-                      <Suspense fallback={<Loading />}>
-                        <Header />
-                        {children}
-                        <Footer />
-                      </Suspense>
+                      {/* <Suspense fallback={<Loading />}> */}
+                      <Header />
+                      <WrapChildren>{children}</WrapChildren>
+                      <Footer />
+                      {/* </Suspense> */}
                     </LoadingProvider>
                   </GlobalSnackbar>
                 </GlobalSnackbarSettingProvider>

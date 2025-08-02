@@ -1,29 +1,51 @@
 'use client';
 
+import { GetMeResponse } from '@/models/GetMeResponse';
 import { Box, LinearProgress, Stack, Typography } from '@mui/material';
-import { createContext, useState } from 'react';
+import { usePathname } from 'next/navigation';
+import { createContext, useCallback, useContext, useState } from 'react';
+import { AuthenticationContext } from './AuthenticationContext';
 
 export const LoadingContext = createContext({
   loading: true,
-  setLoading: (loading: boolean, loadingText?: string) => {},
+  startLoading: (loadingText?: string) => {},
+  endLoading: () => {},
 });
+
+const routerMap: (pathname: string, user: GetMeResponse | null) => string = (pathname: string, user: GetMeResponse | null) => {
+  if (/^\/$/.test(pathname)) return user ? '대시보드 로드 중...' : '서비스 로드 중...';
+  if (/^\/auth\/login$/.test(pathname)) return '로그인 페이지 로드 중...';
+  if (/^\/auth\/signup$/.test(pathname)) return '회원가입 페이지 로드 중...';
+  if (/^\/auth\/reset-password$/.test(pathname)) return '비밀번호 재설정 페이지 로드 중...';
+  if (/^\/survey\/create$/.test(pathname)) return '설문 페이지 로드 중...';
+  if (/^\/survey\/list$/.test(pathname)) return '설문 목록 로드 중...';
+  if (/^\/survey\/(\d+)$/.test(pathname)) return '설문 상세 페이지 로드 중...';
+  return '서비스 로드 중...';
+};
 
 interface LoadingProviderProps {
   children: React.ReactNode;
 }
-export const LoadingProvider: React.FC<LoadingProviderProps> = ({
-  children,
-}) => {
+export const LoadingProvider: React.FC<LoadingProviderProps> = ({ children }) => {
+  const { user } = useContext(AuthenticationContext);
+  const pathname = usePathname();
   const [loading, setLoading] = useState(true);
-  const [loadingText, setLoadingText] = useState('Loading...');
+  const [loadingText, setLoadingText] = useState(routerMap(pathname, user));
 
-  const handleSetLoading = (loading: boolean, loadingText?: string) => {
-    setLoading(loading);
-    if (!loading) setLoadingText(loadingText || 'Loading...');
-  };
+  const startLoading = useCallback(
+    (loadingText?: string) => {
+      setLoadingText(loadingText || '서비스 로드 중...');
+      setLoading(true);
+    },
+    [setLoadingText, setLoading],
+  );
+
+  const endLoading = useCallback(() => {
+    setLoading(false);
+  }, [setLoading]);
 
   return (
-    <LoadingContext.Provider value={{ loading, setLoading: handleSetLoading }}>
+    <LoadingContext.Provider value={{ loading, startLoading, endLoading }}>
       <Stack flex={1} sx={{ position: 'relative' }}>
         {children}
       </Stack>

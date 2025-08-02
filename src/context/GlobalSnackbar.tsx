@@ -13,7 +13,13 @@ export const GlobalSnackbar = ({ children }: { children: React.ReactNode }) => {
   const { enqueueSnackbar } = useSnackbar();
 
   const addNotice = (message: string, variant: VariantType = 'default') => {
-    enqueueSnackbar(message, { variant, preventDuplicate: true, style: { zIndex: 100000 } });
+    enqueueSnackbar(message, {
+      variant,
+      preventDuplicate: true,
+      style: { zIndex: 100000 },
+      autoHideDuration: 3000,
+      anchorOrigin: { vertical: 'bottom', horizontal: 'center' },
+    });
   };
 
   return <GlobalSnackbarContext.Provider value={{ addNotice }}>{children}</GlobalSnackbarContext.Provider>;

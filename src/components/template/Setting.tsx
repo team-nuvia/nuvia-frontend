@@ -13,19 +13,19 @@ import { useContext, useLayoutEffect } from 'react';
 interface SettingProps {}
 const Setting: React.FC<SettingProps> = () => {
   const { user } = useContext(AuthenticationContext);
-  const { setLoading } = useContext(LoadingContext);
+  const { endLoading } = useContext(LoadingContext);
   const router = useRouter();
 
   useLayoutEffect(() => {
-    setLoading(true, '설정 정보를 불러오는 중...');
     getUserSettings()
       .then(() => {
         if (isNil(user)) {
           router.push('/auth/login');
         }
+        endLoading();
       })
-      .finally(() => {
-        setLoading(false);
+      .catch(() => {
+        endLoading();
       });
   }, [user, router]);
 
