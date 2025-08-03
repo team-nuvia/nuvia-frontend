@@ -26,7 +26,7 @@ import {
   Switch,
   TextField,
   Typography,
-  useMediaQuery
+  useMediaQuery,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
@@ -35,7 +35,7 @@ import { InputType } from '@share/enums/input-type';
 import { AllQuestion } from '@share/interface/iquestion';
 import axios from 'axios';
 import dayjs from 'dayjs';
-import { Formik, useFormik } from 'formik';
+import { useFormik } from 'formik';
 import { useContext, useLayoutEffect, useState } from 'react';
 import * as Yup from 'yup';
 
@@ -61,15 +61,15 @@ const SurveySchema = Yup.object().shape({
         Yup.object().shape({
           id: Yup.number().required(),
           label: Yup.string().required('옵션 라벨은 필수입니다.'),
-        })
+        }),
       ),
       answers: Yup.mixed().required(),
-    })
+    }),
   ),
 });
 
 // --- INITIAL VALUES ---
-const initialValues = {
+const initialValues: QuestionInitialValues = {
   title: '',
   description: '',
   expiresAt: null as string | null,
@@ -142,180 +142,6 @@ const Survey: React.FC = () => {
     },
   });
 
-  // Formik Provider를 위한 내부 컴포넌트
-  const SurveyForm: React.FC = () => {
-    return (
-      <Formik
-        initialValues={formik.values}
-        validationSchema={SurveySchema}
-        onSubmit={async (values) => {
-          await formik.handleSubmit();
-        }}
-        enableReinitialize
-      >
-        {({ values, setFieldValue }) => (
-          <Box component="form" noValidate autoComplete="off" onSubmit={formik.handleSubmit}>
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 12, md: isMobile ? 12 : 8 }}>
-                <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
-                  <Typography variant="h4" gutterBottom>
-                    설문 제작
-                  </Typography>
-                  <Box >
-                    <TextField
-                      fullWidth
-                      label="설문 제목"
-                      margin="dense"
-                      required
-                      {...formik.getFieldProps('title')}
-                      error={formik.touched.title && Boolean(formik.errors.title)}
-                      helperText={formik.touched.title && formik.errors.title}
-                    />
-                    
-                    <TextField
-                      fullWidth
-                      label="설문 설명 (선택)"
-                      margin="dense"
-                      multiline
-                      rows={3}
-                      {...formik.getFieldProps('description')}
-                      error={formik.touched.description && Boolean(formik.errors.description)}
-                      helperText={formik.touched.description && formik.errors.description}
-                    />
-                    
-                    <DateTimePicker
-                      label="만료일 (선택)"
-                      value={formik.values.expiresAt ? dayjs(formik.values.expiresAt) : null}
-                      onChange={(value) => formik.setFieldValue('expiresAt', value?.toISOString() || null)}
-                      format="YYYY-MM-DD HH:mm"
-                      slotProps={{
-                        textField: {
-                          fullWidth: true,
-                          margin: 'dense',
-                          error: formik.touched.expiresAt && Boolean(formik.errors.expiresAt),
-                          helperText: formik.touched.expiresAt && formik.errors.expiresAt,
-                        },
-                      }}
-                    />
-                    
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          checked={formik.values.isPublic}
-                          onChange={formik.handleChange}
-                          name="isPublic"
-                        />
-                      }
-                      label="응답 공개 여부"
-                    />
-                  </Box>
-                </Paper>
-
-                {values.questions.map((question, index) => (
-                  <QuestionCard
-                    key={question.id}
-                    id={question.id}
-                    index={index + 1}
-                    title={question.title}
-                    description={question.description}
-                    questionType={question.questionType}
-                    dataType={question.dataType}
-                    required={question.required}
-                    options={question.options}
-                  />
-                ))}
-
-                <Box sx={{ mt: 4, display: 'flex', justifyContent: 'space-between' }}>
-                  <Button 
-                    variant="outlined" 
-                    startIcon={<AddCircleOutlineIcon />} 
-                    onClick={() => handleAddQuestion(InputType.ShortText)}
-                  >
-                    질문 추가
-                  </Button>
-                  <Stack direction="row" gap={2} alignItems="center">
-                    <Button 
-                      variant="outlined" 
-                      startIcon={<AddCircleOutlineIcon />} 
-                      onClick={handlePreview} 
-                      disabled={isSubmitting}
-                    >
-                      미리보기
-                    </Button>
-                    <Button 
-                      type="submit"
-                      variant="contained" 
-                      startIcon={<SaveIcon />} 
-                      color="primary" 
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting ? <CircularProgress size={24} /> : '설문 저장'}
-                    </Button>
-                  </Stack>
-                </Box>
-              </Grid>
-              
-              {!isMobile && (
-                <Grid size={{ xs: 12, md: 4 }}>
-                  <Paper elevation={3} sx={{ p: 2, mt: 4, position: 'sticky', top: 20 }}>
-                    <Typography variant="h6" gutterBottom>
-                      질문 유형
-                    </Typography>
-                    <List sx={{ maxHeight: '500px', overflow: 'auto' }}>
-                      {Object.entries(QUESTION_TYPE_MAP).map(([key, value]) => (
-                        <ListItem
-                          key={key}
-                          disablePadding
-                          onClick={() =>
-                            handleAddQuestion(
-                              QUESTION_DATA_TYPE_MAP[key as InputType | DataType].key,
-                              QUESTION_DATA_TYPE_MAP[key as InputType | DataType].type,
-                            )
-                          }
-                        >
-                          <ListItemButton>
-                            <ListItemIcon>{QUESTION_TYPE_ICONS[key as InputType]}</ListItemIcon>
-                            <ListItemText primary={value} />
-                          </ListItemButton>
-                        </ListItem>
-                      ))}
-                    </List>
-                  </Paper>
-                </Grid>
-              )}
-            </Grid>
-
-            {isMobile && (
-              <SpeedDial 
-                ariaLabel="Add Question Speed Dial" 
-                sx={{ position: 'fixed', bottom: 16, right: 16 }} 
-                icon={<SpeedDialIcon />}
-              >
-                {Object.entries(QUESTION_TYPE_ICONS)
-                  .toReversed()
-                  .map(([key, icon]) => (
-                    <SpeedDialAction
-                      key={key}
-                      icon={icon}
-                      slotProps={{
-                        tooltip: { title: QUESTION_TYPE_MAP[key as InputType] },
-                      }}
-                      onClick={() =>
-                        handleAddQuestion(
-                          QUESTION_DATA_TYPE_MAP[key as InputType | DataType].key,
-                          QUESTION_DATA_TYPE_MAP[key as InputType | DataType].type
-                        )
-                      }
-                    />
-                  ))}
-              </SpeedDial>
-            )}
-          </Box>
-        )}
-      </Formik>
-    );
-  };
-
   // --- HANDLERS ---
   const handleAddQuestion = (questionType: InputType, dataType?: DataType) => {
     const newQuestion: AllQuestion = {
@@ -341,7 +167,142 @@ const Survey: React.FC = () => {
   // --- RENDER ---
   return (
     <Container maxWidth="lg">
-      <SurveyForm />
+      <Box component="form" noValidate autoComplete="off" onSubmit={formik.handleSubmit}>
+        <Grid container spacing={2}>
+          <Grid size={{ xs: 12, md: isMobile ? 12 : 8 }}>
+            <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
+              <Typography variant="h4" gutterBottom>
+                설문 제작
+              </Typography>
+              <Box>
+                <TextField
+                  fullWidth
+                  label="설문 제목"
+                  margin="dense"
+                  required
+                  {...formik.getFieldProps('title')}
+                  error={formik.touched.title && Boolean(formik.errors.title)}
+                  helperText={formik.touched.title && formik.errors.title}
+                />
+
+                <TextField
+                  fullWidth
+                  label="설문 설명 (선택)"
+                  margin="dense"
+                  multiline
+                  rows={3}
+                  {...formik.getFieldProps('description')}
+                  error={formik.touched.description && Boolean(formik.errors.description)}
+                  helperText={formik.touched.description && formik.errors.description}
+                />
+
+                <DateTimePicker
+                  label="만료일 (선택)"
+                  value={formik.values.expiresAt ? dayjs(formik.values.expiresAt) : null}
+                  onChange={(value) => formik.setFieldValue('expiresAt', value?.toISOString() || null)}
+                  format="YYYY-MM-DD HH:mm"
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      margin: 'dense',
+                      error: formik.touched.expiresAt && Boolean(formik.errors.expiresAt),
+                      helperText: formik.touched.expiresAt && formik.errors.expiresAt,
+                    },
+                  }}
+                />
+
+                <FormControlLabel
+                  control={<Switch checked={formik.values.isPublic} onChange={formik.handleChange} name="isPublic" />}
+                  label="응답 공개 여부"
+                />
+              </Box>
+            </Paper>
+
+            {formik.values.questions.map((question, index) => (
+              <QuestionCard
+                key={question.id}
+                id={question.id}
+                index={index + 1}
+                title={question.title}
+                description={question.description}
+                questionType={question.questionType}
+                dataType={question.dataType}
+                required={question.required}
+                options={question.options}
+                questions={formik.values.questions}
+                setFieldValue={formik.setFieldValue}
+                touched={formik.touched as { [key: string]: { [key: string]: boolean } }}
+                errors={formik.errors as { [key: string]: { [key: string]: any } }}
+              />
+            ))}
+
+            <Box sx={{ mt: 4, display: 'flex', justifyContent: 'space-between' }}>
+              <Button variant="outlined" startIcon={<AddCircleOutlineIcon />} onClick={() => handleAddQuestion(InputType.ShortText)}>
+                질문 추가
+              </Button>
+              <Stack direction="row" gap={2} alignItems="center">
+                <Button variant="outlined" startIcon={<AddCircleOutlineIcon />} onClick={handlePreview} disabled={isSubmitting}>
+                  미리보기
+                </Button>
+                <Button type="submit" variant="contained" startIcon={<SaveIcon />} color="primary" disabled={isSubmitting}>
+                  {isSubmitting ? <CircularProgress size={24} /> : '설문 저장'}
+                </Button>
+              </Stack>
+            </Box>
+          </Grid>
+
+          {!isMobile && (
+            <Grid size={{ xs: 12, md: 4 }}>
+              <Paper elevation={3} sx={{ p: 2, mt: 4, position: 'sticky', top: 20 }}>
+                <Typography variant="h6" gutterBottom>
+                  질문 유형
+                </Typography>
+                <List sx={{ maxHeight: '500px', overflow: 'auto' }}>
+                  {Object.entries(QUESTION_TYPE_MAP).map(([key, value]) => (
+                    <ListItem
+                      key={key}
+                      disablePadding
+                      onClick={() =>
+                        handleAddQuestion(
+                          QUESTION_DATA_TYPE_MAP[key as InputType | DataType].key,
+                          QUESTION_DATA_TYPE_MAP[key as InputType | DataType].type,
+                        )
+                      }
+                    >
+                      <ListItemButton>
+                        <ListItemIcon>{QUESTION_TYPE_ICONS[key as InputType]}</ListItemIcon>
+                        <ListItemText primary={value} />
+                      </ListItemButton>
+                    </ListItem>
+                  ))}
+                </List>
+              </Paper>
+            </Grid>
+          )}
+        </Grid>
+
+        {isMobile && (
+          <SpeedDial ariaLabel="Add Question Speed Dial" sx={{ position: 'fixed', bottom: 16, right: 16 }} icon={<SpeedDialIcon />}>
+            {Object.entries(QUESTION_TYPE_ICONS)
+              .toReversed()
+              .map(([key, icon]) => (
+                <SpeedDialAction
+                  key={key}
+                  icon={icon}
+                  slotProps={{
+                    tooltip: { title: QUESTION_TYPE_MAP[key as InputType] },
+                  }}
+                  onClick={() =>
+                    handleAddQuestion(
+                      QUESTION_DATA_TYPE_MAP[key as InputType | DataType].key,
+                      QUESTION_DATA_TYPE_MAP[key as InputType | DataType].type,
+                    )
+                  }
+                />
+              ))}
+          </SpeedDial>
+        )}
+      </Box>
 
       {/* <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
         <Alert onClose={() => setError(null)} severity="error" sx={{ width: '100%' }}>

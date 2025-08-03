@@ -21,7 +21,6 @@ import {
 import { DataType } from '@share/enums/data-type';
 import { InputType } from '@share/enums/input-type';
 import { IQuestion, IQuestionOption } from '@share/interface/iquestion';
-import { useFormikContext } from 'formik';
 import { useMemo } from 'react';
 
 const DATA_TYPE_MAP = {
@@ -48,13 +47,26 @@ interface QuestionCardProps {
   required: boolean;
   value?: string;
   options?: IQuestionOption[];
+  questions: IQuestion[];
+  setFieldValue: (field: string, value: any) => void;
+  touched?: { [key: string]: { [key: string]: boolean } };
+  errors?: { [key: string]: { [key: string]: any } };
 }
 
-const QuestionCard: React.FC<QuestionCardProps> = ({ id, index, title, description, questionType, dataType, required, options }) => {
-  const { setFieldValue, values } = useFormikContext<{
-    questions: IQuestion[];
-  }>();
-
+const QuestionCard: React.FC<QuestionCardProps> = ({
+  id,
+  index,
+  title,
+  description,
+  questionType,
+  dataType,
+  required,
+  options,
+  questions,
+  setFieldValue,
+  touched,
+  errors,
+}) => {
   const inputValueType = useMemo(() => {
     switch (dataType) {
       case DataType.Image:
@@ -81,11 +93,19 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ id, index, title, descripti
     }
   }, [dataType]);
 
+  // 현재 질문의 validation 상태
+  const questionIndex = questions.findIndex((q) => q.id === id);
+  const questionTouched = touched?.questions?.[questionIndex] || false;
+  const questionErrors = errors?.questions?.[questionIndex] || {};
+  const titleError = questionErrors.title;
+  console.log('🚀 ~ QuestionCard ~ titleError:', title, titleError);
+  const optionsErrors = questionErrors.options || [];
+  console.log('🚀 ~ QuestionCard ~ optionsErrors:', optionsErrors);
+
   // Formik과 직접 연동된 핸들러들
   const handleQuestionChange = (field: keyof IQuestion, value: any) => {
-    const questionIndex = values.questions.findIndex((q) => q.id === id);
     if (questionIndex !== -1) {
-      const updatedQuestions = [...values.questions];
+      const updatedQuestions = [...questions];
       updatedQuestions[questionIndex] = {
         ...updatedQuestions[questionIndex],
         [field]: value,
@@ -95,9 +115,8 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ id, index, title, descripti
   };
 
   const handleOptionChange = (optionId: number, value: string) => {
-    const questionIndex = values.questions.findIndex((q) => q.id === id);
     if (questionIndex !== -1) {
-      const updatedQuestions = [...values.questions];
+      const updatedQuestions = [...questions];
       const question = updatedQuestions[questionIndex];
       const optionIndex = question.options?.findIndex((opt) => opt.id === optionId);
 
@@ -112,9 +131,8 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ id, index, title, descripti
   };
 
   const handleAddOption = () => {
-    const questionIndex = values.questions.findIndex((q) => q.id === id);
     if (questionIndex !== -1) {
-      const updatedQuestions = [...values.questions];
+      const updatedQuestions = [...questions];
       const question = updatedQuestions[questionIndex];
       const newOption = { id: Date.now(), label: '' };
 
@@ -127,9 +145,8 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ id, index, title, descripti
   };
 
   const handleRemoveOption = (optionId: number) => {
-    const questionIndex = values.questions.findIndex((q) => q.id === id);
     if (questionIndex !== -1) {
-      const updatedQuestions = [...values.questions];
+      const updatedQuestions = [...questions];
       const question = updatedQuestions[questionIndex];
 
       updatedQuestions[questionIndex] = {
@@ -141,7 +158,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ id, index, title, descripti
   };
 
   const handleRemoveQuestion = () => {
-    const filteredQuestions = values.questions.filter((q) => q.id !== id);
+    const filteredQuestions = questions.filter((q) => q.id !== id);
     setFieldValue('questions', filteredQuestions);
   };
 
@@ -156,6 +173,9 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ id, index, title, descripti
             value={title}
             onChange={(e) => handleQuestionChange('title', e.target.value)}
             variant="standard"
+            error={questionTouched && Boolean(titleError)}
+            helperText={questionTouched && titleError}
+            required
           />
           <ActionButton
             component={Chip}
@@ -209,6 +229,9 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ id, index, title, descripti
                     onChange={(e) => handleOptionChange(option.id, e.target.value)}
                     variant="standard"
                     type={inputValueType}
+                    error={questionTouched && Boolean(optionsErrors[optIndex]?.label)}
+                    helperText={questionTouched && optionsErrors[optIndex]?.label}
+                    required
                   />
                 </Grid>
                 <Grid size={{ xs: 1 }}>

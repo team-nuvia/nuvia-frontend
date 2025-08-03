@@ -1,8 +1,17 @@
 import '@mui/material/styles';
+import { AllQuestion } from '@share/interface/iquestion';
 
 export declare global {
   interface Payload<T> {
     payload: T | null;
+  }
+
+  interface QuestionInitialValues {
+    title: string;
+    description: string;
+    expiresAt: string | null;
+    isPublic: boolean;
+    questions: AllQuestion[];
   }
 
   interface ServerResponse<T extends any> extends Payload<T> {
