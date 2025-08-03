@@ -30,7 +30,6 @@ const Preview: React.FC<PreviewProps> = ({ survey, handleClose }) => {
     <Paper
       sx={{
         p: isFullscreen ? 0 : 2,
-        mt: 2,
         position: 'fixed',
         top: isFullscreen ? 0 : 15,
         left: isFullscreen ? 0 : 15,

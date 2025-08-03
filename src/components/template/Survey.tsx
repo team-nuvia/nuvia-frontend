@@ -1,8 +1,11 @@
 'use client';
 
+import { CreateSurveyPayload } from '@/models/CreateSurveyPayload';
+import { createSurvey } from '@api/create-survey';
 import { QUESTION_DATA_TYPE_MAP, QUESTION_TYPE_ICONS, QUESTION_TYPE_MAP } from '@common/global';
 import Preview from '@components/organism/Preview';
 import QuestionCard from '@components/organism/QuestionCard';
+import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import LoadingContext from '@context/LodingContext';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import SaveIcon from '@mui/icons-material/Save';
@@ -33,10 +36,10 @@ import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { DataType } from '@share/enums/data-type';
 import { InputType } from '@share/enums/input-type';
 import { AllQuestion } from '@share/interface/iquestion';
-import axios from 'axios';
 import dayjs from 'dayjs';
 import { useFormik } from 'formik';
-import { useContext, useLayoutEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useContext, useEffect, useLayoutEffect, useState } from 'react';
 import * as Yup from 'yup';
 
 // --- HELPER FUNCTIONS ---
@@ -63,7 +66,7 @@ const SurveySchema = Yup.object().shape({
           label: Yup.string().required('옵션 라벨은 필수입니다.'),
         }),
       ),
-      answers: Yup.mixed().required(),
+      // answers: Yup.mixed().required(),
     }),
   ),
 });
@@ -72,21 +75,22 @@ const SurveySchema = Yup.object().shape({
 const initialValues: QuestionInitialValues = {
   title: '',
   description: '',
-  expiresAt: null as string | null,
+  expiresAt: null as Date | null,
   isPublic: true,
   questions: [] as AllQuestion[],
 };
 
 // --- COMPONENT ---
 const Survey: React.FC = () => {
+  /* hooks */
   const { endLoading } = useContext(LoadingContext);
-  // --- STATE ---
+  const { addNotice } = useContext(GlobalSnackbarContext);
+  const router = useRouter();
+  const theme = useTheme();
+
+  /* state */
   const [isPreview, setIsPreview] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-
-  const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   useLayoutEffect(() => {
@@ -100,72 +104,71 @@ const Survey: React.FC = () => {
     onSubmit: async (values) => {
       for (let i = 0; i < values.questions.length; i++) {
         const question = values.questions[i];
-        if (question.options?.length === 0) {
+        if (
+          (question.questionType === InputType.SingleChoice || question.questionType === InputType.MultipleChoice) &&
+          question.options?.length === 0
+        ) {
           formik.setFieldTouched(`questions[${i}].options`, true);
           formik.setFieldError(`questions[${i}].options`, '최소 1개의 옵션이 필요합니다.');
-          console.log('🚀 ~ Survey ~ question:', question.id);
           return;
         }
       }
 
-      console.log('🚀 ~ Survey ~ values:', values);
       setIsSubmitting(true);
-      setError(null);
-      setSuccess(null);
 
-      // NOTE: Assuming non-member survey for now. Auth state would determine this.
-      const isMember = false;
-      const managementPassword = isMember ? '' : generatePassword();
-
-      const surveyData = {
+      const surveyData: CreateSurveyPayload = {
         title: values.title,
         description: values.description,
-        expires_at: values.expiresAt,
-        is_public: values.isPublic,
+        expiresAt: values.expiresAt || null,
+        isPublic: values.isPublic,
         questions: values.questions.map(({ id, ...rest }) => ({
           ...rest,
           options: (rest.options || []).map(({ id, ...optRest }) => optRest), // Remove client-side IDs
         })),
-        management_password: managementPassword,
+        // managementPassword: managementPassword,
       };
 
       try {
         // Using a placeholder API endpoint
-        const response = await axios.post('/api/nuvia/surveys', surveyData);
+        const response = await createSurvey(surveyData);
 
-        if (response.status === 201) {
-          let successMessage = '설문이 성공적으로 생성되었습니다!';
-          if (managementPassword) {
-            successMessage += ` 관리용 비밀번호: ${managementPassword}`;
-          }
-          setSuccess(successMessage);
+        if (response.ok) {
+          addNotice('설문이 성공적으로 생성되었습니다!', 'success');
           // Reset form
           formik.resetForm();
         } else {
-          setError(`오류: ${response.statusText}`);
+          addNotice(response.message, 'error');
         }
       } catch (err) {
-        setError('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
         console.error(err);
+        addNotice('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
       } finally {
         setIsSubmitting(false);
+        router.push('/');
       }
     },
   });
 
+  useEffect(() => {
+    if (formik.isSubmitting && Object.keys(formik.errors).length > 0) {
+      console.log(formik.errors);
+      addNotice('설문에 필요한 내용을 작성해주세요.', 'warning');
+    }
+  }, [formik.errors, formik.touched]);
+
   // --- HANDLERS ---
   const handleAddQuestion = (questionType: InputType, dataType?: DataType) => {
     const isSelectable = questionType === InputType.SingleChoice || questionType === InputType.MultipleChoice;
-    const newQuestion: AllQuestion = {
+    const newQuestion: Omit<AllQuestion, 'answers'> = {
       id: Date.now(),
       title: '',
       description: '',
       questionType,
       dataType: dataType || DataType.Text,
       required: false,
-      isAnswered: false,
+      // isAnswered: false,
       options: isSelectable ? [{ id: 1, label: '' }] : [],
-      answers: new Map(),
+      // answers: new Map(),
     };
     formik.setFieldValue('questions', [...formik.values.questions, newQuestion]);
   };
@@ -250,7 +253,7 @@ const Survey: React.FC = () => {
               />
             ))}
 
-            <Box sx={{ mt: 4, display: 'flex', justifyContent: 'space-between' }}>
+            <Box sx={{ my: 4, display: 'flex', justifyContent: 'space-between' }}>
               <Button variant="outlined" startIcon={<AddCircleOutlineIcon />} onClick={() => handleAddQuestion(InputType.ShortText)}>
                 질문 추가
               </Button>
@@ -318,17 +321,6 @@ const Survey: React.FC = () => {
         )}
       </Box>
 
-      {/* <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
-        <Alert onClose={() => setError(null)} severity="error" sx={{ width: '100%' }}>
-          {error}
-        </Alert>
-      </Snackbar> */}
-      {/* <Snackbar open={!!success} autoHideDuration={6000} onClose={() => setSuccess(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
-        <Alert onClose={() => setSuccess(null)} severity="success" sx={{ width: '100%' }}>
-          {success}
-        </Alert>
-      </Snackbar> */}
-
       {isPreview && (
         <Preview
           survey={{
@@ -336,7 +328,7 @@ const Survey: React.FC = () => {
             name: '미리보기 사용자',
             description: formik.values.description,
             category: '미리보기',
-            expiresAt: formik.values.expiresAt || '',
+            expiresAt: formik.values.expiresAt || null,
             isPublic: formik.values.isPublic,
             participants: 0,
             questions: formik.values.questions,

@@ -9,7 +9,7 @@ export declare global {
   interface QuestionInitialValues {
     title: string;
     description: string;
-    expiresAt: string | null;
+    expiresAt: Date | null;
     isPublic: boolean;
     questions: AllQuestion[];
   }
