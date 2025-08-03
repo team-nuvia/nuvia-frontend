@@ -44,6 +44,7 @@ const Login: React.FC<LoginProps> = () => {
   }, []);
 
   useEffect(() => {
+    console.log('🚀 ~ Login ~ user:', user);
     if (!isNil(user)) {
       addNotice('이미 로그인한 상태입니다.', 'warning');
       router.push('/');
@@ -58,8 +59,8 @@ const Login: React.FC<LoginProps> = () => {
       console.log('🚀 ~ handleSubmit ~ response:', response);
       if (response.ok) {
         await fetchUser();
-        router.push('/');
         addNotice(response.message, 'success');
+        router.push('/');
       } else {
         addNotice(response.message, 'error');
       }
@@ -119,7 +120,7 @@ const Login: React.FC<LoginProps> = () => {
           ))}
           submitText="로그인"
           onSubmit={formik.handleSubmit}
-          signupPath="/signup"
+          signupPath="/auth/signup"
           signupText="계정이 없으신가요?"
         />
         <Grid container sx={{ mt: 2 }}>

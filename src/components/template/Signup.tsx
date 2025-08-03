@@ -1,32 +1,90 @@
 'use client';
 
+import { signup } from '@api/signup';
 import { BRAND_NAME } from '@common/variables';
 import CommonText from '@components/atom/CommonText';
 import ActionForm from '@components/molecular/ActionForm';
+import { AuthenticationContext } from '@context/AuthenticationContext';
+import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
+import LoadingContext from '@context/LodingContext';
 import { Box, Container, Stack, TextField } from '@mui/material';
+import { useFormik } from 'formik';
 import Image from 'next/image';
-import { useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useContext, useEffect, useLayoutEffect } from 'react';
+import * as Yup from 'yup';
 
 interface SignupProps {}
-const Signup: React.FC<SignupProps> = () => {
-  const formRef = useRef<HTMLFormElement>(null);
 
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    passwordConfirm: '',
+const Signup: React.FC<SignupProps> = () => {
+  const { user } = useContext(AuthenticationContext);
+  const { endLoading } = useContext(LoadingContext);
+  const { addNotice } = useContext(GlobalSnackbarContext);
+
+  const router = useRouter();
+
+  // 유효성 검사 스키마
+  const validationSchema = Yup.object({
+    name: Yup.string().required('이름을 입력해주세요.').min(2, '이름은 2자 이상이어야 합니다.').max(20, '이름은 20자 이하여야 합니다.'),
+    email: Yup.string().required('이메일을 입력해주세요.').email('올바른 이메일 형식이 아닙니다.'),
+    password: Yup.string()
+      .required('비밀번호를 입력해주세요.')
+      .min(8, '비밀번호는 8자 이상이어야 합니다.')
+      .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, '비밀번호는 영문 대소문자와 숫자를 포함해야 합니다.'),
+    passwordConfirm: Yup.string()
+      .required('비밀번호 확인을 입력해주세요.')
+      .oneOf([Yup.ref('password')], '비밀번호가 일치하지 않습니다.'),
   });
+
+  const formik = useFormik({
+    initialValues: {
+      name: '',
+      email: '',
+      password: '',
+      passwordConfirm: '',
+    },
+    validationSchema,
+    onSubmit: async (values) => {
+      console.log('Form submitted:', values);
+      // 여기에 회원가입 API 호출 로직을 추가할 수 있습니다.
+      if (values.password !== values.passwordConfirm) {
+        formik.setFieldError('passwordConfirm', '비밀번호가 일치하지 않습니다.');
+        addNotice('비밀번호가 일치하지 않습니다.', 'warning');
+        return;
+      }
+      const { passwordConfirm, ...data } = values;
+      const response = await signup(data);
+      if (response.ok) {
+        router.push('/auth/login');
+      }
+    },
+  });
+
+  useLayoutEffect(() => {
+    if (formik.touched.password && formik.touched.passwordConfirm && formik.values.password !== formik.values.passwordConfirm) {
+      formik.setFieldError('passwordConfirm', '비밀번호가 일치하지 않습니다.');
+    }
+    endLoading();
+  }, [formik.touched.password, formik.touched.passwordConfirm, formik.values.password, formik.values.passwordConfirm, endLoading]);
+
+  useEffect(() => {
+    if (user) {
+      router.push('/');
+    }
+  }, [user]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(formData);
+    formik.handleSubmit(e);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
+  // 필드 라벨과 타입 매핑
+  const fieldConfig = [
+    { name: 'name', label: '이름', type: 'text' },
+    { name: 'email', label: '이메일', type: 'email' },
+    { name: 'password', label: '비밀번호', type: 'password' },
+    { name: 'passwordConfirm', label: '비밀번호 확인', type: 'password' },
+  ];
 
   return (
     <Box
@@ -54,19 +112,22 @@ const Signup: React.FC<SignupProps> = () => {
               </CommonText>
             </Stack>
           }
-          slots={Object.entries(formData).map(([key, value]) => (
+          slots={fieldConfig.map(({ name, label, type }) => (
             <TextField
-              key={key}
-              name={key}
-              autoComplete={key}
+              key={name}
+              name={name}
+              autoComplete={name}
               size="medium"
               required
               fullWidth
-              label={key}
-              type={key === 'password' ? 'password' : 'text'}
-              value={value}
-              placeholder={`${key}을 입력해주세요.`}
-              onChange={handleChange}
+              label={label}
+              type={type}
+              value={formik.values[name as keyof typeof formik.values]}
+              placeholder={`${label}을 입력해주세요.`}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.touched[name as keyof typeof formik.touched] && Boolean(formik.errors[name as keyof typeof formik.errors])}
+              helperText={formik.touched[name as keyof typeof formik.touched] && formik.errors[name as keyof typeof formik.errors]}
               sx={{
                 '& .MuiOutlinedInput-input:autofill': {
                   WebkitBoxShadow: (theme) => `0 0 0 1000px ${theme.palette.background.paper} inset`,
@@ -77,7 +138,7 @@ const Signup: React.FC<SignupProps> = () => {
           ))}
           submitText="회원가입"
           onSubmit={handleSubmit}
-          signupPath="/login"
+          signupPath="/auth/login"
           signupText="이미 계정이 있으신가요?"
         />
       </Container>

@@ -2,7 +2,7 @@
 
 import { GetMeResponse } from '@/models/GetMeResponse';
 import { Box, LinearProgress, Stack, Typography } from '@mui/material';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { createContext, useCallback, useContext, useState } from 'react';
 import { AuthenticationContext } from './AuthenticationContext';
 
@@ -23,14 +23,33 @@ const routerMap: (pathname: string, user: GetMeResponse | null) => string = (pat
   return '서비스 로드 중...';
 };
 
+// export const protectedRouterMap = (pathname: string, user: GetMeResponse | null) => {
+//   if (user) {
+//     if (/^\/auth\/login$/.test(pathname) || /^\/auth\/signup$/.test(pathname) || /^\/auth\/reset-password$/.test(pathname)) return false;
+//     return true;
+//   } else {
+//     if (/^\/survey\/.+$/.test(pathname)) return false;
+//     return true;
+//   }
+// };
+
 interface LoadingProviderProps {
   children: React.ReactNode;
 }
 export const LoadingProvider: React.FC<LoadingProviderProps> = ({ children }) => {
+  const router = useRouter();
   const { user } = useContext(AuthenticationContext);
   const pathname = usePathname();
   const [loading, setLoading] = useState(true);
   const [loadingText, setLoadingText] = useState(routerMap(pathname, user));
+
+  // useLayoutEffect(() => {
+  //   if (!protectedRouterMap(pathname, user)) {
+  //     router.push('/');
+  //   } else {
+  //     router.push('/auth/login');
+  //   }
+  // }, [pathname, user]);
 
   const startLoading = useCallback(
     (loadingText?: string) => {

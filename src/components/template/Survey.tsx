@@ -56,10 +56,10 @@ const SurveySchema = Yup.object().shape({
       id: Yup.number().required(),
       title: Yup.string().required('질문 제목은 필수입니다.'),
       description: Yup.string(),
-      questionType: Yup.string().required(),
+      inputType: Yup.string().required(),
       dataType: Yup.string().required(),
-      required: Yup.boolean().required(),
-      isAnswered: Yup.boolean().required(),
+      isRequired: Yup.boolean().required(),
+      // isAnswered: Yup.boolean().required(),
       options: Yup.array().of(
         Yup.object().shape({
           id: Yup.number().required(),
@@ -104,10 +104,7 @@ const Survey: React.FC = () => {
     onSubmit: async (values) => {
       for (let i = 0; i < values.questions.length; i++) {
         const question = values.questions[i];
-        if (
-          (question.questionType === InputType.SingleChoice || question.questionType === InputType.MultipleChoice) &&
-          question.options?.length === 0
-        ) {
+        if ((question.inputType === InputType.SingleChoice || question.inputType === InputType.MultipleChoice) && question.options?.length === 0) {
           formik.setFieldTouched(`questions[${i}].options`, true);
           formik.setFieldError(`questions[${i}].options`, '최소 1개의 옵션이 필요합니다.');
           return;
@@ -157,17 +154,17 @@ const Survey: React.FC = () => {
   }, [formik.errors, formik.touched]);
 
   // --- HANDLERS ---
-  const handleAddQuestion = (questionType: InputType, dataType?: DataType) => {
-    const isSelectable = questionType === InputType.SingleChoice || questionType === InputType.MultipleChoice;
+  const handleAddQuestion = (inputType: InputType, dataType?: DataType) => {
+    const isSelectable = inputType === InputType.SingleChoice || inputType === InputType.MultipleChoice;
     const newQuestion: Omit<AllQuestion, 'answers'> = {
       id: Date.now(),
       title: '',
       description: '',
-      questionType,
+      inputType,
       dataType: dataType || DataType.Text,
-      required: false,
+      isRequired: false,
       // isAnswered: false,
-      options: isSelectable ? [{ id: 1, label: '' }] : [],
+      options: isSelectable ? [{ id: Date.now(), label: '' }] : [],
       // answers: new Map(),
     };
     formik.setFieldValue('questions', [...formik.values.questions, newQuestion]);
@@ -240,9 +237,9 @@ const Survey: React.FC = () => {
                 index={index + 1}
                 title={question.title}
                 description={question.description}
-                questionType={question.questionType}
+                inputType={question.inputType}
                 dataType={question.dataType}
-                required={question.required}
+                isRequired={question.isRequired}
                 options={question.options}
                 questions={formik.values.questions}
                 setFieldValue={formik.setFieldValue}

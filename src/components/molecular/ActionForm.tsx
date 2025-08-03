@@ -1,5 +1,6 @@
 import ActionButton from '@components/atom/ActionButton';
 import { Stack } from '@mui/material';
+import { useRouter } from 'next/navigation';
 
 interface ActionFormProps {
   title: React.ReactNode;
@@ -10,6 +11,7 @@ interface ActionFormProps {
   signupText?: string;
 }
 const ActionForm: React.FC<ActionFormProps> = ({ title, onSubmit, submitText, slots, signupPath, signupText }) => {
+  const router = useRouter();
   return (
     <Stack
       p={5}
@@ -31,7 +33,7 @@ const ActionForm: React.FC<ActionFormProps> = ({ title, onSubmit, submitText, sl
           {submitText}
         </ActionButton>
         {signupPath && (
-          <ActionButton size="xlarge" variant="text" fullWidth type="button">
+          <ActionButton size="xlarge" variant="text" fullWidth type="button" onClick={() => router.push(signupPath)}>
             {signupText}
           </ActionButton>
         )}
