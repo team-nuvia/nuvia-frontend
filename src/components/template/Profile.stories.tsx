@@ -4,6 +4,7 @@ import { parameters } from '.storybook/variables';
 import { AuthenticationContext } from '@context/AuthenticationContext';
 import { Stack } from '@mui/material';
 import { UserRole } from '@share/enums/user-role';
+import { DateFormat } from '@util/dateFormat';
 import { PartialStoryFn } from 'storybook/internal/csf';
 import Profile from './Profile';
 
@@ -31,12 +32,13 @@ export const Default: Story = {
               id: 1,
               name: 'Devkimson',
               email: 'devkims@gmail.com',
-              role: UserRole.User,
-              createdAt: new Date(),
-              updatedAt: new Date(),
+              role: UserRole.Viewer,
+              createdAt: DateFormat.toKST(),
+              updatedAt: DateFormat.toKST(),
+              profileImageUrl: null,
             },
             setUser: () => {},
-            clearUser: () => {},
+            clearUser: () => Promise.resolve(),
             fetchUser: () => Promise.resolve(),
           }}
         >

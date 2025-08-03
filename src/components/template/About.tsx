@@ -1,11 +1,9 @@
 'use client';
 
 import CommonText from '@/components/atom/CommonText';
-import { Box, Container, Paper, Stack, styled, Theme, Typography } from '@mui/material';
+import { Box, Container, Paper, Stack, styled, Typography, useTheme } from '@mui/material';
 
-const SectionContainer = styled(Paper, {
-  shouldForwardProp: (prop) => prop !== 'theme',
-})<{ theme: Theme }>(({ theme }) => ({
+const SectionContainer = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(4),
   marginBottom: theme.spacing(3),
   borderRadius: 16,
@@ -13,9 +11,7 @@ const SectionContainer = styled(Paper, {
   border: '1px solid rgba(0, 0, 0, 0.05)',
 }));
 
-const ColorSection = styled(SectionContainer, {
-  shouldForwardProp: (prop) => prop !== 'color',
-})<{ color: string }>(({ color }) => ({
+const ColorSection = styled(SectionContainer)<{ color: string }>(({ color }) => ({
   borderLeft: `6px solid ${color}`,
   '&:hover': {
     transform: 'translateY(-2px)',
@@ -24,17 +20,13 @@ const ColorSection = styled(SectionContainer, {
   },
 }));
 
-const HighlightText = styled(Typography, {
-  shouldForwardProp: (prop) => prop !== 'theme',
-})<{ theme: Theme }>(({ theme }) => ({
+const HighlightText = styled(Typography)(({ theme }) => ({
   fontWeight: 600,
   color: theme.palette.primary.main,
   marginBottom: theme.spacing(2),
 }));
 
-const ProblemList = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'theme',
-})<{ theme: Theme }>(({ theme }) => ({
+const ProblemList = styled(Box)(({ theme }) => ({
   margin: theme.spacing(2, 0),
   '& > div': {
     marginBottom: theme.spacing(1),
@@ -50,9 +42,7 @@ const ProblemList = styled(Box, {
   },
 }));
 
-const FeatureList = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'theme',
-})<{ theme: Theme }>(({ theme }) => ({
+const FeatureList = styled(Box)(({ theme }) => ({
   margin: theme.spacing(2, 0),
   '& > div': {
     marginBottom: theme.spacing(1.5),
@@ -74,7 +64,7 @@ const About: React.FC = () => {
     <Container maxWidth="md" sx={{ py: 6 }}>
       <Stack gap={4}>
         {/* 1. Nuvia는 이런 서비스입니다 */}
-        <ColorSection theme={theme} color="#00A344">
+        <ColorSection color="#00A344">
           <Typography variant="h4" component="h1" gutterBottom thickness="bold" color="primary">
             🟢 Nuvia는 이런 서비스입니다
           </Typography>
@@ -90,7 +80,7 @@ const About: React.FC = () => {
         </ColorSection>
 
         {/* 2. 설문, 왜 이렇게 복잡할까요? */}
-        <ColorSection theme={theme} color="#F57C00">
+        <ColorSection color="#F57C00">
           <Typography variant="h4" component="h2" gutterBottom thickness="bold" color="primary">
             🟡 설문, 왜 이렇게 복잡할까요?
           </Typography>
@@ -109,7 +99,7 @@ const About: React.FC = () => {
         </ColorSection>
 
         {/* 3. 그래서 이렇게 만들었어요 */}
-        <ColorSection theme={theme} color="#FF9800">
+        <ColorSection color="#FF9800">
           <Typography variant="h4" component="h3" gutterBottom thickness="bold" color="primary">
             🟠 그래서 이렇게 만들었어요
           </Typography>
@@ -126,7 +116,7 @@ const About: React.FC = () => {
         </ColorSection>
 
         {/* 4. 우리는 이렇게 만들고 싶었습니다 */}
-        <ColorSection theme={theme} color="#2196F3">
+        <ColorSection color="#2196F3">
           <Typography variant="h4" component="h4" gutterBottom thickness="bold" color="primary">
             🟣 우리는 이렇게 만들고 싶었습니다
           </Typography>
@@ -138,13 +128,13 @@ const About: React.FC = () => {
           <CommonText variant="body1" sx={{ mb: 2, lineHeight: 1.8 }}>
             Nuvia는 설문 데이터를 단순히 '모으는 도구'가 아니라
           </CommonText>
-          <HighlightText variant="h6" component="div" sx={{ textAlign: 'center', fontStyle: 'italic' }}>
+          <HighlightText variant="h6" sx={{ textAlign: 'center', fontStyle: 'italic' }}>
             **'소통을 위한 기반'**으로 생각합니다.
           </HighlightText>
         </ColorSection>
 
         {/* 5. 조금씩 나아가겠습니다 */}
-        <ColorSection theme={theme} color="#9C27B0">
+        <ColorSection color="#9C27B0">
           <Typography variant="h4" component="h5" gutterBottom thickness="bold" color="primary">
             🟣 조금씩 나아가겠습니다
           </Typography>
@@ -160,7 +150,7 @@ const About: React.FC = () => {
         </ColorSection>
 
         {/* 6. 만든 사람에 대하여 */}
-        <ColorSection theme={theme} color="#757575">
+        <ColorSection color="#757575">
           <Typography variant="h4" component="h6" gutterBottom thickness="bold" color="primary">
             ⚪ 만든 사람에 대하여
           </Typography>
