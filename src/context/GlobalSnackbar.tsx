@@ -15,10 +15,11 @@ export const GlobalSnackbar = ({ children }: { children: React.ReactNode }) => {
   const addNotice = (message: string, variant: VariantType = 'default') => {
     enqueueSnackbar(message, {
       variant,
-      preventDuplicate: true,
+      preventDuplicate: false,
       style: { zIndex: 100000 },
       autoHideDuration: 3000,
       anchorOrigin: { vertical: 'bottom', horizontal: 'center' },
+      transitionDuration: 150,
     });
   };
 

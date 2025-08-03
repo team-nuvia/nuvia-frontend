@@ -1,5 +1,6 @@
 import { QUESTION_DEFAULT_TYPE_LIST } from '@common/global';
 import ActionButton from '@components/atom/ActionButton';
+import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditSquareIcon from '@mui/icons-material/EditSquare';
 import {
@@ -21,7 +22,7 @@ import {
 import { DataType } from '@share/enums/data-type';
 import { InputType } from '@share/enums/input-type';
 import { IQuestion, IQuestionOption } from '@share/interface/iquestion';
-import { useMemo } from 'react';
+import { useContext, useMemo } from 'react';
 
 const DATA_TYPE_MAP = {
   [DataType.Text]: '텍스트',
@@ -49,6 +50,8 @@ interface QuestionCardProps {
   options?: IQuestionOption[];
   questions: IQuestion[];
   setFieldValue: (field: string, value: any) => void;
+  setFieldError: (field: string, message: string) => void;
+  setFieldTouched: (field: string, touched?: boolean) => void;
   touched?: { [key: string]: { [key: string]: boolean } };
   errors?: { [key: string]: { [key: string]: any } };
 }
@@ -64,9 +67,12 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   options,
   questions,
   setFieldValue,
+  setFieldError,
+  setFieldTouched,
   touched,
   errors,
 }) => {
+  const { addNotice } = useContext(GlobalSnackbarContext);
   const inputValueType = useMemo(() => {
     switch (dataType) {
       case DataType.Image:
@@ -98,17 +104,27 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   const questionTouched = touched?.questions?.[questionIndex] || false;
   const questionErrors = errors?.questions?.[questionIndex] || {};
   const titleError = questionErrors.title;
-  console.log('🚀 ~ QuestionCard ~ titleError:', title, titleError);
   const optionsErrors = questionErrors.options || [];
-  console.log('🚀 ~ QuestionCard ~ optionsErrors:', optionsErrors);
 
   // Formik과 직접 연동된 핸들러들
   const handleQuestionChange = (field: keyof IQuestion, value: any) => {
     if (questionIndex !== -1) {
       const updatedQuestions = [...questions];
+      const updateData: Partial<IQuestion> = {};
+
+      if (field === 'questionType') {
+        const isSelectable = value === InputType.SingleChoice || value === InputType.MultipleChoice;
+        Object.assign(updateData, {
+          dataType: DataType.Text,
+          options: isSelectable ? [{ id: 1, label: '' }] : [],
+        });
+      }
+
+      updateData[field] = value;
+
       updatedQuestions[questionIndex] = {
         ...updatedQuestions[questionIndex],
-        [field]: value,
+        ...updateData,
       };
       setFieldValue('questions', updatedQuestions);
     }
@@ -145,6 +161,16 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   };
 
   const handleRemoveOption = (optionId: number) => {
+    if (questions[questionIndex].options?.length === 1) {
+      // 해당 질문의 options 필드를 touched로 설정
+      setFieldTouched(`questions.${questionIndex}.options`, true);
+      // 에러 메시지 설정
+      setFieldError(`questions.${questionIndex}.options`, '최소 1개의 옵션이 필요합니다.');
+
+      addNotice('최소 1개의 옵션이 필요합니다.', 'error');
+      return; // 옵션 제거하지 않고 함수 종료
+    }
+
     if (questionIndex !== -1) {
       const updatedQuestions = [...questions];
       const question = updatedQuestions[questionIndex];
@@ -154,6 +180,9 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
         options: (question.options || []).filter((opt) => opt.id !== optionId),
       };
       setFieldValue('questions', updatedQuestions);
+
+      // 옵션 제거 후 에러가 있었다면 클리어
+      setFieldError(`questions.${questionIndex}.options`, '');
     }
   };
 
@@ -218,6 +247,11 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       <Box sx={{ mt: 3 }}>
         {(questionType === InputType.SingleChoice || questionType === InputType.MultipleChoice) && (
           <Box>
+            {/* 옵션 에러 메시지 표시 */}
+            {/* {questionTouched && questionErrors?.options && (
+              <Box sx={{ color: 'error.main', fontSize: '0.75rem', mb: 1 }}>{questionErrors?.options}</Box>
+            )} */}
+
             {(options || []).map((option, optIndex) => (
               <Grid container spacing={1} key={option.id} alignItems="center">
                 <Grid size={{ xs: 11 }}>
@@ -244,6 +278,9 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             <Button onClick={handleAddOption} sx={{ mt: 1 }}>
               옵션 추가
             </Button>
+            {options?.length === 0 && questionTouched && (
+              <Box sx={{ color: 'error.main', fontSize: '0.75rem', mb: 1 }}>최소 1개의 옵션이 필요합니다.</Box>
+            )}
           </Box>
         )}
       </Box>

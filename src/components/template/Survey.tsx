@@ -98,6 +98,17 @@ const Survey: React.FC = () => {
     initialValues,
     validationSchema: SurveySchema,
     onSubmit: async (values) => {
+      for (let i = 0; i < values.questions.length; i++) {
+        const question = values.questions[i];
+        if (question.options?.length === 0) {
+          formik.setFieldTouched(`questions[${i}].options`, true);
+          formik.setFieldError(`questions[${i}].options`, '최소 1개의 옵션이 필요합니다.');
+          console.log('🚀 ~ Survey ~ question:', question.id);
+          return;
+        }
+      }
+
+      console.log('🚀 ~ Survey ~ values:', values);
       setIsSubmitting(true);
       setError(null);
       setSuccess(null);
@@ -144,6 +155,7 @@ const Survey: React.FC = () => {
 
   // --- HANDLERS ---
   const handleAddQuestion = (questionType: InputType, dataType?: DataType) => {
+    const isSelectable = questionType === InputType.SingleChoice || questionType === InputType.MultipleChoice;
     const newQuestion: AllQuestion = {
       id: Date.now(),
       title: '',
@@ -152,7 +164,7 @@ const Survey: React.FC = () => {
       dataType: dataType || DataType.Text,
       required: false,
       isAnswered: false,
-      options: [{ id: 1, label: '' }],
+      options: isSelectable ? [{ id: 1, label: '' }] : [],
       answers: new Map(),
     };
     formik.setFieldValue('questions', [...formik.values.questions, newQuestion]);
@@ -231,6 +243,8 @@ const Survey: React.FC = () => {
                 options={question.options}
                 questions={formik.values.questions}
                 setFieldValue={formik.setFieldValue}
+                setFieldError={formik.setFieldError}
+                setFieldTouched={formik.setFieldTouched}
                 touched={formik.touched as { [key: string]: { [key: string]: boolean } }}
                 errors={formik.errors as { [key: string]: { [key: string]: any } }}
               />
