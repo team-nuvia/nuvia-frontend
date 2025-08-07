@@ -1,5 +1,3 @@
-'use client';
-
 import { GetMeResponse } from '@/models/GetMeResponse';
 import { snapApi } from '.';
 

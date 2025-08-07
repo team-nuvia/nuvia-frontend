@@ -17,7 +17,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { DataType } from '@share/enums/data-type';
-import { InputType } from '@share/enums/input-type';
+import { QuestionType } from '@share/enums/question-type';
 import { IQuestionOption } from '@share/interface/iquestion';
 import dayjs from 'dayjs';
 import { useMemo } from 'react';
@@ -41,9 +41,9 @@ interface ResponseCardProps {
   index: number;
   title: string;
   description: string;
-  questionType: InputType;
+  questionType: QuestionType;
   dataType: DataType;
-  required: boolean;
+  isRequired: boolean;
   answers?: Map<number, any>;
   options?: IQuestionOption[];
   handleOptionChange: (
@@ -60,7 +60,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
   description,
   questionType,
   dataType,
-  required,
+  isRequired,
   answers,
   options,
   handleOptionChange,
@@ -291,18 +291,18 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
             <Chip
               size="small"
               color={
-                questionType === InputType.MultipleChoice
+                questionType === QuestionType.MultipleChoice
                   ? 'primary'
                   : 'default'
               }
               label={
-                questionType === InputType.MultipleChoice ? '다중' : '단일'
+                questionType === QuestionType.MultipleChoice ? '다중' : '단일'
               }
             />
             <Chip
               size="small"
-              color={required ? 'error' : 'default'}
-              label={required ? '필수' : '선택'}
+              color={isRequired ? 'error' : 'default'}
+              label={isRequired ? '필수' : '선택'}
             />
           </Stack>
         </Grid>
@@ -312,8 +312,8 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
       </Grid>
 
       <Box sx={{ mt: 3 }}>
-        {questionType === InputType.ShortText && dynamicField}
-        {questionType === InputType.LongText && (
+        {questionType === QuestionType.ShortText && dynamicField}
+        {questionType === QuestionType.LongText && (
           <TextField
             fullWidth
             multiline
@@ -327,7 +327,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
             onChange={(e) => handleOptionChange(id, 1, e.target.value)}
           />
         )}
-        {questionType === InputType.SingleChoice && (
+        {questionType === QuestionType.SingleChoice && (
           <FormControl component="fieldset" fullWidth /* error={hasError} */>
             <RadioGroup
               value={answers?.get(1) || ''}
@@ -356,7 +356,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
             </RadioGroup>
           </FormControl>
         )}
-        {questionType === InputType.MultipleChoice && (
+        {questionType === QuestionType.MultipleChoice && (
           <FormControl component="fieldset" fullWidth /* error={hasError} */>
             <FormGroup>
               {options?.map((option) => (
@@ -397,8 +397,8 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
             </FormGroup>
           </FormControl>
         )}
-        {/* {(questionType === InputType.SingleChoice ||
-          questionType === InputType.MultipleChoice) && (
+        {/* {(questionType === QuestionType.SingleChoice ||
+          questionType === QuestionType.MultipleChoice) && (
           <FormGroup>
             {(options || []).map((option) => (
               <FormControlLabel
@@ -408,7 +408,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
                   <Checkbox
                     checked={answers?.get(option.id) ?? false}
                     onChange={(e) => {
-                      // if (questionType === InputType.SingleChoice) {
+                      // if (questionType === QuestionType.SingleChoice) {
                       //   handleOptionClear();
                       // }
                       handleOptionChange(id, option.id, e.target.checked);

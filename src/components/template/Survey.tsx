@@ -22,6 +22,8 @@ import {
   ListItemIcon,
   ListItemText,
   Paper,
+  Radio,
+  RadioGroup,
   SpeedDial,
   SpeedDialAction,
   SpeedDialIcon,
@@ -34,7 +36,8 @@ import {
 import { useTheme } from '@mui/material/styles';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { DataType } from '@share/enums/data-type';
-import { InputType } from '@share/enums/input-type';
+import { QuestionType } from '@share/enums/question-type';
+import { SurveyStatus } from '@share/enums/survey-status';
 import { AllQuestion } from '@share/interface/iquestion';
 import dayjs from 'dayjs';
 import { useFormik } from 'formik';
@@ -56,7 +59,7 @@ const SurveySchema = Yup.object().shape({
       id: Yup.number().required(),
       title: Yup.string().required('질문 제목은 필수입니다.'),
       description: Yup.string(),
-      inputType: Yup.string().required(),
+      questionType: Yup.string().required(),
       dataType: Yup.string().required(),
       isRequired: Yup.boolean().required(),
       // isAnswered: Yup.boolean().required(),
@@ -77,6 +80,7 @@ const initialValues: QuestionInitialValues = {
   description: '',
   expiresAt: null as Date | null,
   isPublic: true,
+  status: SurveyStatus.Draft,
   questions: [] as AllQuestion[],
 };
 
@@ -104,7 +108,10 @@ const Survey: React.FC = () => {
     onSubmit: async (values) => {
       for (let i = 0; i < values.questions.length; i++) {
         const question = values.questions[i];
-        if ((question.inputType === InputType.SingleChoice || question.inputType === InputType.MultipleChoice) && question.options?.length === 0) {
+        if (
+          (question.questionType === QuestionType.SingleChoice || question.questionType === QuestionType.MultipleChoice) &&
+          question.options?.length === 0
+        ) {
           formik.setFieldTouched(`questions[${i}].options`, true);
           formik.setFieldError(`questions[${i}].options`, '최소 1개의 옵션이 필요합니다.');
           return;
@@ -118,6 +125,7 @@ const Survey: React.FC = () => {
         description: values.description,
         expiresAt: values.expiresAt || null,
         isPublic: values.isPublic,
+        status: values.status,
         questions: values.questions.map(({ id, ...rest }) => ({
           ...rest,
           options: (rest.options || []).map(({ id, ...optRest }) => optRest), // Remove client-side IDs
@@ -154,13 +162,13 @@ const Survey: React.FC = () => {
   }, [formik.errors, formik.touched]);
 
   // --- HANDLERS ---
-  const handleAddQuestion = (inputType: InputType, dataType?: DataType) => {
-    const isSelectable = inputType === InputType.SingleChoice || inputType === InputType.MultipleChoice;
+  const handleAddQuestion = (questionType: QuestionType, dataType?: DataType) => {
+    const isSelectable = questionType === QuestionType.SingleChoice || questionType === QuestionType.MultipleChoice;
     const newQuestion: Omit<AllQuestion, 'answers'> = {
       id: Date.now(),
       title: '',
       description: '',
-      inputType,
+      questionType,
       dataType: dataType || DataType.Text,
       isRequired: false,
       // isAnswered: false,
@@ -227,6 +235,17 @@ const Survey: React.FC = () => {
                   control={<Switch checked={formik.values.isPublic} onChange={formik.handleChange} name="isPublic" />}
                   label="응답 공개 여부"
                 />
+
+                <RadioGroup
+                  row
+                  aria-labelledby="status-radio-buttons-group-label"
+                  name="status"
+                  value={formik.values.status}
+                  onChange={formik.handleChange}
+                >
+                  <FormControlLabel value={SurveyStatus.Draft} control={<Radio />} label="초안" />
+                  <FormControlLabel value={SurveyStatus.Active} control={<Radio />} label="발행" />
+                </RadioGroup>
               </Box>
             </Paper>
 
@@ -237,7 +256,7 @@ const Survey: React.FC = () => {
                 index={index + 1}
                 title={question.title}
                 description={question.description}
-                inputType={question.inputType}
+                questionType={question.questionType}
                 dataType={question.dataType}
                 isRequired={question.isRequired}
                 options={question.options}
@@ -251,7 +270,7 @@ const Survey: React.FC = () => {
             ))}
 
             <Box sx={{ my: 4, display: 'flex', justifyContent: 'space-between' }}>
-              <Button variant="outlined" startIcon={<AddCircleOutlineIcon />} onClick={() => handleAddQuestion(InputType.ShortText)}>
+              <Button variant="outlined" startIcon={<AddCircleOutlineIcon />} onClick={() => handleAddQuestion(QuestionType.ShortText)}>
                 질문 추가
               </Button>
               <Stack direction="row" gap={2} alignItems="center">
@@ -278,13 +297,13 @@ const Survey: React.FC = () => {
                       disablePadding
                       onClick={() =>
                         handleAddQuestion(
-                          QUESTION_DATA_TYPE_MAP[key as InputType | DataType].key,
-                          QUESTION_DATA_TYPE_MAP[key as InputType | DataType].type,
+                          QUESTION_DATA_TYPE_MAP[key as QuestionType | DataType].key,
+                          QUESTION_DATA_TYPE_MAP[key as QuestionType | DataType].type,
                         )
                       }
                     >
                       <ListItemButton>
-                        <ListItemIcon>{QUESTION_TYPE_ICONS[key as InputType]}</ListItemIcon>
+                        <ListItemIcon>{QUESTION_TYPE_ICONS[key as QuestionType]}</ListItemIcon>
                         <ListItemText primary={value} />
                       </ListItemButton>
                     </ListItem>
@@ -304,12 +323,12 @@ const Survey: React.FC = () => {
                   key={key}
                   icon={icon}
                   slotProps={{
-                    tooltip: { title: QUESTION_TYPE_MAP[key as InputType] },
+                    tooltip: { title: QUESTION_TYPE_MAP[key as QuestionType] },
                   }}
                   onClick={() =>
                     handleAddQuestion(
-                      QUESTION_DATA_TYPE_MAP[key as InputType | DataType].key,
-                      QUESTION_DATA_TYPE_MAP[key as InputType | DataType].type,
+                      QUESTION_DATA_TYPE_MAP[key as QuestionType | DataType].key,
+                      QUESTION_DATA_TYPE_MAP[key as QuestionType | DataType].type,
                     )
                   }
                 />

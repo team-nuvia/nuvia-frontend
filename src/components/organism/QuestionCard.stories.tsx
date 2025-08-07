@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 import { DataType } from '@share/enums/data-type';
-import { InputType } from '@share/enums/input-type';
+import { QuestionType } from '@share/enums/question-type';
 import QuestionCard from './QuestionCard';
 
 const meta = {
@@ -18,8 +18,15 @@ export const Default: Story = {
     index: 1,
     title: 'Question 1',
     description: 'Description 1',
-    questionType: InputType.ShortText,
+    questionType: QuestionType.ShortText,
     dataType: DataType.Text,
-    required: true,
+    isRequired: true,
+    options: [],
+    questions: [],
+    setFieldValue: () => {},
+    setFieldError: () => {},
+    setFieldTouched: () => {},
+    touched: {},
+    errors: {},
   },
 };

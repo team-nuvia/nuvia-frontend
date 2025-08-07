@@ -37,7 +37,7 @@ interface Question {
   title: string;
   description?: string;
   options?: string[];
-  required: boolean;
+  isRequired: boolean;
   min?: number;
   max?: number;
   step?: number;
@@ -87,21 +87,21 @@ const mockSurvey: Survey = {
       title: '저희 서비스를 어떻게 알게 되셨나요?',
       description: '가장 주된 경로를 선택해주세요',
       options: ['검색엔진 (구글, 네이버 등)', '소셜미디어 (인스타그램, 페이스북 등)', '지인 추천', '온라인 광고', '블로그/리뷰', '기타'],
-      required: true,
+      isRequired: true,
     },
     {
       id: '2',
       type: 'rating',
       title: '전반적인 서비스 만족도를 평가해주세요',
       description: '1점(매우 불만족) ~ 5점(매우 만족)',
-      required: true,
+      isRequired: true,
     },
     {
       id: '3',
       type: 'multiple',
       title: '어떤 기능들을 주로 사용하시나요? (복수 선택 가능)',
       options: ['설문 생성', '응답 수집', '통계 분석', '데이터 내보내기', '팀 협업', '템플릿 사용'],
-      required: false,
+      isRequired: false,
     },
     {
       id: '4',
@@ -111,21 +111,21 @@ const mockSurvey: Survey = {
       min: 0,
       max: 10,
       step: 1,
-      required: true,
+      isRequired: true,
     },
     {
       id: '5',
       type: 'text',
       title: '개선이 필요한 부분이나 추가하고 싶은 기능이 있다면 자유롭게 작성해주세요',
       description: '구체적인 의견일수록 서비스 개선에 큰 도움이 됩니다',
-      required: false,
+      isRequired: false,
     },
     {
       id: '6',
       type: 'email',
       title: '추후 서비스 업데이트 소식을 받고 싶으시다면 이메일을 입력해주세요',
       description: '선택사항이며, 마케팅 목적으로만 사용됩니다',
-      required: false,
+      isRequired: false,
     },
   ],
 };
@@ -170,7 +170,7 @@ export default function SurveyDetail() {
     const answer = answers[currentQuestion.id];
     const newErrors = { ...errors };
 
-    if (currentQuestion.required) {
+    if (currentQuestion.isRequired) {
       if (answer === undefined || answer === '' || (Array.isArray(answer) && answer.length === 0)) {
         newErrors[currentQuestion.id] = '이 질문은 필수입니다';
         setErrors(newErrors);
@@ -622,7 +622,7 @@ export default function SurveyDetail() {
                     <Typography variant="h5" sx={{ fontWeight: 600, flexGrow: 1 }}>
                       {currentStep + 1}. {currentQuestion.title}
                     </Typography>
-                    {currentQuestion.required && <Chip label="필수" size="small" color="primary" />}
+                    {currentQuestion.isRequired && <Chip label="필수" size="small" color="primary" />}
                   </Box>
 
                   {currentQuestion.description && (

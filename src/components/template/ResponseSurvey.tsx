@@ -8,8 +8,9 @@ import { Alert, Box, Button, Chip, CircularProgress, Container, Grid, Paper, Sna
 import { useTheme } from '@mui/material/styles';
 import { TimeIcon } from '@mui/x-date-pickers/icons';
 import { IResponseSurvey } from '@share/dto/response-survey';
-import { InputType } from '@share/enums/input-type';
+import { QuestionType } from '@share/enums/question-type';
 import { AllQuestion } from '@share/interface/iquestion';
+import { DateFormat } from '@util/dateFormat';
 import { isEmpty } from '@util/isEmpty';
 import axios from 'axios';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -52,7 +53,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
     setQuestions((questions) =>
       questions.map((q) => {
         if (q.id === questionId) {
-          if (q.questionType === InputType.SingleChoice) {
+          if (q.questionType === QuestionType.SingleChoice) {
             q.answers.clear();
             q.answers.set(optionId, value);
           } else {
@@ -78,7 +79,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
     );
     if (!isAllAnswered) {
       for (const q of questions) {
-        if (q.required && !q.isAnswered) {
+        if (q.isRequired && !q.isAnswered) {
           setErrors((errors) => {
             const newErrors = { ...errors };
             newErrors[q.id] = '이 질문은 필수입니다';
@@ -139,7 +140,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
     const isAnswered = answers.values().some((item) => !isEmpty(item));
     const newErrors = { ...errors };
 
-    if (currentQuestion.required) {
+    if (currentQuestion.isRequired) {
       if (!isAnswered || answers.size === 0) {
         newErrors[currentQuestion.id] = '이 질문은 필수입니다';
         setErrors(newErrors);
@@ -185,7 +186,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
     setDirection('previous');
     setTimeout(() => {
       setCurrentStep((prev) => Math.max(0, prev - 1));
-      if (!questions[currentStep - 1].required) {
+      if (!questions[currentStep - 1].isRequired) {
         if (questions[currentStep - 1].answers.values().some((item) => isEmpty(item)) || questions[currentStep - 1].answers.size === 0) {
           questions[currentStep - 1].isAnswered = false;
           setQuestions(questions);
@@ -219,7 +220,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
                 <Stack direction="row" alignItems="center" gap={1}>
                   <Stack direction="row" alignItems="center" gap={1}>
                     <Chip size="small" icon={<Category />} label={survey.category} />
-                    <Chip size="small" icon={<TimeIcon />} label={survey.expiresAt} />
+                    <Chip size="small" icon={<TimeIcon />} label={DateFormat.toKST('YYYY-MM-DD HH:mm', survey.expiresAt || new Date())} />
                     <Chip size="small" icon={<TimeIcon />} label={estimatedTime} />
                     <Chip size="small" icon={<People />} label={`${survey.participants}명`} />
                   </Stack>
@@ -263,7 +264,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
                     description={currentQuestion.description}
                     questionType={currentQuestion.questionType}
                     dataType={currentQuestion.dataType}
-                    required={currentQuestion.required}
+                    isRequired={currentQuestion.isRequired}
                     options={currentQuestion.options}
                     answers={currentQuestion.answers}
                     handleOptionChange={handleOptionChange}

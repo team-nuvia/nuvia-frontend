@@ -1,4 +1,5 @@
 import '@mui/material/styles';
+import { SurveyStatus } from '@share/enums/survey-status';
 import { AllQuestion } from '@share/interface/iquestion';
 
 export declare global {
@@ -11,6 +12,7 @@ export declare global {
     description: string;
     expiresAt: Date | null;
     isPublic: boolean;
+    status: SurveyStatus;
     questions: AllQuestion[];
   }
 

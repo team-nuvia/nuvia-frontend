@@ -20,7 +20,7 @@ import {
   TextField,
 } from '@mui/material';
 import { DataType } from '@share/enums/data-type';
-import { InputType } from '@share/enums/input-type';
+import { QuestionType } from '@share/enums/question-type';
 import { IQuestion, IQuestionOption } from '@share/interface/iquestion';
 import { useContext, useMemo } from 'react';
 
@@ -43,7 +43,7 @@ interface QuestionCardProps {
   index: number;
   title: string;
   description: string;
-  inputType: InputType;
+  questionType: QuestionType;
   dataType: DataType;
   isRequired: boolean;
   value?: string;
@@ -61,7 +61,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   index,
   title,
   description,
-  inputType,
+  questionType,
   dataType,
   isRequired,
   options,
@@ -112,8 +112,8 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       const updatedQuestions = [...questions];
       const updateData: Partial<IQuestion> = {};
 
-      if (field === 'inputType') {
-        const isSelectable = value === InputType.SingleChoice || value === InputType.MultipleChoice;
+      if (field === 'questionType') {
+        const isSelectable = value === QuestionType.SingleChoice || value === QuestionType.MultipleChoice;
         Object.assign(updateData, {
           dataType: DataType.Text,
           options: isSelectable ? [{ id: 1, label: '' }] : [],
@@ -222,8 +222,8 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
           <Select
             fullWidth
             size="small"
-            value={inputType || InputType.ShortText}
-            onChange={(e) => handleQuestionChange('inputType', e.target.value as InputType)}
+            value={questionType || QuestionType.ShortText}
+            onChange={(e) => handleQuestionChange('questionType', e.target.value as QuestionType)}
           >
             {Object.entries(QUESTION_DEFAULT_TYPE_LIST).map(([key, value]) => (
               <MenuItem key={key} value={key}>
@@ -245,7 +245,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       </Grid>
 
       <Box sx={{ mt: 3 }}>
-        {(inputType === InputType.SingleChoice || inputType === InputType.MultipleChoice) && (
+        {(questionType === QuestionType.SingleChoice || questionType === QuestionType.MultipleChoice) && (
           <Box>
             {/* 옵션 에러 메시지 표시 */}
             {/* {questionTouched && questionErrors?.options && (
@@ -285,8 +285,8 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
         )}
       </Box>
 
-      <Stack direction="row" gap={1} mt={2} alignItems="center" justifyContent={inputType === InputType.ShortText ? 'space-between' : 'flex-end'}>
-        {inputType === InputType.ShortText && (
+      <Stack direction="row" gap={1} mt={2} alignItems="center" justifyContent={questionType === QuestionType.ShortText ? 'space-between' : 'flex-end'}>
+        {questionType === QuestionType.ShortText && (
           <FormControl>
             <RadioGroup row value={dataType} onChange={(e) => handleQuestionChange('dataType', e.target.value as DataType)}>
               {Object.values(DataType).map((value) => (
