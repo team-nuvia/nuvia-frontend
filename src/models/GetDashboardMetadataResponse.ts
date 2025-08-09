@@ -1,12 +1,13 @@
 export interface GetDashboardMetadataResponse {
-  totalSurveys: number;
-  totalRespondents: number;
-  averageResponseRate: {
-    respondents: number;
-    total: number;
+  totalSurveyCount: number;
+  totalRespondentCount: number;
+  respondentIncreaseRate: {
+    previousMonthRespondentCount: number;
+    currentMonthRespondentCount: number;
   };
   planUsage: {
-    used: number;
-    total: number;
+    plan: string;
+    usage: number;
+    limit: number;
   };
 }

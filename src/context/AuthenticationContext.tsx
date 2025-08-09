@@ -29,6 +29,11 @@ const AuthenticationProvider = ({ children }: { children: React.ReactNode }) => 
 
   const fetchUser = useCallback(async () => {
     try {
+      const hasAccessToken = localStorage.getItem('access_token');
+      if (!hasAccessToken) {
+        return;
+      }
+
       const response = await getVerify();
       if (response.ok && response.payload?.verified) {
         const response = await getUsersMe();

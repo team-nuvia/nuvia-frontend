@@ -1,6 +1,7 @@
 'use client';
 
 import LoadingContext from '@/context/LodingContext';
+import { getSurveyList } from '@api/get-survey-list';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import {
   Add,
@@ -43,11 +44,13 @@ import {
   Typography,
   useTheme,
 } from '@mui/material';
+import { SurveyStatus } from '@share/enums/survey-status';
 import { SearchSurvey } from '@share/interface/search-survey';
+import { useQuery } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import type React from 'react';
-import { useContext, useLayoutEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 
 // interface Survey {
 //   id: string
@@ -71,70 +74,75 @@ const mockSurveys: SearchSurvey[] = [
     title: '2024 고객 만족도 조사',
     description: '고객 서비스 품질 개선을 위한 만족도 조사입니다.',
     status: 'active',
-    responses: 1247,
-    views: 2834,
+    responseAmount: 1247,
+    viewCount: 2834,
     createdAt: new Date('2024-01-15'),
     updatedAt: new Date('2024-01-20'),
     estimatedTime: 5,
-    questions: 10,
+    questionAmount: 10,
     category: '고객 서비스',
     isPublic: true,
+    hashedUniqueKey: '1234567890',
   },
   {
     id: 2,
     title: '신제품 출시 전 사용자 피드백',
     description: '새로운 기능에 대한 사용자들의 의견을 수집합니다.',
     status: 'active',
-    responses: 456,
-    views: 1203,
+    responseAmount: 456,
+    viewCount: 1203,
     createdAt: new Date('2024-01-10'),
     updatedAt: new Date('2024-01-18'),
     estimatedTime: 3,
-    questions: 5,
+    questionAmount: 5,
     category: '제품 개발',
     isPublic: false,
+    hashedUniqueKey: '1234567890',
   },
   {
     id: 3,
     title: '직원 만족도 설문',
     description: '회사 내부 직원들의 만족도를 측정하는 설문입니다.',
     status: 'draft',
-    responses: 0,
-    views: 0,
+    responseAmount: 0,
+    viewCount: 0,
     createdAt: new Date('2024-01-08'),
     updatedAt: new Date('2024-01-12'),
     estimatedTime: 7,
-    questions: 12,
+    questionAmount: 12,
     category: '인사',
     isPublic: false,
+    hashedUniqueKey: '1234567890',
   },
   {
     id: 4,
     title: '웹사이트 사용성 테스트',
     description: '웹사이트 개편 후 사용자 경험 평가를 위한 설문입니다.',
     status: 'closed',
-    responses: 892,
-    views: 1567,
+    responseAmount: 892,
+    viewCount: 1567,
     createdAt: new Date('2023-12-20'),
     updatedAt: new Date('2024-01-05'),
     estimatedTime: 4,
-    questions: 10,
+    questionAmount: 10,
     category: 'UX/UI',
     isPublic: true,
+    hashedUniqueKey: '1234567890',
   },
   {
     id: 5,
     title: '마케팅 캠페인 효과 분석',
     description: '최근 마케팅 캠페인의 효과를 측정하는 설문입니다.',
     status: 'active',
-    responses: 234,
-    views: 678,
+    responseAmount: 234,
+    viewCount: 678,
     createdAt: new Date('2024-01-05'),
     updatedAt: new Date('2024-01-15'),
     estimatedTime: 6,
-    questions: 8,
+    questionAmount: 8,
     category: '마케팅',
     isPublic: true,
+    hashedUniqueKey: '1234567890',
   },
 ];
 
@@ -151,22 +159,39 @@ export default function SurveyList() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const { addNotice } = useContext(GlobalSnackbarContext);
+  const { data, refetch, isLoading } = useQuery({
+    queryKey: ['surveyList'],
+    queryFn: () =>
+      getSurveyList({ page: 1, limit: 10, search: '', status: ['all', SurveyStatus.Active, SurveyStatus.Draft, SurveyStatus.Closed][selectedTab] }),
+  });
 
-  useLayoutEffect(() => {
-    const loadSurveys = async () => {
-      try {
-        // Mock API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        setSurveys(mockSurveys);
-      } catch (error) {
-        console.error('Failed to load surveys:', error);
-      } finally {
-        endLoading();
-      }
-    };
+  // useLayoutEffect(() => {
+  //   const loadSurveys = async () => {
+  //     try {
+  //       // Mock API call
+  //       await new Promise((resolve) => setTimeout(resolve, 1000));
+  //       setSurveys(mockSurveys);
+  //     } catch (error) {
+  //       console.error('Failed to load surveys:', error);
+  //     } finally {
+  //       endLoading();
+  //     }
+  //   };
 
-    loadSurveys();
-  }, []);
+  //   loadSurveys();
+  // }, []);
+
+  useEffect(() => {
+    if (data?.payload) {
+      setSurveys(data.payload.data);
+      endLoading();
+    }
+  }, [data]);
+
+  useEffect(() => {
+    console.log('🚀 ~ useEffect ~ filterStatus:', selectedTab);
+    refetch();
+  }, [selectedTab]);
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>, survey: SearchSurvey) => {
     setAnchorEl(event.currentTarget);
@@ -205,7 +230,7 @@ export default function SurveyList() {
   const handleToggleStatus = () => {
     if (selectedSurvey) {
       const newStatus = selectedSurvey.status === 'active' ? 'closed' : 'active';
-      setSurveys(surveys.map((s) => (s.id === selectedSurvey.id ? { ...s, status: newStatus as SearchSurvey['status'] } : s)));
+      // setSurveys(surveys.map((s) => (s.id === selectedSurvey.id ? { ...s, status: newStatus as SearchSurvey['status'] } : s)));
       addNotice(`설문이 ${newStatus === 'active' ? '활성화' : '비활성화'}되었습니다`);
       // setSnackbarOpen(true);
     }
@@ -214,7 +239,7 @@ export default function SurveyList() {
 
   const confirmDelete = () => {
     if (selectedSurvey) {
-      setSurveys(surveys.filter((s) => s.id !== selectedSurvey.id));
+      // setSurveys(surveys.filter((s) => s.id !== selectedSurvey.id));
       addNotice('설문이 삭제되었습니다');
       // setSnackbarOpen(true);
     }
@@ -258,7 +283,7 @@ export default function SurveyList() {
     }
   };
 
-  const filteredSurveys = surveys.filter((survey) => {
+  const filteredSurveys = surveys; /* ?.filter((survey) => {
     const matchesSearch =
       survey.title.toLowerCase().includes(searchQuery.toLowerCase()) || survey.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = filterStatus === 'all' || survey.status === filterStatus;
@@ -269,17 +294,17 @@ export default function SurveyList() {
       (selectedTab === 3 && survey.status === 'closed');
 
     return matchesSearch && matchesStatus && matchesTab;
-  });
+  }) */
 
-  const totalResponses = surveys.reduce((sum, survey) => sum + survey.responses, 0);
-  const activeSurveys = surveys.filter((s) => s.status === 'active').length;
-  const totalViews = surveys.reduce((sum, survey) => sum + survey.views, 0);
+  const totalResponses = surveys?.reduce((sum, survey) => sum + survey.responseAmount, 0) ?? 0;
+  const activeSurveys = surveys?.filter((s) => s.status === 'active').length ?? 0;
+  const totalViews = surveys?.reduce((sum, survey) => sum + survey.viewCount, 0) ?? 0;
 
-  const estimatedTime = surveys.reduce((sum, survey) => {
-    const questions = survey.questions;
-    const estimatedTime = questions * 0.5;
-    return sum + estimatedTime;
-  }, 0);
+  // const estimatedTime = surveys.reduce((sum, survey) => {
+  //   const questions = survey.questions;
+  //   const estimatedTime = questions * 0.5;
+  //   return sum + estimatedTime;
+  // }, 0);
 
   return (
     <Container maxWidth="lg" sx={{ pt: 12, pb: 8 }}>
@@ -299,7 +324,7 @@ export default function SurveyList() {
           <Card>
             <CardContent sx={{ textAlign: 'center', p: 3 }}>
               <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
-                {surveys.length}
+                {surveys?.length ?? 0}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 총 설문 수
@@ -372,10 +397,10 @@ export default function SurveyList() {
             <FormControl size="small" sx={{ minWidth: 120 }}>
               <InputLabel>상태</InputLabel>
               <Select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} label="상태">
-                <MenuItem value="all">전체</MenuItem>
-                <MenuItem value="active">진행중</MenuItem>
-                <MenuItem value="draft">초안</MenuItem>
-                <MenuItem value="closed">종료</MenuItem>
+                <MenuItem value={'all'}>전체</MenuItem>
+                <MenuItem value={SurveyStatus.Active}>진행중</MenuItem>
+                <MenuItem value={SurveyStatus.Draft}>초안</MenuItem>
+                <MenuItem value={SurveyStatus.Closed}>종료</MenuItem>
               </Select>
             </FormControl>
           </Box>
@@ -393,7 +418,7 @@ export default function SurveyList() {
       </Box>
 
       {/* 설문 목록 */}
-      {filteredSurveys.length === 0 ? (
+      {filteredSurveys?.length === 0 ? (
         <Card>
           <CardContent sx={{ textAlign: 'center', py: 8 }}>
             <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
@@ -412,7 +437,7 @@ export default function SurveyList() {
       ) : (
         <Grid container spacing={3}>
           <AnimatePresence>
-            {filteredSurveys.map((survey) => (
+            {filteredSurveys?.map((survey) => (
               <Grid size={{ xs: 12, md: 6, lg: 4 }} key={survey.id}>
                 <motion.div
                   layout
@@ -492,7 +517,7 @@ export default function SurveyList() {
                           >
                             <People sx={{ fontSize: 16, color: 'text.secondary' }} />
                             <Typography variant="body2" color="text.secondary">
-                              {survey.responses}명 응답
+                              {survey.responseAmount}명 응답
                             </Typography>
                           </Box>
                         </Grid>
@@ -506,7 +531,7 @@ export default function SurveyList() {
                           >
                             <TrendingUp sx={{ fontSize: 16, color: 'text.secondary' }} />
                             <Typography variant="body2" color="text.secondary">
-                              {survey.views}회 조회
+                              {survey.viewCount}회 조회
                             </Typography>
                           </Box>
                         </Grid>
@@ -520,13 +545,13 @@ export default function SurveyList() {
                           >
                             <Schedule sx={{ fontSize: 16, color: 'text.secondary' }} />
                             <Typography variant="body2" color="text.secondary">
-                              약 {estimatedTime}분
+                              약 {survey.estimatedTime}분
                             </Typography>
                           </Box>
                         </Grid>
                         <Grid size={{ xs: 6 }}>
                           <Typography variant="body2" color="text.secondary">
-                            {survey.questions}개 질문
+                            {survey.questionAmount}개 질문
                           </Typography>
                         </Grid>
                       </Grid>
@@ -552,7 +577,7 @@ export default function SurveyList() {
                         >
                           편집
                         </Button>
-                        {survey.responses > 0 && (
+                        {survey.responseAmount > 0 && (
                           <Button
                             size="small"
                             variant="contained"
@@ -590,7 +615,7 @@ export default function SurveyList() {
           <Share sx={{ mr: 2 }} />
           공유
         </MenuItem>
-        {selectedSurvey?.responses && selectedSurvey.responses > 0 && (
+        {selectedSurvey?.responseAmount && selectedSurvey.responseAmount > 0 && (
           <MenuItem onClick={handleViewResults}>
             <Analytics sx={{ mr: 2 }} />
             결과 보기

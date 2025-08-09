@@ -1,5 +1,8 @@
 'use client';
 
+import { GetSurveyDetailResponse, QuestionDetailNestedResponseDto } from '@/models/GetSurveyDetailResponse';
+import { getSurveyDetail } from '@api/get-survey-detail';
+import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import LoadingContext from '@context/LodingContext';
 import { ArrowBack, ArrowForward, CheckCircle, Person, PhotoCamera, Schedule, Send, ThumbUp } from '@mui/icons-material';
 import {
@@ -22,25 +25,24 @@ import {
   Radio,
   RadioGroup,
   Rating,
-  Slider,
   TextField,
   Typography,
   useTheme,
 } from '@mui/material';
+import { DataType } from '@share/enums/data-type';
+import { QuestionType } from '@share/enums/question-type';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useParams } from 'next/navigation';
 import { useContext, useEffect, useState } from 'react';
 
 interface Question {
   id: string;
-  type: 'text' | 'choice' | 'multiple' | 'rating' | 'slider' | 'image' | 'email' | 'phone';
+  questionType: QuestionType;
+  dataType: DataType;
   title: string;
   description?: string;
-  options?: string[];
+  options?: { id: string; label: string }[];
   isRequired: boolean;
-  min?: number;
-  max?: number;
-  step?: number;
 }
 
 interface Survey {
@@ -63,77 +65,77 @@ interface Survey {
 }
 
 // Mock survey data with more variety
-const mockSurvey: Survey = {
-  id: '1',
-  title: '2024 고객 만족도 및 서비스 개선 설문조사',
-  description:
-    '안녕하세요! 저희 서비스를 이용해주셔서 감사합니다. 더 나은 서비스 제공을 위해 고객님의 소중한 의견을 듣고자 합니다. 설문은 약 5분 정도 소요되며, 모든 응답은 익명으로 처리됩니다.',
-  author: {
-    name: 'Nuvia Team',
-    avatar: 'N',
-  },
-  estimatedTime: 5,
-  totalResponses: 1247,
-  settings: {
-    allowAnonymous: true,
-    showProgress: true,
-    randomizeQuestions: false,
-    oneResponsePerUser: false,
-  },
-  questions: [
-    {
-      id: '1',
-      type: 'choice',
-      title: '저희 서비스를 어떻게 알게 되셨나요?',
-      description: '가장 주된 경로를 선택해주세요',
-      options: ['검색엔진 (구글, 네이버 등)', '소셜미디어 (인스타그램, 페이스북 등)', '지인 추천', '온라인 광고', '블로그/리뷰', '기타'],
-      isRequired: true,
-    },
-    {
-      id: '2',
-      type: 'rating',
-      title: '전반적인 서비스 만족도를 평가해주세요',
-      description: '1점(매우 불만족) ~ 5점(매우 만족)',
-      isRequired: true,
-    },
-    {
-      id: '3',
-      type: 'multiple',
-      title: '어떤 기능들을 주로 사용하시나요? (복수 선택 가능)',
-      options: ['설문 생성', '응답 수집', '통계 분석', '데이터 내보내기', '팀 협업', '템플릿 사용'],
-      isRequired: false,
-    },
-    {
-      id: '4',
-      type: 'slider',
-      title: '저희 서비스를 다른 사람에게 추천할 가능성은 얼마나 되나요?',
-      description: '0점(전혀 추천하지 않음) ~ 10점(적극 추천)',
-      min: 0,
-      max: 10,
-      step: 1,
-      isRequired: true,
-    },
-    {
-      id: '5',
-      type: 'text',
-      title: '개선이 필요한 부분이나 추가하고 싶은 기능이 있다면 자유롭게 작성해주세요',
-      description: '구체적인 의견일수록 서비스 개선에 큰 도움이 됩니다',
-      isRequired: false,
-    },
-    {
-      id: '6',
-      type: 'email',
-      title: '추후 서비스 업데이트 소식을 받고 싶으시다면 이메일을 입력해주세요',
-      description: '선택사항이며, 마케팅 목적으로만 사용됩니다',
-      isRequired: false,
-    },
-  ],
-};
+// const mockSurvey: Survey = {
+//   id: '1',
+//   title: '2024 고객 만족도 및 서비스 개선 설문조사',
+//   description:
+//     '안녕하세요! 저희 서비스를 이용해주셔서 감사합니다. 더 나은 서비스 제공을 위해 고객님의 소중한 의견을 듣고자 합니다. 설문은 약 5분 정도 소요되며, 모든 응답은 익명으로 처리됩니다.',
+//   author: {
+//     name: 'Nuvia Team',
+//     avatar: 'N',
+//   },
+//   estimatedTime: 5,
+//   totalResponses: 1247,
+//   settings: {
+//     allowAnonymous: true,
+//     showProgress: true,
+//     randomizeQuestions: false,
+//     oneResponsePerUser: false,
+//   },
+//   questions: [
+//     {
+//       id: '1',
+//       type: 'choice',
+//       title: '저희 서비스를 어떻게 알게 되셨나요?',
+//       description: '가장 주된 경로를 선택해주세요',
+//       options: ['검색엔진 (구글, 네이버 등)', '소셜미디어 (인스타그램, 페이스북 등)', '지인 추천', '온라인 광고', '블로그/리뷰', '기타'],
+//       isRequired: true,
+//     },
+//     {
+//       id: '2',
+//       type: 'rating',
+//       title: '전반적인 서비스 만족도를 평가해주세요',
+//       description: '1점(매우 불만족) ~ 5점(매우 만족)',
+//       isRequired: true,
+//     },
+//     {
+//       id: '3',
+//       type: 'multiple',
+//       title: '어떤 기능들을 주로 사용하시나요? (복수 선택 가능)',
+//       options: ['설문 생성', '응답 수집', '통계 분석', '데이터 내보내기', '팀 협업', '템플릿 사용'],
+//       isRequired: false,
+//     },
+//     {
+//       id: '4',
+//       type: 'slider',
+//       title: '저희 서비스를 다른 사람에게 추천할 가능성은 얼마나 되나요?',
+//       description: '0점(전혀 추천하지 않음) ~ 10점(적극 추천)',
+//       min: 0,
+//       max: 10,
+//       step: 1,
+//       isRequired: true,
+//     },
+//     {
+//       id: '5',
+//       type: 'text',
+//       title: '개선이 필요한 부분이나 추가하고 싶은 기능이 있다면 자유롭게 작성해주세요',
+//       description: '구체적인 의견일수록 서비스 개선에 큰 도움이 됩니다',
+//       isRequired: false,
+//     },
+//     {
+//       id: '6',
+//       type: 'email',
+//       title: '추후 서비스 업데이트 소식을 받고 싶으시다면 이메일을 입력해주세요',
+//       description: '선택사항이며, 마케팅 목적으로만 사용됩니다',
+//       isRequired: false,
+//     },
+//   ],
+// };
 export default function SurveyDetail() {
-  const params = useParams() ?? { id: 1 };
-  const { id = 1 } = params;
+  const { addNotice } = useContext(GlobalSnackbarContext);
   const theme = useTheme();
-  const [survey, setSurvey] = useState<Survey | null>(null);
+  const { id } = useParams();
+  const [survey, setSurvey] = useState<GetSurveyDetailResponse | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -145,18 +147,20 @@ export default function SurveyDetail() {
   // Load survey data
   useEffect(() => {
     const loadSurvey = async () => {
-      setSurvey(mockSurvey);
-      endLoading();
+      getSurveyDetail('' + id).then(({ payload }) => {
+        setSurvey(payload);
+        endLoading();
+      });
     };
 
     loadSurvey();
-  }, [params.id]);
+  }, [id]);
 
   const currentQuestion = survey?.questions[currentStep];
   const isLastQuestion = currentStep === (survey?.questions.length || 0) - 1;
   const progress = survey ? ((currentStep + 1) / survey.questions.length) * 100 : 0;
 
-  const handleAnswerChange = (questionId: string, value: any) => {
+  const handleAnswerChange = (questionId: number, value: any) => {
     setAnswers({ ...answers, [questionId]: value });
     // Clear error when user provides answer
     if (errors[questionId]) {
@@ -178,7 +182,7 @@ export default function SurveyDetail() {
       }
     }
 
-    if (currentQuestion.type === 'email' && answer) {
+    if (currentQuestion.dataType === DataType.Email && answer) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(answer)) {
         newErrors[currentQuestion.id] = '올바른 이메일 형식을 입력해주세요';
@@ -187,14 +191,14 @@ export default function SurveyDetail() {
       }
     }
 
-    if (currentQuestion.type === 'phone' && answer) {
-      const phoneRegex = /^[0-9-+\s()]+$/;
-      if (!phoneRegex.test(answer)) {
-        newErrors[currentQuestion.id] = '올바른 전화번호 형식을 입력해주세요';
-        setErrors(newErrors);
-        return false;
-      }
-    }
+    // if (currentQuestion.dataType === DataType.Phone && answer) {
+    //   const phoneRegex = /^[0-9-+\s()]+$/;
+    //   if (!phoneRegex.test(answer)) {
+    //     newErrors[currentQuestion.id] = '올바른 전화번호 형식을 입력해주세요';
+    //     setErrors(newErrors);
+    //     return false;
+    //   }
+    // }
 
     return true;
   };
@@ -210,6 +214,11 @@ export default function SurveyDetail() {
   };
 
   const handleSubmit = async () => {
+    if (survey?.isOwner) {
+      addNotice('설문 작성자는 응답할 수 없습니다.', 'warning');
+      return;
+    }
+
     if (!validateCurrentQuestion()) return;
 
     setIsSubmitting(true);
@@ -217,14 +226,11 @@ export default function SurveyDetail() {
     try {
       const responseTime = Date.now() - startTime;
       const submissionData = {
-        surveyId: params.id,
+        surveyId: survey?.id ?? '',
         answers,
         responseTime,
         timestamp: new Date().toISOString(),
       };
-
-      // Mock API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
 
       console.log('Survey submitted:', submissionData);
       setIsSubmitted(true);
@@ -235,26 +241,26 @@ export default function SurveyDetail() {
     }
   };
 
-  const renderQuestion = (question: Question) => {
+  const renderQuestion = (question: QuestionDetailNestedResponseDto) => {
     const answer = answers[question.id];
     const hasError = !!errors[question.id];
 
-    switch (question.type) {
-      case 'choice':
+    switch (question.questionType) {
+      case QuestionType.SingleChoice:
         return (
           <FormControl component="fieldset" fullWidth error={hasError}>
             <RadioGroup value={answer || ''} onChange={(e) => handleAnswerChange(question.id, e.target.value)}>
               {question.options?.map((option) => (
                 <FormControlLabel
-                  key={option}
-                  value={option}
+                  key={option.id}
+                  value={option.label}
                   control={<Radio />}
-                  label={option}
+                  label={option.label}
                   sx={{
                     mb: 1,
                     p: 2,
                     border: '1px solid',
-                    borderColor: answer === option ? 'primary.main' : 'divider',
+                    borderColor: answer === option.label ? 'primary.main' : 'divider',
                     borderRadius: 2,
                     transition: 'all 0.2s',
                     '&:hover': {
@@ -267,29 +273,31 @@ export default function SurveyDetail() {
           </FormControl>
         );
 
-      case 'multiple':
+      case QuestionType.MultipleChoice:
         return (
           <FormControl component="fieldset" fullWidth error={hasError}>
             <FormGroup>
               {question.options?.map((option) => (
                 <FormControlLabel
-                  key={option}
+                  key={option.id}
                   control={
                     <Checkbox
-                      checked={(answer || []).includes(option)}
+                      checked={(answer || []).includes(option.label)}
                       onChange={(e) => {
                         const currentAnswers = answer || [];
-                        const newAnswers = e.target.checked ? [...currentAnswers, option] : currentAnswers.filter((a: string) => a !== option);
+                        const newAnswers = e.target.checked
+                          ? [...currentAnswers, option.label]
+                          : currentAnswers.filter((a: string) => a !== option.label);
                         handleAnswerChange(question.id, newAnswers);
                       }}
                     />
                   }
-                  label={option}
+                  label={option.label}
                   sx={{
                     mb: 1,
                     p: 2,
                     border: '1px solid',
-                    borderColor: (answer || []).includes(option) ? 'primary.main' : 'divider',
+                    borderColor: (answer || []).includes(option.label) ? 'primary.main' : 'divider',
                     borderRadius: 2,
                     transition: 'all 0.2s',
                     '&:hover': {
@@ -302,66 +310,153 @@ export default function SurveyDetail() {
           </FormControl>
         );
 
-      case 'rating':
-        return (
-          <Box sx={{ textAlign: 'center' }}>
-            <Rating
-              size="large"
-              value={answer || 0}
-              onChange={(_, value) => handleAnswerChange(question.id, value)}
-              sx={{ fontSize: '3rem', mb: 2 }}
-            />
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                maxWidth: 300,
-                mx: 'auto',
-              }}
-            >
-              <Typography variant="caption" color="text.secondary">
-                매우 불만족
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                매우 만족
-              </Typography>
-            </Box>
-          </Box>
-        );
+      case QuestionType.ShortText: {
+        switch (question.dataType) {
+          case DataType.Rating:
+            return (
+              <Box sx={{ textAlign: 'center' }}>
+                <Rating
+                  size="large"
+                  value={answer || 0}
+                  onChange={(_, value) => handleAnswerChange(question.id, value)}
+                  sx={{ fontSize: '3rem', mb: 2 }}
+                />
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    maxWidth: 300,
+                    mx: 'auto',
+                  }}
+                >
+                  <Typography variant="caption" color="text.secondary">
+                    매우 불만족
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    매우 만족
+                  </Typography>
+                </Box>
+              </Box>
+            );
 
-      case 'slider':
-        return (
-          <Box sx={{ px: 2 }}>
-            <Box sx={{ textAlign: 'center', mb: 4 }}>
-              <Typography variant="h2" color="primary.main" sx={{ fontWeight: 'bold' }}>
-                {answer || question.min || 0}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                점
-              </Typography>
-            </Box>
-            <Slider
-              value={answer || question.min || 0}
-              onChange={(_, value) => handleAnswerChange(question.id, value)}
-              min={question.min || 0}
-              max={question.max || 10}
-              step={question.step || 1}
-              marks
-              valueLabelDisplay="auto"
-              sx={{ mb: 2 }}
-            />
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Typography variant="caption" color="text.secondary">
-                {question.min || 0}점
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {question.max || 10}점
-              </Typography>
-            </Box>
-          </Box>
-        );
+          // case 'slider':
+          //   return (
+          //     <Box sx={{ px: 2 }}>
+          //       <Box sx={{ textAlign: 'center', mb: 4 }}>
+          //         <Typography variant="h2" color="primary.main" sx={{ fontWeight: 'bold' }}>
+          //           {answer || question.min || 0}
+          //         </Typography>
+          //         <Typography variant="body2" color="text.secondary">
+          //           점
+          //         </Typography>
+          //       </Box>
+          //       <Slider
+          //         value={answer || question.min || 0}
+          //         onChange={(_, value) => handleAnswerChange(question.id, value)}
+          //         min={question.min || 0}
+          //         max={question.max || 10}
+          //         step={question.step || 1}
+          //         marks
+          //         valueLabelDisplay="auto"
+          //         sx={{ mb: 2 }}
+          //       />
+          //       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+          //         <Typography variant="caption" color="text.secondary">
+          //           {question.min || 0}점
+          //         </Typography>
+          //         <Typography variant="caption" color="text.secondary">
+          //           {question.max || 10}점
+          //         </Typography>
+          //       </Box>
+          //     </Box>
+          //   );
 
-      case 'text':
+          case DataType.Email:
+            return (
+              <TextField
+                fullWidth
+                type="email"
+                value={answer || ''}
+                onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                placeholder="example@email.com"
+                error={hasError}
+                helperText={errors[question.id]}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                  },
+                }}
+              />
+            );
+
+          // case DataType.Phone:
+          //   return (
+          //     <TextField
+          //       fullWidth
+          //       type="tel"
+          //       value={answer || ''}
+          //       onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+          //       placeholder="010-1234-5678"
+          //       error={hasError}
+          //       helperText={errors[question.id]}
+          //       sx={{
+          //         '& .MuiOutlinedInput-root': {
+          //           borderRadius: 2,
+          //         },
+          //       }}
+          //     />
+          //   );
+
+          case DataType.Image:
+            return (
+              <Box
+                sx={{
+                  border: '2px dashed',
+                  borderColor: 'divider',
+                  borderRadius: 2,
+                  p: 4,
+                  textAlign: 'center',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  '&:hover': {
+                    borderColor: 'primary.main',
+                    backgroundColor: 'action.hover',
+                  },
+                }}
+              >
+                <PhotoCamera sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+                <Typography variant="body1" color="text.secondary">
+                  이미지를 업로드하려면 클릭하세요
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  JPG, PNG 파일만 지원 (최대 5MB)
+                </Typography>
+              </Box>
+            );
+
+          case DataType.Text:
+          default:
+            return (
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                value={answer || ''}
+                onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                placeholder="의견을 자유롭게 작성해주세요..."
+                error={hasError}
+                helperText={errors[question.id]}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                  },
+                }}
+              />
+            );
+        }
+      }
+
+      case QuestionType.LongText:
         return (
           <TextField
             fullWidth
@@ -378,69 +473,6 @@ export default function SurveyDetail() {
               },
             }}
           />
-        );
-
-      case 'email':
-        return (
-          <TextField
-            fullWidth
-            type="email"
-            value={answer || ''}
-            onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-            placeholder="example@email.com"
-            error={hasError}
-            helperText={errors[question.id]}
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                borderRadius: 2,
-              },
-            }}
-          />
-        );
-
-      case 'phone':
-        return (
-          <TextField
-            fullWidth
-            type="tel"
-            value={answer || ''}
-            onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-            placeholder="010-1234-5678"
-            error={hasError}
-            helperText={errors[question.id]}
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                borderRadius: 2,
-              },
-            }}
-          />
-        );
-
-      case 'image':
-        return (
-          <Box
-            sx={{
-              border: '2px dashed',
-              borderColor: 'divider',
-              borderRadius: 2,
-              p: 4,
-              textAlign: 'center',
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-              '&:hover': {
-                borderColor: 'primary.main',
-                backgroundColor: 'action.hover',
-              },
-            }}
-          >
-            <PhotoCamera sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
-            <Typography variant="body1" color="text.secondary">
-              이미지를 업로드하려면 클릭하세요
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              JPG, PNG 파일만 지원 (최대 5MB)
-            </Typography>
-          </Box>
         );
 
       default:
@@ -541,13 +573,13 @@ export default function SurveyDetail() {
       <Card sx={{ mb: 4, overflow: 'visible' }}>
         <CardContent sx={{ p: 4 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-            <Avatar sx={{ bgcolor: 'primary.main', mr: 2, width: 48, height: 48 }}>{survey.author.avatar}</Avatar>
+            <Avatar sx={{ bgcolor: 'primary.main', mr: 2, width: 48, height: 48 }}>{survey.author.profileUrl}</Avatar>
             <Box>
               <Typography variant="h6" sx={{ fontWeight: 600 }}>
                 {survey.author.name}
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 0.5 }}>
-                <Chip icon={<Schedule />} label={`약 ${survey.estimatedTime}분`} size="small" />
+                <Chip icon={<Schedule />} label={`약 ${Math.round(survey.estimatedTime / 60)}분`} size="small" />
                 <Chip icon={<Person />} label={`${survey.totalResponses}명 참여`} size="small" />
               </Box>
             </Box>
@@ -564,39 +596,37 @@ export default function SurveyDetail() {
       </Card>
 
       {/* 진행률 */}
-      {survey.settings.showProgress && (
-        <Card sx={{ mb: 4 }}>
-          <CardContent sx={{ p: 3 }}>
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                mb: 2,
-              }}
-            >
-              <Typography variant="body2" color="text.secondary">
-                진행률
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {currentStep + 1} / {survey.questions.length}
-              </Typography>
-            </Box>
-            <LinearProgress
-              variant="determinate"
-              value={progress}
-              sx={{
-                height: 8,
+      <Card sx={{ mb: 4 }}>
+        <CardContent sx={{ p: 3 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              mb: 2,
+            }}
+          >
+            <Typography variant="body2" color="text.secondary">
+              진행률
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {currentStep + 1} / {survey.questionCount}
+            </Typography>
+          </Box>
+          <LinearProgress
+            variant="determinate"
+            value={progress}
+            sx={{
+              height: 8,
+              borderRadius: 4,
+              backgroundColor: 'action.hover',
+              '& .MuiLinearProgress-bar': {
                 borderRadius: 4,
-                backgroundColor: 'action.hover',
-                '& .MuiLinearProgress-bar': {
-                  borderRadius: 4,
-                },
-              }}
-            />
-          </CardContent>
-        </Card>
-      )}
+              },
+            }}
+          />
+        </CardContent>
+      </Card>
 
       {/* 질문 카드 */}
       <AnimatePresence mode="wait">
@@ -660,7 +690,7 @@ export default function SurveyDetail() {
         </Button>
 
         <Box sx={{ display: 'flex', gap: 1 }}>
-          {survey.questions.map((_, index) => (
+          {Array.from({ length: survey.questionCount }).map((_, index) => (
             <Box
               key={index}
               sx={{

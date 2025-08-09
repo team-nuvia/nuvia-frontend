@@ -1,5 +1,5 @@
 import Landing from '@components/template/Landing';
 
-export default async function Page() {
+export default function Page() {
   return <Landing />;
 }
