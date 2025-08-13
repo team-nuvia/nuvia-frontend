@@ -1,7 +1,7 @@
 'use client';
 
 import { GetSurveyDetailResponse, QuestionDetailNestedResponseDto } from '@/models/GetSurveyDetailResponse';
-import { getSurveyDetail } from '@api/get-survey-detail';
+import { getSurveyDetailView } from '@api/get-survey-detail-view';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import LoadingContext from '@context/LodingContext';
 import { ArrowBack, ArrowForward, CheckCircle, Person, PhotoCamera, Schedule, Send, ThumbUp } from '@mui/icons-material';
@@ -32,7 +32,7 @@ import {
 import { DataType } from '@share/enums/data-type';
 import { QuestionType } from '@share/enums/question-type';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useState } from 'react';
 
 interface Question {
@@ -41,7 +41,7 @@ interface Question {
   dataType: DataType;
   title: string;
   description?: string;
-  options?: { id: string; label: string }[];
+  questionOptions?: { id: string; label: string }[];
   isRequired: boolean;
 }
 
@@ -64,77 +64,10 @@ interface Survey {
   };
 }
 
-// Mock survey data with more variety
-// const mockSurvey: Survey = {
-//   id: '1',
-//   title: '2024 고객 만족도 및 서비스 개선 설문조사',
-//   description:
-//     '안녕하세요! 저희 서비스를 이용해주셔서 감사합니다. 더 나은 서비스 제공을 위해 고객님의 소중한 의견을 듣고자 합니다. 설문은 약 5분 정도 소요되며, 모든 응답은 익명으로 처리됩니다.',
-//   author: {
-//     name: 'Nuvia Team',
-//     avatar: 'N',
-//   },
-//   estimatedTime: 5,
-//   totalResponses: 1247,
-//   settings: {
-//     allowAnonymous: true,
-//     showProgress: true,
-//     randomizeQuestions: false,
-//     oneResponsePerUser: false,
-//   },
-//   questions: [
-//     {
-//       id: '1',
-//       type: 'choice',
-//       title: '저희 서비스를 어떻게 알게 되셨나요?',
-//       description: '가장 주된 경로를 선택해주세요',
-//       options: ['검색엔진 (구글, 네이버 등)', '소셜미디어 (인스타그램, 페이스북 등)', '지인 추천', '온라인 광고', '블로그/리뷰', '기타'],
-//       isRequired: true,
-//     },
-//     {
-//       id: '2',
-//       type: 'rating',
-//       title: '전반적인 서비스 만족도를 평가해주세요',
-//       description: '1점(매우 불만족) ~ 5점(매우 만족)',
-//       isRequired: true,
-//     },
-//     {
-//       id: '3',
-//       type: 'multiple',
-//       title: '어떤 기능들을 주로 사용하시나요? (복수 선택 가능)',
-//       options: ['설문 생성', '응답 수집', '통계 분석', '데이터 내보내기', '팀 협업', '템플릿 사용'],
-//       isRequired: false,
-//     },
-//     {
-//       id: '4',
-//       type: 'slider',
-//       title: '저희 서비스를 다른 사람에게 추천할 가능성은 얼마나 되나요?',
-//       description: '0점(전혀 추천하지 않음) ~ 10점(적극 추천)',
-//       min: 0,
-//       max: 10,
-//       step: 1,
-//       isRequired: true,
-//     },
-//     {
-//       id: '5',
-//       type: 'text',
-//       title: '개선이 필요한 부분이나 추가하고 싶은 기능이 있다면 자유롭게 작성해주세요',
-//       description: '구체적인 의견일수록 서비스 개선에 큰 도움이 됩니다',
-//       isRequired: false,
-//     },
-//     {
-//       id: '6',
-//       type: 'email',
-//       title: '추후 서비스 업데이트 소식을 받고 싶으시다면 이메일을 입력해주세요',
-//       description: '선택사항이며, 마케팅 목적으로만 사용됩니다',
-//       isRequired: false,
-//     },
-//   ],
-// };
-export default function SurveyDetail() {
+export default function SurveyDetail({ hash }: { hash?: string }) {
   const { addNotice } = useContext(GlobalSnackbarContext);
   const theme = useTheme();
-  const { id } = useParams();
+  const router = useRouter();
   const [survey, setSurvey] = useState<GetSurveyDetailResponse | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, any>>({});
@@ -147,14 +80,24 @@ export default function SurveyDetail() {
   // Load survey data
   useEffect(() => {
     const loadSurvey = async () => {
-      getSurveyDetail('' + id).then(({ payload }) => {
-        setSurvey(payload);
+      if (hash) {
+        getSurveyDetailView(hash)
+          .then((survey) => {
+            setSurvey(survey.payload);
+            endLoading();
+          })
+          .catch((error) => {
+            console.log('🚀 ~ loadSurvey ~ error:', error);
+            addNotice('설문 정보를 불러오는데 실패했습니다.', 'error');
+            router.back();
+          });
+      } else {
         endLoading();
-      });
+      }
     };
 
     loadSurvey();
-  }, [id]);
+  }, []);
 
   const currentQuestion = survey?.questions[currentStep];
   const isLastQuestion = currentStep === (survey?.questions.length || 0) - 1;
@@ -579,7 +522,7 @@ export default function SurveyDetail() {
                 {survey.author.name}
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 0.5 }}>
-                <Chip icon={<Schedule />} label={`약 ${Math.round(survey.estimatedTime / 60)}분`} size="small" />
+                <Chip icon={<Schedule />} label={`약 ${survey.estimatedTime}분`} size="small" />
                 <Chip icon={<Person />} label={`${survey.totalResponses}명 참여`} size="small" />
               </Box>
             </Box>

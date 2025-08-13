@@ -1,7 +1,10 @@
 'use client';
 
 import LoadingContext from '@/context/LodingContext';
+import { deleteSurvey } from '@api/delete-survey';
 import { getSurveyList } from '@api/get-survey-list';
+import { toggleSurveyVisibility } from '@api/toggle-survey-visibility';
+import { GlobalDialogContext } from '@context/GlobalDialogContext';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import {
   Add,
@@ -25,10 +28,6 @@ import {
   CardContent,
   Chip,
   Container,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   Fab,
   FormControl,
   Grid,
@@ -46,105 +45,11 @@ import {
 } from '@mui/material';
 import { SurveyStatus } from '@share/enums/survey-status';
 import { SearchSurvey } from '@share/interface/search-survey';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import type React from 'react';
-import { useContext, useEffect, useState } from 'react';
-
-// interface Survey {
-//   id: string
-//   title: string
-//   description: string
-//   status: "draft" | "active" | "closed"
-//   responses: number
-//   views: number
-//   createdAt: string
-//   updatedAt: string
-//   estimatedTime: number
-//   questions: number
-//   category: string
-//   isPublic: boolean
-// }
-
-// Mock data
-const mockSurveys: SearchSurvey[] = [
-  {
-    id: 1,
-    title: '2024 고객 만족도 조사',
-    description: '고객 서비스 품질 개선을 위한 만족도 조사입니다.',
-    status: 'active',
-    responseAmount: 1247,
-    viewCount: 2834,
-    createdAt: new Date('2024-01-15'),
-    updatedAt: new Date('2024-01-20'),
-    estimatedTime: 5,
-    questionAmount: 10,
-    category: '고객 서비스',
-    isPublic: true,
-    hashedUniqueKey: '1234567890',
-  },
-  {
-    id: 2,
-    title: '신제품 출시 전 사용자 피드백',
-    description: '새로운 기능에 대한 사용자들의 의견을 수집합니다.',
-    status: 'active',
-    responseAmount: 456,
-    viewCount: 1203,
-    createdAt: new Date('2024-01-10'),
-    updatedAt: new Date('2024-01-18'),
-    estimatedTime: 3,
-    questionAmount: 5,
-    category: '제품 개발',
-    isPublic: false,
-    hashedUniqueKey: '1234567890',
-  },
-  {
-    id: 3,
-    title: '직원 만족도 설문',
-    description: '회사 내부 직원들의 만족도를 측정하는 설문입니다.',
-    status: 'draft',
-    responseAmount: 0,
-    viewCount: 0,
-    createdAt: new Date('2024-01-08'),
-    updatedAt: new Date('2024-01-12'),
-    estimatedTime: 7,
-    questionAmount: 12,
-    category: '인사',
-    isPublic: false,
-    hashedUniqueKey: '1234567890',
-  },
-  {
-    id: 4,
-    title: '웹사이트 사용성 테스트',
-    description: '웹사이트 개편 후 사용자 경험 평가를 위한 설문입니다.',
-    status: 'closed',
-    responseAmount: 892,
-    viewCount: 1567,
-    createdAt: new Date('2023-12-20'),
-    updatedAt: new Date('2024-01-05'),
-    estimatedTime: 4,
-    questionAmount: 10,
-    category: 'UX/UI',
-    isPublic: true,
-    hashedUniqueKey: '1234567890',
-  },
-  {
-    id: 5,
-    title: '마케팅 캠페인 효과 분석',
-    description: '최근 마케팅 캠페인의 효과를 측정하는 설문입니다.',
-    status: 'active',
-    responseAmount: 234,
-    viewCount: 678,
-    createdAt: new Date('2024-01-05'),
-    updatedAt: new Date('2024-01-15'),
-    estimatedTime: 6,
-    questionAmount: 8,
-    category: '마케팅',
-    isPublic: true,
-    hashedUniqueKey: '1234567890',
-  },
-];
+import { useContext, useEffect, useLayoutEffect, useState } from 'react';
 
 export default function SurveyList() {
   const theme = useTheme();
@@ -156,40 +61,44 @@ export default function SurveyList() {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedSurvey, setSelectedSurvey] = useState<SearchSurvey | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const { handleOpenDialog } = useContext(GlobalDialogContext);
   const { addNotice } = useContext(GlobalSnackbarContext);
   const { data, refetch, isLoading } = useQuery({
     queryKey: ['surveyList'],
     queryFn: () =>
       getSurveyList({ page: 1, limit: 10, search: '', status: ['all', SurveyStatus.Active, SurveyStatus.Draft, SurveyStatus.Closed][selectedTab] }),
   });
+  const { mutate: mutateToggleVisibility } = useMutation({
+    mutationKey: ['toggleVisibility', selectedSurvey?.id],
+    mutationFn: toggleSurveyVisibility,
+    onSuccess: () => {
+      addNotice(`설문이 ${selectedSurvey?.isPublic ? '비활성화' : '활성화'}되었습니다`, 'success');
+      refetch();
+    },
+    onError: () => {
+      addNotice('설문 활성화에 실패했습니다', 'error');
+    },
+  });
+  const { mutate: mutateDeleteSurvey } = useMutation({
+    mutationKey: ['deleteSurvey', selectedSurvey?.id],
+    mutationFn: deleteSurvey,
+    onSuccess: () => {
+      addNotice('설문이 삭제되었습니다', 'success');
+      refetch();
+    },
+    onError: () => {
+      addNotice('설문 삭제에 실패했습니다', 'error');
+    },
+  });
 
-  // useLayoutEffect(() => {
-  //   const loadSurveys = async () => {
-  //     try {
-  //       // Mock API call
-  //       await new Promise((resolve) => setTimeout(resolve, 1000));
-  //       setSurveys(mockSurveys);
-  //     } catch (error) {
-  //       console.error('Failed to load surveys:', error);
-  //     } finally {
-  //       endLoading();
-  //     }
-  //   };
-
-  //   loadSurveys();
-  // }, []);
-
-  useEffect(() => {
-    if (data?.payload) {
+  useLayoutEffect(() => {
+    if (data?.payload && !isLoading) {
       setSurveys(data.payload.data);
       endLoading();
     }
-  }, [data]);
+  }, [data, isLoading]);
 
   useEffect(() => {
-    console.log('🚀 ~ useEffect ~ filterStatus:', selectedTab);
     refetch();
   }, [selectedTab]);
 
@@ -205,18 +114,39 @@ export default function SurveyList() {
 
   const handleEdit = () => {
     if (selectedSurvey) {
-      router.push(`/create?edit=${selectedSurvey.id}`);
+      router.push(`/survey/create?edit=${selectedSurvey.id}`);
     }
     handleMenuClose();
   };
 
   const handleDelete = () => {
-    setDeleteDialogOpen(true);
+    handleOpenDialog('설문 삭제', '삭제된 설문은 복구 불가합니다. 삭제하시겠습니까?\n복구 가능한 구독제는 설명을 참조해주세요.', confirmDelete);
     handleMenuClose();
   };
 
   const handleShare = () => {
-    setShareDialogOpen(true);
+    handleOpenDialog(
+      '설문 공유',
+      <>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          아래 링크를 복사하여 설문을 공유하세요
+        </Typography>
+        <TextField
+          fullWidth
+          value={selectedSurvey ? `${window.location.origin}/survey/${selectedSurvey.id}` : ''}
+          slotProps={{
+            input: {
+              readOnly: true,
+              endAdornment: (
+                <IconButton onClick={handleCopyLink}>
+                  <ContentCopy />
+                </IconButton>
+              ),
+            },
+          }}
+        />
+      </>,
+    );
     handleMenuClose();
   };
 
@@ -227,23 +157,18 @@ export default function SurveyList() {
     handleMenuClose();
   };
 
-  const handleToggleStatus = () => {
+  const handleToggleVisibility = () => {
     if (selectedSurvey) {
-      const newStatus = selectedSurvey.status === 'active' ? 'closed' : 'active';
-      // setSurveys(surveys.map((s) => (s.id === selectedSurvey.id ? { ...s, status: newStatus as SearchSurvey['status'] } : s)));
-      addNotice(`설문이 ${newStatus === 'active' ? '활성화' : '비활성화'}되었습니다`);
-      // setSnackbarOpen(true);
+      const newStatus = !selectedSurvey.isPublic;
+      mutateToggleVisibility({ surveyId: selectedSurvey.id, isPublic: newStatus });
     }
     handleMenuClose();
   };
 
   const confirmDelete = () => {
     if (selectedSurvey) {
-      // setSurveys(surveys.filter((s) => s.id !== selectedSurvey.id));
-      addNotice('설문이 삭제되었습니다');
-      // setSnackbarOpen(true);
+      mutateDeleteSurvey({ surveyId: selectedSurvey.id.toString() });
     }
-    setDeleteDialogOpen(false);
     setSelectedSurvey(null);
   };
 
@@ -252,9 +177,7 @@ export default function SurveyList() {
       const link = `${window.location.origin}/survey/${selectedSurvey.id}`;
       navigator.clipboard.writeText(link);
       addNotice('링크가 복사되었습니다', 'success');
-      // setSnackbarOpen(true);
     }
-    setShareDialogOpen(false);
   };
 
   const getStatusColor = (status: SearchSurvey['status']) => {
@@ -283,28 +206,9 @@ export default function SurveyList() {
     }
   };
 
-  const filteredSurveys = surveys; /* ?.filter((survey) => {
-    const matchesSearch =
-      survey.title.toLowerCase().includes(searchQuery.toLowerCase()) || survey.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = filterStatus === 'all' || survey.status === filterStatus;
-    const matchesTab =
-      selectedTab === 0 ||
-      (selectedTab === 1 && survey.status === 'active') ||
-      (selectedTab === 2 && survey.status === 'draft') ||
-      (selectedTab === 3 && survey.status === 'closed');
-
-    return matchesSearch && matchesStatus && matchesTab;
-  }) */
-
   const totalResponses = surveys?.reduce((sum, survey) => sum + survey.responseAmount, 0) ?? 0;
   const activeSurveys = surveys?.filter((s) => s.status === 'active').length ?? 0;
   const totalViews = surveys?.reduce((sum, survey) => sum + survey.viewCount, 0) ?? 0;
-
-  // const estimatedTime = surveys.reduce((sum, survey) => {
-  //   const questions = survey.questions;
-  //   const estimatedTime = questions * 0.5;
-  //   return sum + estimatedTime;
-  // }, 0);
 
   return (
     <Container maxWidth="lg" sx={{ pt: 12, pb: 8 }}>
@@ -418,7 +322,7 @@ export default function SurveyList() {
       </Box>
 
       {/* 설문 목록 */}
-      {filteredSurveys?.length === 0 ? (
+      {surveys?.length === 0 ? (
         <Card>
           <CardContent sx={{ textAlign: 'center', py: 8 }}>
             <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
@@ -437,7 +341,7 @@ export default function SurveyList() {
       ) : (
         <Grid container spacing={3}>
           <AnimatePresence>
-            {filteredSurveys?.map((survey) => (
+            {surveys?.map((survey) => (
               <Grid size={{ xs: 12, md: 6, lg: 4 }} key={survey.id}>
                 <motion.div
                   layout
@@ -557,7 +461,7 @@ export default function SurveyList() {
                       </Grid>
 
                       {/* 카테고리 */}
-                      <Chip label={survey.category} size="small" variant="outlined" sx={{ mb: 2 }} />
+                      <Chip label={survey.category.name} size="small" variant="outlined" sx={{ mb: 2 }} />
 
                       {/* 날짜 */}
                       <Typography variant="caption" color="text.secondary">
@@ -572,7 +476,7 @@ export default function SurveyList() {
                           size="small"
                           variant="outlined"
                           startIcon={<Edit />}
-                          onClick={() => router.push(`/create?edit=${survey.id}`)}
+                          onClick={() => router.push(`/survey/create?edit=${survey.id}`)}
                           sx={{ flexGrow: 1 }}
                         >
                           편집
@@ -615,14 +519,14 @@ export default function SurveyList() {
           <Share sx={{ mr: 2 }} />
           공유
         </MenuItem>
-        {selectedSurvey?.responseAmount && selectedSurvey.responseAmount > 0 && (
+        {selectedSurvey && selectedSurvey.responseAmount > 0 && (
           <MenuItem onClick={handleViewResults}>
             <Analytics sx={{ mr: 2 }} />
             결과 보기
           </MenuItem>
         )}
-        <MenuItem onClick={handleToggleStatus}>
-          {selectedSurvey?.status === 'active' ? (
+        <MenuItem onClick={handleToggleVisibility}>
+          {selectedSurvey?.isPublic ? (
             <>
               <VisibilityOff sx={{ mr: 2 }} />
               비활성화
@@ -641,7 +545,7 @@ export default function SurveyList() {
       </Menu>
 
       {/* 삭제 확인 다이얼로그 */}
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+      {/* <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
         <DialogTitle>설문 삭제</DialogTitle>
         <DialogContent>
           <Typography>
@@ -656,10 +560,10 @@ export default function SurveyList() {
             삭제
           </Button>
         </DialogActions>
-      </Dialog>
+      </Dialog> */}
 
       {/* 공유 다이얼로그 */}
-      <Dialog open={shareDialogOpen} onClose={() => setShareDialogOpen(false)} maxWidth="sm" fullWidth>
+      {/* <Dialog open={shareDialogOpen} onClose={() => setShareDialogOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>설문 공유</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
@@ -686,7 +590,7 @@ export default function SurveyList() {
             링크 복사
           </Button>
         </DialogActions>
-      </Dialog>
+      </Dialog> */}
 
       {/* <Snackbar
         open={snackbarOpen}

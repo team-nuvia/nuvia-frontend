@@ -65,6 +65,7 @@ const Login: React.FC<LoginProps> = () => {
         addNotice(response.message, 'error');
       }
     } catch (error: unknown) {
+      console.log('🚀 ~ handleSubmit ~ error:', error);
       addNotice(error instanceof AxiosError ? error.response?.data.message : '알 수 없는 오류가 발생했습니다.', 'error');
     }
   }

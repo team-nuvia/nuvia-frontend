@@ -1,7 +1,12 @@
 'use client';
 
 import { CreateSurveyPayload } from '@/models/CreateSurveyPayload';
+import { GetCategoryResponse } from '@/models/GetCategoryResponse';
+import { UpdateSurveyPayload } from '@/models/UpdateSurveyPayload';
 import { createSurvey } from '@api/create-survey';
+import { getCategories } from '@api/get-categories';
+import { getSurveyDetail } from '@api/get-survey-detail';
+import { updateSurvey } from '@api/update-survey';
 import { QUESTION_DATA_TYPE_MAP, QUESTION_TYPE_ICONS, QUESTION_TYPE_MAP } from '@common/global';
 import Preview from '@components/organism/Preview';
 import QuestionCard from '@components/organism/QuestionCard';
@@ -15,15 +20,18 @@ import {
   CircularProgress,
   Container,
   FormControlLabel,
+  FormHelperText,
   Grid,
   List,
   ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  MenuItem,
   Paper,
   Radio,
   RadioGroup,
+  Select,
   SpeedDial,
   SpeedDialAction,
   SpeedDialIcon,
@@ -39,34 +47,36 @@ import { DataType } from '@share/enums/data-type';
 import { QuestionType } from '@share/enums/question-type';
 import { SurveyStatus } from '@share/enums/survey-status';
 import { AllQuestion } from '@share/interface/iquestion';
+import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { useFormik } from 'formik';
 import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useLayoutEffect, useState } from 'react';
 import * as Yup from 'yup';
 
-// --- HELPER FUNCTIONS ---
-const generatePassword = () => Math.random().toString(36).slice(-8);
-
 // --- VALIDATION SCHEMA ---
 const SurveySchema = Yup.object().shape({
   title: Yup.string().required('설문 제목은 필수입니다.'),
   description: Yup.string(),
+  categoryId: Yup.number().required('카테고리는 필수입니다.'),
+  status: Yup.string().required('상태는 필수입니다.'),
   expiresAt: Yup.string().nullable(),
-  isPublic: Yup.boolean().required(),
+  isPublic: Yup.boolean().required('응답 공개 여부는 필수입니다.'),
   questions: Yup.array().of(
     Yup.object().shape({
-      id: Yup.number().required(),
+      id: Yup.number().nullable(),
       title: Yup.string().required('질문 제목은 필수입니다.'),
-      description: Yup.string(),
-      questionType: Yup.string().required(),
-      dataType: Yup.string().required(),
-      isRequired: Yup.boolean().required(),
+      description: Yup.string().nullable(),
+      questionType: Yup.string().required('질문 유형은 필수입니다.'),
+      dataType: Yup.string().required('데이터 유형은 필수입니다.'),
+      isRequired: Yup.boolean().required('필수 여부는 필수입니다.'),
       // isAnswered: Yup.boolean().required(),
-      options: Yup.array().of(
+      questionOptions: Yup.array().of(
         Yup.object().shape({
-          id: Yup.number().required(),
+          id: Yup.number().nullable(),
           label: Yup.string().required('옵션 라벨은 필수입니다.'),
+          description: Yup.string(),
+          sequence: Yup.number(),
         }),
       ),
       // answers: Yup.mixed().required(),
@@ -78,14 +88,15 @@ const SurveySchema = Yup.object().shape({
 const initialValues: QuestionInitialValues = {
   title: '',
   description: '',
+  categoryId: '',
+  status: SurveyStatus.Draft,
   expiresAt: null as Date | null,
   isPublic: true,
-  status: SurveyStatus.Draft,
   questions: [] as AllQuestion[],
 };
 
 // --- COMPONENT ---
-const Survey: React.FC = () => {
+const Survey: React.FC<{ id?: string }> = ({ id }) => {
   /* hooks */
   const { endLoading } = useContext(LoadingContext);
   const { addNotice } = useContext(GlobalSnackbarContext);
@@ -96,63 +107,186 @@ const Survey: React.FC = () => {
   const [isPreview, setIsPreview] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-
-  useLayoutEffect(() => {
-    endLoading();
-  }, []);
+  const { data: categories } = useQuery<ServerResponse<GetCategoryResponse[]>>({
+    queryKey: ['categories'],
+    queryFn: () => getCategories(),
+  });
 
   // --- FORMIK ---
   const formik = useFormik({
     initialValues,
     validationSchema: SurveySchema,
     onSubmit: async (values) => {
-      for (let i = 0; i < values.questions.length; i++) {
-        const question = values.questions[i];
-        if (
-          (question.questionType === QuestionType.SingleChoice || question.questionType === QuestionType.MultipleChoice) &&
-          question.options?.length === 0
-        ) {
-          formik.setFieldTouched(`questions[${i}].options`, true);
-          formik.setFieldError(`questions[${i}].options`, '최소 1개의 옵션이 필요합니다.');
-          return;
-        }
+      if (id) {
+        handleUpdateSurvey(id, values);
+      } else {
+        handleSaveSurvey(values);
       }
+    },
+  });
 
-      setIsSubmitting(true);
+  function validateAndReturnSurveyData(values: QuestionInitialValues) {
+    console.log('🚀 ~ Survey ~ values:', values);
+    for (let i = 0; i < values.questions.length; i++) {
+      const question = values.questions[i];
+      if (
+        (question.questionType === QuestionType.SingleChoice || question.questionType === QuestionType.MultipleChoice) &&
+        question.questionOptions?.length === 0
+      ) {
+        formik.setFieldTouched(`questions[${i}].questionOptions`, true);
+        formik.setFieldError(`questions[${i}].questionOptions`, '최소 1개의 옵션이 필요합니다.');
+        return;
+      }
+    }
 
+    setIsSubmitting(true);
+
+    if (id) {
+      const surveyData: UpdateSurveyPayload = {
+        surveyFormData: {
+          categoryId: +values.categoryId,
+          title: values.title,
+          description: values.description,
+          expiresAt: values.expiresAt || null,
+          isPublic: values.isPublic,
+          status: values.status,
+        },
+        surveyQuestionData: values.questions.map((question) => ({
+          id: question.id,
+          title: question.title,
+          description: question.description,
+          questionType: question.questionType,
+          dataType: question.dataType,
+          isRequired: question.isRequired,
+          sequence: question.sequence,
+          questionOptions: (question.questionOptions || []).map((option) => ({
+            id: option.id,
+            label: option.label,
+            sequence: option.sequence,
+          })),
+        })),
+      };
+
+      return surveyData;
+    } else {
       const surveyData: CreateSurveyPayload = {
+        categoryId: +values.categoryId,
         title: values.title,
         description: values.description,
         expiresAt: values.expiresAt || null,
         isPublic: values.isPublic,
         status: values.status,
-        questions: values.questions.map(({ id, ...rest }) => ({
-          ...rest,
-          options: (rest.options || []).map(({ id, ...optRest }) => optRest), // Remove client-side IDs
+        questions: values.questions.map(({ id, idx, ...rest }) => ({
+          title: rest.title,
+          description: rest.description,
+          questionType: rest.questionType,
+          dataType: rest.dataType,
+          isRequired: rest.isRequired,
+          sequence: rest.sequence,
+          questionOptions: (rest.questionOptions || []).map(({ id, idx, ...optRest }) => ({
+            label: optRest.label,
+            sequence: optRest.sequence,
+          })), // Remove client-side IDs
         })),
         // managementPassword: managementPassword,
       };
 
-      try {
-        // Using a placeholder API endpoint
-        const response = await createSurvey(surveyData);
+      return surveyData;
+    }
+  }
 
-        if (response.ok) {
-          addNotice('설문이 성공적으로 생성되었습니다!', 'success');
-          // Reset form
-          formik.resetForm();
-        } else {
-          addNotice(response.message, 'error');
-        }
-      } catch (err) {
-        console.error(err);
-        addNotice('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
-      } finally {
-        setIsSubmitting(false);
-        router.push('/');
+  async function handleSaveSurvey(values: QuestionInitialValues) {
+    const surveyData = validateAndReturnSurveyData(values);
+
+    if (!surveyData) return;
+
+    try {
+      // Using a placeholder API endpoint
+      const response = await createSurvey(surveyData as CreateSurveyPayload);
+
+      if (response.ok) {
+        addNotice('설문이 성공적으로 생성되었습니다!', 'success');
+        // Reset form
+        formik.resetForm();
+      } else {
+        addNotice(response.message, 'error');
       }
-    },
-  });
+    } catch (err) {
+      console.error(err);
+      addNotice('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
+    } finally {
+      setIsSubmitting(false);
+      router.push('/');
+    }
+  }
+
+  async function handleUpdateSurvey(id: string, values: QuestionInitialValues) {
+    const surveyData = validateAndReturnSurveyData(values);
+
+    if (!surveyData) return;
+
+    try {
+      // Using a placeholder API endpoint
+      const response = await updateSurvey(id, surveyData as UpdateSurveyPayload);
+
+      if (response.ok) {
+        addNotice('설문이 성공적으로 수정되었습니다!', 'success');
+        // Reset form
+        formik.resetForm();
+        router.push('/');
+      } else {
+        addNotice(response.message, 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      addNotice('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  useLayoutEffect(() => {
+    console.log('🚀 ~ useLayoutEffect ~ isWrong:', id);
+    if (id) {
+      getSurveyDetail(id)
+        .then((survey) => {
+          console.log('🚀 ~ getSurveyDetail ~ survey:', survey);
+          if (survey.payload) {
+            const payload = survey.payload;
+            formik.setValues({
+              title: payload.title,
+              description: payload.description,
+              categoryId: payload.category.id.toString(),
+              status: payload.status,
+              expiresAt: payload.expiresAt,
+              isPublic: payload.isPublic,
+              questions: payload.questions.map((question) => ({
+                id: question.id,
+                idx: question.id ?? Date.now(),
+                title: question.title,
+                description: question.description,
+                questionType: question.questionType,
+                dataType: question.dataType,
+                isRequired: question.isRequired,
+                sequence: question.sequence,
+                questionOptions: question.questionOptions.map((option) => ({
+                  ...option,
+                  idx: option.id ?? Date.now(),
+                })),
+              })),
+            });
+          }
+          endLoading();
+        })
+        .catch((error) => {
+          console.log('🚀 ~ getSurveyDetail ~ error:', error);
+          addNotice('설문 정보를 불러오는데 실패했습니다.', 'error');
+          router.push('/');
+        });
+    } else {
+      endLoading();
+    }
+  }, []);
 
   useEffect(() => {
     if (formik.isSubmitting && Object.keys(formik.errors).length > 0) {
@@ -165,15 +299,17 @@ const Survey: React.FC = () => {
   const handleAddQuestion = (questionType: QuestionType, dataType?: DataType) => {
     const isSelectable = questionType === QuestionType.SingleChoice || questionType === QuestionType.MultipleChoice;
     const newQuestion: Omit<AllQuestion, 'answers'> = {
-      id: Date.now(),
+      id: null,
+      idx: Date.now(),
       title: '',
-      description: '',
+      description: null,
       questionType,
       dataType: dataType || DataType.Text,
       isRequired: false,
       // isAnswered: false,
-      options: isSelectable ? [{ id: Date.now(), label: '' }] : [],
+      questionOptions: isSelectable ? [{ id: null, label: '', sequence: 0, idx: Date.now() }] : [],
       // answers: new Map(),
+      sequence: formik.values.questions.length ?? 0,
     };
     formik.setFieldValue('questions', [...formik.values.questions, newQuestion]);
   };
@@ -181,8 +317,6 @@ const Survey: React.FC = () => {
   const handlePreview = () => {
     setIsPreview(true);
   };
-
-  const reversedQuestionTypes = Object.entries(QUESTION_TYPE_MAP).toReversed();
 
   // --- RENDER ---
   return (
@@ -246,20 +380,37 @@ const Survey: React.FC = () => {
                   <FormControlLabel value={SurveyStatus.Draft} control={<Radio />} label="초안" />
                   <FormControlLabel value={SurveyStatus.Active} control={<Radio />} label="발행" />
                 </RadioGroup>
+
+                <Select
+                  fullWidth
+                  label="카테고리 (선택)"
+                  margin="dense"
+                  {...formik.getFieldProps('categoryId')}
+                  defaultValue=""
+                  error={formik.touched.categoryId && Boolean(formik.errors.categoryId)}
+                >
+                  <MenuItem value="">선택해주세요</MenuItem>
+                  {categories?.payload?.map((category) => (
+                    <MenuItem key={category.id.toString()} value={category.id.toString()}>
+                      {category.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+                {formik.touched.categoryId && formik.errors.categoryId && <FormHelperText error>{formik.errors.categoryId}</FormHelperText>}
               </Box>
             </Paper>
 
             {formik.values.questions.map((question, index) => (
               <QuestionCard
-                key={question.id}
-                id={question.id}
+                key={question.idx}
+                idx={question.idx}
                 index={index + 1}
                 title={question.title}
-                description={question.description}
+                description={question.description ?? ''}
                 questionType={question.questionType}
                 dataType={question.dataType}
                 isRequired={question.isRequired}
-                options={question.options}
+                questionOptions={question.questionOptions}
                 questions={formik.values.questions}
                 setFieldValue={formik.setFieldValue}
                 setFieldError={formik.setFieldError}
@@ -343,7 +494,7 @@ const Survey: React.FC = () => {
             title: formik.values.title,
             name: '미리보기 사용자',
             description: formik.values.description,
-            category: '미리보기',
+            category: categories?.payload?.find((category) => category.id === formik.values.categoryId)?.name || '',
             expiresAt: formik.values.expiresAt || null,
             isPublic: formik.values.isPublic,
             participants: 0,

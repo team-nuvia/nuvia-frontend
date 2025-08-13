@@ -1,7 +1,9 @@
 import { SurveyStatus } from '@share/enums/survey-status';
+import { GetCategoryResponse } from './GetCategoryResponse';
 
 export interface GetDashboardSurveyNestedResponseDto {
   id: number;
+  category: GetCategoryResponse;
   title: string;
   description: string | null;
   isPublic: boolean;

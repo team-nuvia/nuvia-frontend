@@ -105,7 +105,7 @@ const Dashboard = () => {
     },
   ]);
   const [recentSurveys, setRecentSurveys] = useState<
-    (Pick<ISurvey, 'id' | 'title' | 'status' | 'createdAt' | 'updatedAt'> & { responses: number })[]
+    (Pick<ISurvey, 'id' | 'title' | 'status' | 'createdAt' | 'updatedAt' | 'hashedUniqueKey'> & { responses: number })[]
   >([]);
 
   const router = useRouter();
@@ -260,7 +260,7 @@ const Dashboard = () => {
                     {recentSurveys.map((survey) => (
                       <TableRow hover key={survey.id}>
                         <TableCell>
-                          <Link component={NextLink} href={`/survey/${survey.id}`} underline="hover">
+                          <Link component={NextLink} href={`/survey/view/${survey.hashedUniqueKey}`} underline="hover">
                             {survey.title}
                           </Link>
                         </TableCell>

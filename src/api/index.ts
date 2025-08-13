@@ -1,5 +1,3 @@
-'use client';
-
 import { API_URL } from '@common/variables';
 import axios from 'axios';
 
@@ -11,6 +9,7 @@ export const snapApi = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 1 * 60 * 1000,
 });
 
 snapApi.interceptors.request.use(
@@ -26,6 +25,7 @@ snapApi.interceptors.request.use(
   },
 );
 
+const MAX_RETRY_COUNT = 10;
 let maxRetryCount = 0;
 
 snapApi.interceptors.response.use(
@@ -33,33 +33,47 @@ snapApi.interceptors.response.use(
     return response;
   },
   async (error) => {
-    console.log('🚀 ~ error:', error);
-    if (error.response.data.httpStatus === 401) {
-      if (error.response.data.message === '인증되지 않은 요청입니다.') {
+    if (error.code === 'ERR_NETWORK' || error.code === 'ERR_CONNECTION_REFUSED') {
+      return Promise.reject(error);
+    }
+
+    if (error.response && error.response.status === 401) {
+      if (error.response.data && error.response.data.name === 'ExpiredTokenExceptionDto') {
+        if (maxRetryCount < MAX_RETRY_COUNT) {
+          try {
+            maxRetryCount++;
+
+            const res = await snapApi.post('/auth/refresh');
+            const accessToken = res.data.payload.accessToken;
+
+            if (accessToken) {
+              localStorage.setItem('access_token', accessToken);
+            }
+          } catch (error: any) {
+            if (error.response.data.name === 'ExpiredTokenExceptionDto') {
+              await snapApi.post('/auth/logout');
+              localStorage.removeItem('access_token');
+              maxRetryCount = 0;
+              return Promise.reject(error);
+            }
+            maxRetryCount = 0;
+            return Promise.reject(error);
+          }
+
+          try {
+            const result = await snapApi(error.config);
+            maxRetryCount = 0;
+
+            return Promise.resolve(result);
+          } catch {
+            maxRetryCount = 0;
+            return Promise.reject(error);
+          }
+        }
+      } else {
         await snapApi.post('/auth/logout');
         localStorage.removeItem('access_token');
-        window.location.href = '/auth/login';
         return Promise.reject(error);
-      }
-
-      if (maxRetryCount < 3) {
-        try {
-          maxRetryCount++;
-          await new Promise((resolve) => setTimeout(resolve, 5000));
-
-          const res = await snapApi.post('/auth/refresh');
-          const accessToken = res.data.accessToken;
-
-          localStorage.setItem('access_token', accessToken);
-
-          error.config.headers.Authorization = `Bearer ${accessToken}`;
-          return snapApi(error.config).then((res) => {
-            maxRetryCount = 0;
-            return res;
-          });
-        } catch (error) {
-          return Promise.reject(error);
-        }
       }
     }
 

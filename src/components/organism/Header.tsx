@@ -3,6 +3,7 @@
 import { BRAND_NAME, LOGO_ONLY } from '@common/variables';
 import BrandHead from '@components/molecular/BrandHead';
 import { AuthenticationContext } from '@context/AuthenticationContext';
+import { GlobalDialogContext } from '@context/GlobalDialogContext';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded';
 import { Avatar, IconButton, Menu, MenuItem, Stack, Tooltip, Typography, useTheme } from '@mui/material';
@@ -11,6 +12,7 @@ import { useContext, useMemo, useState } from 'react';
 
 interface HeaderProps {}
 const Header: React.FC<HeaderProps> = () => {
+  const { handleOpenDialog, handleCloseDialog } = useContext(GlobalDialogContext);
   const theme = useTheme();
   const { user, clearUser } = useContext(AuthenticationContext);
   const { addNotice } = useContext(GlobalSnackbarContext);

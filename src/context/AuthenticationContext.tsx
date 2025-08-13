@@ -30,23 +30,20 @@ const AuthenticationProvider = ({ children }: { children: React.ReactNode }) => 
   const fetchUser = useCallback(async () => {
     try {
       const hasAccessToken = localStorage.getItem('access_token');
-      if (!hasAccessToken) {
+      const noAccessToken = !hasAccessToken || hasAccessToken === 'undefined';
+
+      if (noAccessToken) {
+        localStorage.removeItem('access_token');
         return;
       }
 
       const response = await getVerify();
       if (response.ok && response.payload?.verified) {
         const response = await getUsersMe();
-        if (response.ok) {
-          setUser(response.payload);
-        }
-      } else {
-        await clearUser();
+        setUser(response.payload);
       }
     } catch (error) {
-      if (error instanceof AxiosError && error.code === 'ERR_BAD_RESPONSE') {
-        console.error('AuthenticationContext fetchUser error', error);
-      } else {
+      if (error instanceof AxiosError && error.code === 'ERR_NETWORK') {
         await clearUser();
       }
     }

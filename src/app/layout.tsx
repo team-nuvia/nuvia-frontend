@@ -5,6 +5,7 @@ import { BRAND_NAME } from '@common/variables';
 import Footer from '@components/organism/Footer';
 import Header from '@components/organism/Header';
 import WrapChildren from '@components/organism/WrapChildren';
+import GlobalDialogProvider from '@context/GlobalDialogContext';
 import { GlobalSnackbar } from '@context/GlobalSnackbar';
 import { GlobalSnackbarSettingProvider } from '@context/GlobalSnackbarSettingProvider';
 import { CssBaseline, ThemeProvider } from '@mui/material';
@@ -42,17 +43,19 @@ export default function RootLayout({
             <AppRouterCacheProvider>
               <ThemeProvider theme={lightTheme}>
                 <CssBaseline />
-                <GlobalSnackbarSettingProvider>
-                  <GlobalSnackbar>
-                    <LoadingProvider>
-                      {/* <Suspense fallback={<Loading />}> */}
-                      <Header />
-                      <WrapChildren>{children}</WrapChildren>
-                      <Footer />
-                      {/* </Suspense> */}
-                    </LoadingProvider>
-                  </GlobalSnackbar>
-                </GlobalSnackbarSettingProvider>
+                <GlobalDialogProvider>
+                  <GlobalSnackbarSettingProvider>
+                    <GlobalSnackbar>
+                      <LoadingProvider>
+                        {/* <Suspense fallback={<Loading />}> */}
+                        <Header />
+                        <WrapChildren>{children}</WrapChildren>
+                        <Footer />
+                        {/* </Suspense> */}
+                      </LoadingProvider>
+                    </GlobalSnackbar>
+                  </GlobalSnackbarSettingProvider>
+                </GlobalDialogProvider>
               </ThemeProvider>
             </AppRouterCacheProvider>
           </AuthenticationProvider>

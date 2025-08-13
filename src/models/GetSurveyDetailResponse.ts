@@ -1,13 +1,15 @@
 import { DataType } from '@share/enums/data-type';
 import { QuestionType } from '@share/enums/question-type';
 import { SurveyStatus } from '@share/enums/survey-status';
+import { AllQuestion } from '@share/interface/iquestion';
+import { GetCategoryResponse } from './GetCategoryResponse';
 
 export interface QuestionOptionDetailNestedResponseDto {
   id: number;
   label: string;
 }
 
-export interface QuestionDetailNestedResponseDto {
+export interface QuestionDetailNestedResponseDto extends Omit<AllQuestion, 'options'> {
   id: number;
   title: string;
   description: string | null;
@@ -19,6 +21,7 @@ export interface QuestionDetailNestedResponseDto {
 
 export interface GetSurveyDetailResponse {
   id: number;
+  category: GetCategoryResponse;
   title: string;
   description: string | null;
   author: {

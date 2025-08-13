@@ -7,7 +7,7 @@ import SaveIcon from '@mui/icons-material/Save';
 import { Alert, Box, Button, Chip, CircularProgress, Container, Grid, Paper, Snackbar, Stack, useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { TimeIcon } from '@mui/x-date-pickers/icons';
-import { IResponseSurvey } from '@share/dto/response-survey';
+import { IResponseSurveyCategory } from '@share/dto/response-survey';
 import { QuestionType } from '@share/enums/question-type';
 import { AllQuestion } from '@share/interface/iquestion';
 import { DateFormat } from '@util/dateFormat';
@@ -16,11 +16,8 @@ import axios from 'axios';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
 
-// --- HELPER FUNCTIONS ---
-const generatePassword = () => Math.random().toString(36).slice(-8);
-
 interface ResponseSurveyProps {
-  survey: IResponseSurvey;
+  survey: IResponseSurveyCategory;
 }
 // --- COMPONENT ---
 const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
@@ -94,20 +91,16 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
     setError(null);
     setSuccess(null);
 
-    // NOTE: Assuming non-member survey for now. Auth state would determine this.
-    const isMember = false;
-    const managementPassword = isMember ? '' : generatePassword();
-
     const surveyData = {
+      category: survey.category,
       title: survey.title,
       description: survey.description,
       expires_at: survey.expiresAt,
       isPublic: survey.isPublic,
       questions: questions.map(({ id, ...rest }) => ({
         ...rest,
-        options: (rest.options || []).map(({ id, ...optRest }) => optRest), // Remove client-side IDs
+        questionOptions: (rest.questionOptions || []).map(({ id, ...optRest }) => optRest), // Remove client-side IDs
       })),
-      managementPassword: managementPassword,
     };
 
     try {
@@ -116,9 +109,6 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
 
       if (response.status === 201) {
         let successMessage = '설문이 성공적으로 생성되었습니다!';
-        if (managementPassword) {
-          successMessage += ` 관리용 비밀번호: ${managementPassword}`;
-        }
         setSuccess(successMessage);
         // Reset form
         setQuestions([]);
@@ -265,7 +255,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
                     questionType={currentQuestion.questionType}
                     dataType={currentQuestion.dataType}
                     isRequired={currentQuestion.isRequired}
-                    options={currentQuestion.options}
+                    questionOptions={currentQuestion.questionOptions}
                     answers={currentQuestion.answers}
                     handleOptionChange={handleOptionChange}
                     // handleOptionClear={handleOptionClear}

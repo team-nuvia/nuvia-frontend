@@ -9,11 +9,12 @@ export declare global {
 
   interface QuestionInitialValues {
     title: string;
-    description: string;
+    description: string | null;
+    categoryId: string;
     expiresAt: Date | null;
     isPublic: boolean;
     status: SurveyStatus;
-    questions: AllQuestion[];
+    questions: Omit<AllQuestion, 'answers' | 'isAnswered'>[];
   }
 
   interface ServerResponse<T extends any> extends Payload<T> {
