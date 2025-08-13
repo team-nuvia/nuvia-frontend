@@ -1,21 +1,22 @@
-import { DataType, InputType } from '@share/enums/question-type';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import EmailIcon from '@mui/icons-material/Email';
+import EventIcon from '@mui/icons-material/Event';
+import ImageIcon from '@mui/icons-material/Image';
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import LinkIcon from '@mui/icons-material/Link';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
 import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked';
 import ShortTextIcon from '@mui/icons-material/ShortText';
-import SubjectIcon from '@mui/icons-material/Subject';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import LinkIcon from '@mui/icons-material/Link';
-import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
-import ImageIcon from '@mui/icons-material/Image';
-import EventIcon from '@mui/icons-material/Event';
-import EmailIcon from '@mui/icons-material/Email';
-import VideoCameraFrontIcon from '@mui/icons-material/VideoCameraFront';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
 import StarIcon from '@mui/icons-material/Star';
+import SubjectIcon from '@mui/icons-material/Subject';
+import VideoCameraFrontIcon from '@mui/icons-material/VideoCameraFront';
+import { DataType } from '@share/enums/data-type';
+import { QuestionType } from '@share/enums/question-type';
 
 export const QUESTION_DEFAULT_TYPE_LIST: {
-  [key in InputType]: string;
+  [key in QuestionType]: string;
 } = {
   shortText: '단답형',
   longText: '장문형',
@@ -40,34 +41,34 @@ export const QUESTION_DEFAULT_DATA_TYPE_LIST: {
 };
 
 export const QUESTION_TYPE_MAP: {
-  [key in InputType | DataType]: string;
+  [key in QuestionType | DataType]: string;
 } = {
   ...QUESTION_DEFAULT_TYPE_LIST,
   ...QUESTION_DEFAULT_DATA_TYPE_LIST,
 };
 
 export const QUESTION_DATA_TYPE_MAP: {
-  [key in InputType | DataType]: { key: InputType; type: DataType };
+  [key in QuestionType | DataType]: { key: QuestionType; type: DataType };
 } = {
-  shortText: { key: InputType.ShortText, type: DataType.Text },
-  longText: { key: InputType.LongText, type: DataType.Text },
-  singleChoice: { key: InputType.SingleChoice, type: DataType.Text },
-  multipleChoice: { key: InputType.MultipleChoice, type: DataType.Text },
-  date: { key: InputType.ShortText, type: DataType.Date },
-  time: { key: InputType.ShortText, type: DataType.Time },
-  dateTime: { key: InputType.ShortText, type: DataType.DateTime },
-  link: { key: InputType.ShortText, type: DataType.Link },
-  file: { key: InputType.ShortText, type: DataType.File },
-  image: { key: InputType.ShortText, type: DataType.Image },
-  text: { key: InputType.ShortText, type: DataType.Text },
-  email: { key: InputType.ShortText, type: DataType.Email },
-  video: { key: InputType.ShortText, type: DataType.Video },
-  location: { key: InputType.ShortText, type: DataType.Location },
-  rating: { key: InputType.ShortText, type: DataType.Rating },
+  shortText: { key: QuestionType.ShortText, type: DataType.Text },
+  longText: { key: QuestionType.LongText, type: DataType.Text },
+  singleChoice: { key: QuestionType.SingleChoice, type: DataType.Text },
+  multipleChoice: { key: QuestionType.MultipleChoice, type: DataType.Text },
+  date: { key: QuestionType.ShortText, type: DataType.Date },
+  time: { key: QuestionType.ShortText, type: DataType.Time },
+  dateTime: { key: QuestionType.ShortText, type: DataType.DateTime },
+  link: { key: QuestionType.ShortText, type: DataType.Link },
+  file: { key: QuestionType.ShortText, type: DataType.File },
+  image: { key: QuestionType.ShortText, type: DataType.Image },
+  text: { key: QuestionType.ShortText, type: DataType.Text },
+  email: { key: QuestionType.ShortText, type: DataType.Email },
+  video: { key: QuestionType.ShortText, type: DataType.Video },
+  location: { key: QuestionType.ShortText, type: DataType.Location },
+  rating: { key: QuestionType.ShortText, type: DataType.Rating },
 };
 
 export const QUESTION_DEFAULT_TYPE_ICON: {
-  [key in InputType]: React.ReactElement;
+  [key in QuestionType]: React.ReactElement;
 } = {
   shortText: <ShortTextIcon />,
   longText: <SubjectIcon />,
@@ -92,7 +93,7 @@ export const QUESTION_DEFAULT_DATA_TYPE_ICON: {
 };
 
 export const QUESTION_TYPE_ICONS: {
-  [key in InputType | DataType]: React.ReactElement;
+  [key in QuestionType | DataType]: React.ReactElement;
 } = {
   ...QUESTION_DEFAULT_TYPE_ICON,
   ...QUESTION_DEFAULT_DATA_TYPE_ICON,

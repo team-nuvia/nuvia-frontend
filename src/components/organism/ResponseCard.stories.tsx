@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
+import { DataType } from '@share/enums/data-type';
+import { QuestionType } from '@share/enums/question-type';
 import ResponseCard from './ResponseCard';
-import { DataType, InputType } from '@share/enums/question-type';
 
 const meta = {
   component: ResponseCard,
@@ -17,16 +18,13 @@ export const Default: Story = {
     index: 1,
     title: '자유입력입니다.',
     description: '자유롭게 입력해주세요.',
-    questionType: InputType.ShortText,
+    questionType: QuestionType.ShortText,
     dataType: DataType.Text,
-    required: true,
+    isRequired: true,
     answers: new Map(),
     options: [],
     handleOptionChange: (questionId, optionId, value) => {
       console.log('🚀 ~ handleOptionChange:', questionId, optionId, value);
-    },
-    handleOptionClear: () => {
-      console.log('🚀 ~ handleOptionClear:');
     },
   },
 };

@@ -1,5 +1,5 @@
-import Home from '@components/template/Home';
+import Landing from '@components/template/Landing';
 
-export default async function Page() {
-  return <Home />;
+export default function Page() {
+  return <Landing />;
 }

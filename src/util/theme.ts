@@ -1,5 +1,5 @@
 'use client';
-import { Components, createTheme, Theme } from '@mui/material/styles';
+import { Components, createTheme, Theme, ThemeOptions } from '@mui/material/styles';
 
 const commonColor = {
   primary: {
@@ -29,6 +29,85 @@ const commonColor = {
     light: '#FF5252',
     dark: '#9B0000',
   },
+};
+
+const MuiTypography: Components<Omit<Theme, 'components'>>['MuiTypography'] = {
+  defaultProps: {
+    component: 'div',
+  },
+  styleOverrides: {
+    h1: {
+      fontSize: '5rem',
+      fontWeight: 700,
+      lineHeight: '1.2',
+    },
+    h2: {
+      fontSize: '4rem',
+      fontWeight: 700,
+      lineHeight: '1.2',
+    },
+    h3: {
+      fontSize: '3rem',
+      fontWeight: 700,
+      lineHeight: '1.2',
+    },
+    h4: {
+      fontSize: '2rem',
+      fontWeight: 700,
+      lineHeight: '1.2',
+    },
+    h5: {
+      fontSize: '1.5rem',
+      fontWeight: 700,
+      lineHeight: '1.2',
+    },
+    h6: {
+      fontSize: '1.25rem',
+      fontWeight: 700,
+      lineHeight: '1.2',
+    },
+    body1: {
+      fontSize: '1rem',
+      fontWeight: 400,
+      lineHeight: '1.5',
+    },
+    body2: {
+      fontSize: '0.875rem',
+      fontWeight: 400,
+      lineHeight: '1.5',
+    },
+    caption: {
+      fontSize: '0.75rem',
+      fontWeight: 400,
+      lineHeight: '1.5',
+    },
+  },
+  variants: [
+    {
+      props: { thickness: 'thin' },
+      style: {
+        fontWeight: 300,
+      },
+    },
+    {
+      props: { thickness: 'regular' },
+      style: {
+        fontWeight: 400,
+      },
+    },
+    {
+      props: { thickness: 'medium' },
+      style: {
+        fontWeight: 500,
+      },
+    },
+    {
+      props: { thickness: 'bold' },
+      style: {
+        fontWeight: 700,
+      },
+    },
+  ],
 };
 
 const components: Components<Omit<Theme, 'components'>> = {
@@ -70,37 +149,7 @@ const components: Components<Omit<Theme, 'components'>> = {
       },
     ],
   },
-  MuiTypography: {
-    defaultProps: {
-      component: 'div',
-    },
-    variants: [
-      {
-        props: { thickness: 'thin' },
-        style: {
-          fontWeight: 300,
-        },
-      },
-      {
-        props: { thickness: 'regular' },
-        style: {
-          fontWeight: 400,
-        },
-      },
-      {
-        props: { thickness: 'medium' },
-        style: {
-          fontWeight: 500,
-        },
-      },
-      {
-        props: { thickness: 'bold' },
-        style: {
-          fontWeight: 700,
-        },
-      },
-    ],
-  },
+  MuiTypography,
 };
 
 const lightTheme = createTheme({

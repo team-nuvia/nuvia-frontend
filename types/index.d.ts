@@ -1,8 +1,20 @@
 import '@mui/material/styles';
+import { SurveyStatus } from '@share/enums/survey-status';
+import { AllQuestion } from '@share/interface/iquestion';
 
 export declare global {
   interface Payload<T> {
     payload: T | null;
+  }
+
+  interface QuestionInitialValues {
+    title: string;
+    description: string | null;
+    categoryId: string;
+    expiresAt: Date | null;
+    isPublic: boolean;
+    status: SurveyStatus;
+    questions: Omit<AllQuestion, 'answers' | 'isAnswered'>[];
   }
 
   interface ServerResponse<T extends any> extends Payload<T> {
@@ -19,6 +31,8 @@ export declare global {
     request?: () => Promise<void>;
   }
 
+  type PromiseServerResponse<T extends any> = Promise<ServerResponse<T> | void>;
+
   declare interface MenuModel {
     label: string;
     name: string;
@@ -29,9 +43,7 @@ export declare global {
 
   declare module '*.svg' {
     import * as React from 'react';
-    const ReactComponent: React.FunctionComponent<
-      React.SVGProps<SVGSVGElement>
-    >;
+    const ReactComponent: React.FunctionComponent<React.SVGProps<SVGSVGElement>>;
     export default ReactComponent;
   }
 }

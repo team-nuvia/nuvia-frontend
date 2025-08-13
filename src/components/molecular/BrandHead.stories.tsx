@@ -24,5 +24,7 @@ export const Default: Story = {
     title: BRAND_NAME,
     width: 45,
     height: 45,
+    primaryColor: '#000000',
+    secondaryColor: '#000000',
   },
 };

@@ -1,22 +1,10 @@
 import CommonText from '@components/atom/CommonText';
-import {
-  Box,
-  Checkbox,
-  Chip,
-  FormControl,
-  FormControlLabel,
-  FormGroup,
-  Grid,
-  Radio,
-  RadioGroup,
-  Rating,
-  Stack,
-  TextField,
-} from '@mui/material';
+import { Box, Checkbox, Chip, FormControl, FormControlLabel, FormGroup, Grid, Radio, RadioGroup, Rating, Stack, TextField } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-import { DataType, InputType } from '@share/enums/question-type';
+import { DataType } from '@share/enums/data-type';
+import { QuestionType } from '@share/enums/question-type';
 import { IQuestionOption } from '@share/interface/iquestion';
 import dayjs from 'dayjs';
 import { useMemo } from 'react';
@@ -39,17 +27,13 @@ interface ResponseCardProps {
   id: number;
   index: number;
   title: string;
-  description: string;
-  questionType: InputType;
+  description: string | null;
+  questionType: QuestionType;
   dataType: DataType;
-  required: boolean;
+  isRequired: boolean;
   answers?: Map<number, any>;
-  options?: IQuestionOption[];
-  handleOptionChange: (
-    questionId: number,
-    optionId: number,
-    value: any,
-  ) => void;
+  questionOptions?: IQuestionOption[];
+  handleOptionChange: (questionId: number, optionId: number, value: any) => void;
   // handleOptionClear: () => void;
 }
 const ResponseCard: React.FC<ResponseCardProps> = ({
@@ -59,9 +43,9 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
   description,
   questionType,
   dataType,
-  required,
+  isRequired,
   answers,
-  options,
+  questionOptions,
   handleOptionChange,
   // handleOptionClear,
 }) => {
@@ -106,9 +90,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
           <Rating
             size="large"
             value={answers?.get(1) ? Number(answers?.get(1)) : 0}
-            onChange={(_, value) =>
-              handleOptionChange(id, 1, value?.toString() || '1')
-            }
+            onChange={(_, value) => handleOptionChange(id, 1, value?.toString() || '1')}
             sx={{ fontSize: '3rem', mb: 2 }}
           />
           <Box
@@ -289,20 +271,10 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
           <Stack direction="row" alignItems="center" gap={2}>
             <Chip
               size="small"
-              color={
-                questionType === InputType.MultipleChoice
-                  ? 'primary'
-                  : 'default'
-              }
-              label={
-                questionType === InputType.MultipleChoice ? '다중' : '단일'
-              }
+              color={questionType === QuestionType.MultipleChoice ? 'primary' : 'default'}
+              label={questionType === QuestionType.MultipleChoice ? '다중' : '단일'}
             />
-            <Chip
-              size="small"
-              color={required ? 'error' : 'default'}
-              label={required ? '필수' : '선택'}
-            />
+            <Chip size="small" color={isRequired ? 'error' : 'default'} label={isRequired ? '필수' : '선택'} />
           </Stack>
         </Grid>
         <Grid size={{ xs: 12 }}>
@@ -311,8 +283,8 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
       </Grid>
 
       <Box sx={{ mt: 3 }}>
-        {questionType === InputType.ShortText && dynamicField}
-        {questionType === InputType.LongText && (
+        {questionType === QuestionType.ShortText && dynamicField}
+        {questionType === QuestionType.LongText && (
           <TextField
             fullWidth
             multiline
@@ -326,13 +298,10 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
             onChange={(e) => handleOptionChange(id, 1, e.target.value)}
           />
         )}
-        {questionType === InputType.SingleChoice && (
+        {questionType === QuestionType.SingleChoice && (
           <FormControl component="fieldset" fullWidth /* error={hasError} */>
-            <RadioGroup
-              value={answers?.get(1) || ''}
-              onChange={(e) => handleOptionChange(id, 1, e.target.value)}
-            >
-              {options?.map((option) => (
+            <RadioGroup value={answers?.get(1) || ''} onChange={(e) => handleOptionChange(id, 1, e.target.value)}>
+              {questionOptions?.map((option) => (
                 <FormControlLabel
                   key={option.id}
                   value={option.id}
@@ -342,8 +311,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
                     mb: 1,
                     p: 2,
                     border: '1px solid',
-                    borderColor:
-                      answers?.get(1) === option ? 'primary.main' : 'divider',
+                    borderColor: answers?.get(1) === option ? 'primary.main' : 'divider',
                     borderRadius: 2,
                     transition: 'all 0.2s',
                     '&:hover': {
@@ -355,10 +323,10 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
             </RadioGroup>
           </FormControl>
         )}
-        {questionType === InputType.MultipleChoice && (
+        {questionType === QuestionType.MultipleChoice && (
           <FormControl component="fieldset" fullWidth /* error={hasError} */>
             <FormGroup>
-              {options?.map((option) => (
+              {questionOptions?.map((option) => (
                 <FormControlLabel
                   key={option.id}
                   control={
@@ -368,9 +336,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
                         const currentAnswers = answers?.get(option.id) || [];
                         const newAnswers = e.target.checked
                           ? [...currentAnswers, option]
-                          : currentAnswers.filter(
-                              (a: IQuestionOption) => a.id !== option.id,
-                            );
+                          : currentAnswers.filter((a: IQuestionOption) => a.id !== option.id);
                         handleOptionChange(id, option.id, newAnswers);
                       }}
                     />
@@ -380,11 +346,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
                     mb: 1,
                     p: 2,
                     border: '1px solid',
-                    borderColor: (answers?.get(option.id) || []).includes(
-                      option,
-                    )
-                      ? 'primary.main'
-                      : 'divider',
+                    borderColor: (answers?.get(option.id) || []).includes(option) ? 'primary.main' : 'divider',
                     borderRadius: 2,
                     transition: 'all 0.2s',
                     '&:hover': {
@@ -396,8 +358,8 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
             </FormGroup>
           </FormControl>
         )}
-        {/* {(questionType === InputType.SingleChoice ||
-          questionType === InputType.MultipleChoice) && (
+        {/* {(questionType === QuestionType.SingleChoice ||
+          questionType === QuestionType.MultipleChoice) && (
           <FormGroup>
             {(options || []).map((option) => (
               <FormControlLabel
@@ -407,7 +369,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
                   <Checkbox
                     checked={answers?.get(option.id) ?? false}
                     onChange={(e) => {
-                      // if (questionType === InputType.SingleChoice) {
+                      // if (questionType === QuestionType.SingleChoice) {
                       //   handleOptionClear();
                       // }
                       handleOptionChange(id, option.id, e.target.checked);

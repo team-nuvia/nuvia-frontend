@@ -2,16 +2,18 @@ import AuthenticationProvider from '@/context/AuthenticationContext';
 import { LoadingProvider } from '@/context/LodingContext';
 import '@/styles/global.css';
 import { BRAND_NAME } from '@common/variables';
-import Loading from '@components/atom/Loading';
 import Footer from '@components/organism/Footer';
 import Header from '@components/organism/Header';
-import { CssBaseline, Stack, ThemeProvider } from '@mui/material';
+import WrapChildren from '@components/organism/WrapChildren';
+import GlobalDialogProvider from '@context/GlobalDialogContext';
+import { GlobalSnackbar } from '@context/GlobalSnackbar';
+import { GlobalSnackbarSettingProvider } from '@context/GlobalSnackbarSettingProvider';
+import { CssBaseline, ThemeProvider } from '@mui/material';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import ReactQueryProvider from '@util/react-query-provider';
 import { lightTheme } from '@util/theme';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
-import { Suspense } from 'react';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -41,13 +43,19 @@ export default function RootLayout({
             <AppRouterCacheProvider>
               <ThemeProvider theme={lightTheme}>
                 <CssBaseline />
-                <LoadingProvider>
-                  <Suspense fallback={<Loading />}>
-                    <Header />
-                    {children}
-                    <Footer />
-                  </Suspense>
-                </LoadingProvider>
+                <GlobalDialogProvider>
+                  <GlobalSnackbarSettingProvider>
+                    <GlobalSnackbar>
+                      <LoadingProvider>
+                        {/* <Suspense fallback={<Loading />}> */}
+                        <Header />
+                        <WrapChildren>{children}</WrapChildren>
+                        <Footer />
+                        {/* </Suspense> */}
+                      </LoadingProvider>
+                    </GlobalSnackbar>
+                  </GlobalSnackbarSettingProvider>
+                </GlobalDialogProvider>
               </ThemeProvider>
             </AppRouterCacheProvider>
           </AuthenticationProvider>
