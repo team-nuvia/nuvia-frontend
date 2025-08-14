@@ -6,7 +6,10 @@ import { GetCategoryResponse } from './GetCategoryResponse';
 
 export interface QuestionOptionDetailNestedResponseDto {
   id: number;
+  idx: number;
   label: string;
+  description: string | null;
+  sequence: number;
 }
 
 export interface QuestionDetailNestedResponseDto extends Omit<AllQuestion, 'questionOptions'> {

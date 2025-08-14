@@ -273,6 +273,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
                   id: option.id,
                   idx: option.id ?? Date.now(),
                   label: option.label,
+                  description: option.description,
                   sequence: option.sequence,
                 })),
               })),
