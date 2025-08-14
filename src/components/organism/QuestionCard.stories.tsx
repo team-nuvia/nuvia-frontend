@@ -14,14 +14,21 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
-    id: 1,
+    idx: 1,
     index: 1,
-    title: 'Question 1',
-    description: 'Description 1',
+    title: '질문 제목',
+    description: '질문 설명',
     questionType: QuestionType.ShortText,
     dataType: DataType.Text,
     isRequired: true,
-    options: [],
+    questionOptions: [
+      {
+        id: null,
+        idx: 1,
+        label: '옵션 1',
+        sequence: 0,
+      },
+    ],
     questions: [],
     setFieldValue: () => {},
     setFieldError: () => {},

@@ -1,5 +1,10 @@
-import { Stack } from '@mui/material';
-import type { Parameters, ReactRenderer } from '@storybook/nextjs-vite';
+import AuthenticationProvider from '@context/AuthenticationContext';
+import { LoadingProvider } from '@context/LodingContext';
+import { CssBaseline, Stack, ThemeProvider } from '@mui/material';
+import { AppRouterCacheProvider } from '@mui/material-nextjs/v13-appRouter';
+import type { Parameters } from '@storybook/nextjs-vite';
+import ReactQueryProvider from '@util/react-query-provider';
+import { lightTheme } from '@util/theme';
 import { PartialStoryFn } from 'storybook/internal/csf';
 
 export const parameters: Parameters = {
@@ -13,13 +18,19 @@ export const parameters: Parameters = {
 
 export function decorators(Story: PartialStoryFn) {
   return (
-    <Stack
-      direction="row"
-      justifyContent="center"
-      alignItems="center"
-      sx={{ width: '100%', height: '100vh' }}
-    >
-      <Story />
-    </Stack>
+    <ReactQueryProvider>
+      <AuthenticationProvider>
+        <AppRouterCacheProvider>
+          <ThemeProvider theme={lightTheme}>
+            <CssBaseline />
+            <LoadingProvider>
+              <Stack direction="row" justifyContent="center" alignItems="center" sx={{ width: '100%', height: '100vh' }}>
+                <Story />
+              </Stack>
+            </LoadingProvider>
+          </ThemeProvider>
+        </AppRouterCacheProvider>
+      </AuthenticationProvider>
+    </ReactQueryProvider>
   );
 }

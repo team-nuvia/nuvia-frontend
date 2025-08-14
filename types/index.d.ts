@@ -19,10 +19,10 @@ export declare global {
 
   interface ServerResponse<T extends any> extends Payload<T> {
     ok: true;
-    httpStatus: 200;
-    name: 'GetUserMeResponseDto';
-    message: '사용자 정보 조회 성공';
-    reason: null;
+    httpStatus: number;
+    name: string;
+    message: string;
+    reason: string | null;
   }
 
   interface MenuOption {

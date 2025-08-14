@@ -24,7 +24,8 @@ const DATA_TYPE_MAP = {
 };
 
 interface ResponseCardProps {
-  id: number;
+  id: number | null;
+  idx: number;
   index: number;
   title: string;
   description: string | null;
@@ -38,6 +39,7 @@ interface ResponseCardProps {
 }
 const ResponseCard: React.FC<ResponseCardProps> = ({
   id,
+  idx,
   index,
   title,
   description,
@@ -90,7 +92,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
           <Rating
             size="large"
             value={answers?.get(1) ? Number(answers?.get(1)) : 0}
-            onChange={(_, value) => handleOptionChange(id, 1, value?.toString() || '1')}
+            onChange={(_, value) => handleOptionChange(idx, 1, value?.toString() || '1')}
             sx={{ fontSize: '3rem', mb: 2 }}
           />
           <Box
@@ -119,7 +121,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
           label="이메일"
           type="email"
           value={answers?.get(1)}
-          onChange={(e) => handleOptionChange(id, 1, e.target.value)}
+          onChange={(e) => handleOptionChange(idx, 1, e.target.value)}
         />
       );
     }
@@ -131,7 +133,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
           label="링크"
           type="url"
           value={answers?.get(1)}
-          onChange={(e) => handleOptionChange(id, 1, e.target.value)}
+          onChange={(e) => handleOptionChange(idx, 1, e.target.value)}
         />
       );
     }
@@ -140,7 +142,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
         <DatePicker
           label="날짜"
           value={dayjs(answers?.get(1))}
-          onChange={(e) => handleOptionChange(id, 1, e?.toISOString() || '')}
+          onChange={(e) => handleOptionChange(idx, 1, e?.toISOString() || '')}
           slotProps={{
             textField: {
               size: 'small',
@@ -154,7 +156,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
         <DateTimePicker
           label="날짜/시간"
           value={dayjs(answers?.get(1))}
-          onChange={(e) => handleOptionChange(id, 1, e?.toISOString() || '')}
+          onChange={(e) => handleOptionChange(idx, 1, e?.toISOString() || '')}
           // onChange={(e) => handleQuestionChange(id, 'value', e?.toISOString())}
           slotProps={{
             textField: {
@@ -169,7 +171,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
         <TimePicker
           label="시간"
           value={dayjs(answers?.get(1))}
-          onChange={(e) => handleOptionChange(id, 1, e?.toISOString() || '')}
+          onChange={(e) => handleOptionChange(idx, 1, e?.toISOString() || '')}
           // onChange={(e) => handleQuestionChange(id, 'value', e?.toISOString())}
           slotProps={{
             textField: {
@@ -188,7 +190,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
           label="파일"
           type="file"
           value={answers?.get(1)}
-          onChange={(e) => handleOptionChange(id, 1, e.target.value)}
+          onChange={(e) => handleOptionChange(idx, 1, e.target.value)}
           // onChange={(e) => handleQuestionChange(id, 'value', e.target.value)}
         />
       );
@@ -207,7 +209,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
             },
           }}
           value={answers?.get(1)}
-          onChange={(e) => handleOptionChange(id, 1, e.target.value)}
+          onChange={(e) => handleOptionChange(idx, 1, e.target.value)}
           // onChange={(e) => handleQuestionChange(id, 'value', e.target.value)}
         />
       );
@@ -226,7 +228,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
             },
           }}
           value={answers?.get(1)}
-          onChange={(e) => handleOptionChange(id, 1, e.target.value)}
+          onChange={(e) => handleOptionChange(idx, 1, e.target.value)}
           // onChange={(e) => handleQuestionChange(id, 'value', e.target.value)}
         />
       );
@@ -248,11 +250,11 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
         type={inputValueType}
         value={answers?.get(1)}
         onChange={(e) => {
-          handleOptionChange(id, 1, e.target.value);
+          handleOptionChange(idx, 1, e.target.value);
         }}
       />
     );
-  }, [dataType, id, answers]);
+  }, [dataType, idx, answers]);
 
   return (
     <Box sx={{ p: 4, mt: 4 }}>
@@ -295,16 +297,16 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
               slotProps: { htmlInput: { min: 0, max: 5, step: 1 } },
             })}
             value={answers?.get(1)}
-            onChange={(e) => handleOptionChange(id, 1, e.target.value)}
+            onChange={(e) => handleOptionChange(idx, 1, e.target.value)}
           />
         )}
         {questionType === QuestionType.SingleChoice && (
           <FormControl component="fieldset" fullWidth /* error={hasError} */>
-            <RadioGroup value={answers?.get(1) || ''} onChange={(e) => handleOptionChange(id, 1, e.target.value)}>
+            <RadioGroup value={answers?.get(1) || ''} onChange={(e) => handleOptionChange(idx, 1, e.target.value)}>
               {questionOptions?.map((option) => (
                 <FormControlLabel
-                  key={option.id}
-                  value={option.id}
+                  key={option.idx}
+                  value={option.idx}
                   control={<Radio />}
                   label={option.label}
                   sx={{
@@ -328,16 +330,16 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
             <FormGroup>
               {questionOptions?.map((option) => (
                 <FormControlLabel
-                  key={option.id}
+                  key={option.idx}
                   control={
                     <Checkbox
-                      checked={(answers?.get(option.id) || []).includes(option)}
+                      checked={(answers?.get(option.idx) || []).includes(option)}
                       onChange={(e) => {
-                        const currentAnswers = answers?.get(option.id) || [];
+                        const currentAnswers = answers?.get(option.idx) || [];
                         const newAnswers = e.target.checked
                           ? [...currentAnswers, option]
-                          : currentAnswers.filter((a: IQuestionOption) => a.id !== option.id);
-                        handleOptionChange(id, option.id, newAnswers);
+                          : currentAnswers.filter((a: IQuestionOption) => a.idx !== option.idx);
+                        handleOptionChange(idx, option.idx, newAnswers);
                       }}
                     />
                   }
@@ -346,7 +348,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
                     mb: 1,
                     p: 2,
                     border: '1px solid',
-                    borderColor: (answers?.get(option.id) || []).includes(option) ? 'primary.main' : 'divider',
+                    borderColor: (answers?.get(option.idx) || []).includes(option) ? 'primary.main' : 'divider',
                     borderRadius: 2,
                     transition: 'all 0.2s',
                     '&:hover': {
