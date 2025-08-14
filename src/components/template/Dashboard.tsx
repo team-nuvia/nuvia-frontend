@@ -4,6 +4,7 @@ import { getDashboardMetadataServer } from '@api/get-dashboard-metadata.server';
 import { getDashboardRecentSurveysServer } from '@api/get-dashboard-recent-surveys-server';
 import { SURVEY_STATUS_LABELS } from '@common/variables';
 import ActionButton from '@components/atom/ActionButton';
+import UserOrganizationSelect from '@components/molecular/UserOrganizationSelect';
 import LoadingContext from '@context/LodingContext';
 import { Add, BarChart, CheckCircleOutline, DonutLarge, PeopleAlt } from '@mui/icons-material';
 import {
@@ -21,7 +22,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Typography,
+  Typography
 } from '@mui/material';
 import { SurveyStatus } from '@share/enums/survey-status';
 import { ISurvey } from '@share/interface/isurvey';
@@ -157,17 +158,13 @@ const Dashboard = () => {
     <Box sx={{ flexGrow: 1, bgcolor: 'grey.50', p: 4 }}>
       <Container maxWidth="lg">
         {/* Header */}
-        <Box
-          sx={{
-            mb: 4,
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <Typography variant="h4" component="h1" fontWeight="bold">
-            대시보드
-          </Typography>
+        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={4}>
+          <Stack direction="row" alignItems="center" gap={1}>
+            <Typography variant="h4" component="h1" fontWeight="bold">
+              대시보드
+            </Typography>
+            <UserOrganizationSelect />
+          </Stack>
           <ActionButton
             variant="contained"
             color="primary"
@@ -179,7 +176,7 @@ const Dashboard = () => {
           >
             새 설문 만들기
           </ActionButton>
-        </Box>
+        </Stack>
 
         {/* KPI Cards */}
         <Grid container spacing={4}>

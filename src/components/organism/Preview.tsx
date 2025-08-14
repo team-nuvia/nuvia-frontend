@@ -4,11 +4,11 @@ import CloseIcon from '@mui/icons-material/Close';
 import FullscreenIcon from '@mui/icons-material/Fullscreen';
 import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 import { Box, Chip, Container, Divider, IconButton, Paper, Stack, Typography, useTheme } from '@mui/material';
-import { IResponseSurveyCategory } from '@share/dto/response-survey';
+import { IResponseSurveyQuestionWithAnswers } from '@share/dto/response-survey';
 import { useState } from 'react';
 
 interface PreviewProps {
-  survey: IResponseSurveyCategory;
+  survey: IResponseSurveyQuestionWithAnswers;
   handleClose: () => void;
 }
 

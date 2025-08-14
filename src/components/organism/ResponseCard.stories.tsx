@@ -14,7 +14,8 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
-    id: 1,
+    id: null,
+    idx: 1,
     index: 1,
     title: '자유입력입니다.',
     description: '자유롭게 입력해주세요.',
@@ -22,7 +23,7 @@ export const Default: Story = {
     dataType: DataType.Text,
     isRequired: true,
     answers: new Map(),
-    options: [],
+    questionOptions: [],
     handleOptionChange: (questionId, optionId, value) => {
       console.log('🚀 ~ handleOptionChange:', questionId, optionId, value);
     },

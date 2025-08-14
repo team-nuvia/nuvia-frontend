@@ -494,11 +494,16 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
             title: formik.values.title,
             name: '미리보기 사용자',
             description: formik.values.description,
-            category: categories?.payload?.find((category) => category.id === formik.values.categoryId)?.name || '',
+            category: categories?.payload?.find((category) => category.id === Number(formik.values.categoryId)) || { id: 0, name: '' },
             expiresAt: formik.values.expiresAt || null,
             isPublic: formik.values.isPublic,
             participants: 0,
-            questions: formik.values.questions,
+            questions: formik.values.questions.map((question) => ({
+              ...question,
+              id: question.id,
+              idx: question.idx,
+              sequence: question.sequence,
+            })),
             createdAt: new Date(),
             updatedAt: new Date(),
           }}

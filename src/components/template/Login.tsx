@@ -8,6 +8,7 @@ import { AuthenticationContext } from '@context/AuthenticationContext';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import LoadingContext from '@context/LodingContext';
 import { Box, Container, Grid, Link, Stack, TextField } from '@mui/material';
+import { useMutation } from '@tanstack/react-query';
 import { isNil } from '@util/isNil';
 import { AxiosError } from 'axios';
 import { useFormik } from 'formik';
@@ -38,13 +39,31 @@ const Login: React.FC<LoginProps> = () => {
       handleSubmit(values);
     },
   });
+  const { mutate: loginMutation } = useMutation({
+    mutationFn: (values: { email: string; password: string }) => login(values.email, values.password),
+    mutationKey: ['login'],
+    onSuccess: (response) => {
+      addNotice(response.message, 'success');
+      fetchUser();
+      router.push('/');
+    },
+    onError: (error) => {
+      const axiosError = error as AxiosError;
+      const response = axiosError.response;
+      const errorData = response?.data as ServerResponse<any>;
+      if (errorData.httpStatus !== 500) {
+        addNotice(errorData.message, 'error');
+      } else {
+        addNotice('로그인에 실패했습니다. 관리자에게 문의해주세요.', 'error');
+      }
+    },
+  });
 
   useLayoutEffect(() => {
     startLoading('페이지 로드 중...');
   }, []);
 
   useEffect(() => {
-    console.log('🚀 ~ Login ~ user:', user);
     if (!isNil(user)) {
       addNotice('이미 로그인한 상태입니다.', 'warning');
       router.push('/');
@@ -54,20 +73,21 @@ const Login: React.FC<LoginProps> = () => {
   }, []);
 
   async function handleSubmit(values: { email: string; password: string }) {
-    try {
-      const response = await login(values.email, values.password);
-      console.log('🚀 ~ handleSubmit ~ response:', response);
-      if (response.ok) {
-        await fetchUser();
-        addNotice(response.message, 'success');
-        router.push('/');
-      } else {
-        addNotice(response.message, 'error');
-      }
-    } catch (error: unknown) {
-      console.log('🚀 ~ handleSubmit ~ error:', error);
-      addNotice(error instanceof AxiosError ? error.response?.data.message : '알 수 없는 오류가 발생했습니다.', 'error');
-    }
+    loginMutation(values);
+    // try {
+    //   const response = await login(values.email, values.password);
+    //   console.log('🚀 ~ handleSubmit ~ response:', response);
+    //   if (response.ok) {
+    //     await fetchUser();
+    //     addNotice(response.message, 'success');
+    //     router.push('/');
+    //   } else {
+    //     addNotice(response.message, 'error');
+    //   }
+    // } catch (error: unknown) {
+    //   console.log('🚀 ~ handleSubmit ~ error:', error);
+    //   addNotice(error instanceof AxiosError ? error.response?.data.message : '알 수 없는 오류가 발생했습니다.', 'error');
+    // }
   }
 
   return (

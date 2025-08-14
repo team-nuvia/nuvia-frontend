@@ -2,14 +2,14 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  async rewrites() {
-    return [
-      {
-        source: '/api/v1/:path*',
-        destination: 'http://localhost:3000/api/v1/:path*',
-      },
-    ];
-  },
+  // async rewrites() {
+  //   return [
+  //     {
+  //       source: '/api/v1/:path*',
+  //       destination: 'http://localhost:3000/api/v1/:path*',
+  //     },
+  //   ];
+  // },
   images: {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
