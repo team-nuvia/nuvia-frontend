@@ -1,6 +1,6 @@
 'use client';
 
-import { GetSurveyDetailResponse, QuestionDetailNestedResponseDto } from '@/models/GetSurveyDetailResponse';
+import { QuestionDetailNestedResponseDto } from '@/models/GetSurveyDetailResponse';
 import { getSurveyDetailView } from '@api/get-survey-detail-view';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import LoadingContext from '@context/LodingContext';
@@ -31,9 +31,10 @@ import {
 } from '@mui/material';
 import { DataType } from '@share/enums/data-type';
 import { QuestionType } from '@share/enums/question-type';
+import { useMutation } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useLayoutEffect, useState } from 'react';
 
 interface Question {
   id: string;
@@ -68,7 +69,7 @@ export default function SurveyDetail({ hash }: { hash?: string }) {
   const { addNotice } = useContext(GlobalSnackbarContext);
   const theme = useTheme();
   const router = useRouter();
-  const [survey, setSurvey] = useState<GetSurveyDetailResponse | null>(null);
+  // const [survey, setSurvey] = useState<GetSurveyDetailResponse | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -76,28 +77,41 @@ export default function SurveyDetail({ hash }: { hash?: string }) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [startTime] = useState(Date.now());
   const { loading, endLoading } = useContext(LoadingContext);
+  const { mutate: getSurveyDetail, data: surveyData } = useMutation({
+    mutationFn: () => getSurveyDetailView(hash ?? ''),
+    onSuccess: (data) => {
+      console.log('🚀 ~ data:', data);
+      endLoading();
+    },
+  });
+
+  useLayoutEffect(() => {
+    getSurveyDetail();
+  }, []);
 
   // Load survey data
-  useEffect(() => {
-    const loadSurvey = async () => {
-      if (hash) {
-        getSurveyDetailView(hash)
-          .then((survey) => {
-            setSurvey(survey.payload);
-            endLoading();
-          })
-          .catch((error) => {
-            console.log('🚀 ~ loadSurvey ~ error:', error);
-            addNotice('설문 정보를 불러오는데 실패했습니다.', 'error');
-            router.back();
-          });
-      } else {
-        endLoading();
-      }
-    };
+  // useEffect(() => {
+  //   const loadSurvey = async () => {
+  //     if (hash) {
+  //       getSurveyDetailView(hash)
+  //         .then((survey) => {
+  //           setSurvey(survey.payload);
+  //           endLoading();
+  //         })
+  //         .catch((error) => {
+  //           console.log('🚀 ~ loadSurvey ~ error:', error);
+  //           addNotice('설문 정보를 불러오는데 실패했습니다.', 'error');
+  //           router.back();
+  //         });
+  //     } else {
+  //       endLoading();
+  //     }
+  //   };
 
-    loadSurvey();
-  }, []);
+  //   loadSurvey();
+  // }, []);
+
+  const survey = surveyData?.payload;
 
   const currentQuestion = survey?.questions[currentStep];
   const isLastQuestion = currentStep === (survey?.questions.length || 0) - 1;
@@ -187,13 +201,14 @@ export default function SurveyDetail({ hash }: { hash?: string }) {
   const renderQuestion = (question: QuestionDetailNestedResponseDto) => {
     const answer = answers[question.id];
     const hasError = !!errors[question.id];
+    console.log('🚀 ~ renderQuestion ~ question:', question);
 
     switch (question.questionType) {
       case QuestionType.SingleChoice:
         return (
           <FormControl component="fieldset" fullWidth error={hasError}>
             <RadioGroup value={answer || ''} onChange={(e) => handleAnswerChange(question.id, e.target.value)}>
-              {question.options?.map((option) => (
+              {question.questionOptions?.map((option) => (
                 <FormControlLabel
                   key={option.id}
                   value={option.label}
@@ -220,7 +235,7 @@ export default function SurveyDetail({ hash }: { hash?: string }) {
         return (
           <FormControl component="fieldset" fullWidth error={hasError}>
             <FormGroup>
-              {question.options?.map((option) => (
+              {question.questionOptions?.map((option) => (
                 <FormControlLabel
                   key={option.id}
                   control={

@@ -3,8 +3,10 @@ import { updateUserOrganization } from '@api/update-user-organization';
 import { MenuItem, Select } from '@mui/material';
 import { useMutation, useQuery } from '@tanstack/react-query';
 
-interface UserOrganizationSelectProps {}
-const UserOrganizationSelect: React.FC<UserOrganizationSelectProps> = () => {
+interface UserOrganizationSelectProps {
+  refetchCallback: () => void;
+}
+const UserOrganizationSelect: React.FC<UserOrganizationSelectProps> = ({ refetchCallback }) => {
   const { data, refetch } = useQuery({
     queryKey: ['user-organizations'],
     queryFn: getUserOrganizations,
@@ -16,6 +18,7 @@ const UserOrganizationSelect: React.FC<UserOrganizationSelectProps> = () => {
     },
     onSuccess: () => {
       refetch();
+      refetchCallback();
     },
   });
 
@@ -29,7 +32,10 @@ const UserOrganizationSelect: React.FC<UserOrganizationSelectProps> = () => {
     <Select
       value={currentOrganization?.id}
       onChange={(e) => {
-        const organization = organizations?.find((organization) => organization.id === e.target.value);
+        const organization = organizations?.find((organization) => {
+          return organization.id === e.target.value;
+        });
+        console.log('🚀 ~ organization:', organization);
         if (organization) {
           updateUserOrganizationMutation({ organizationId: organization.id });
         }

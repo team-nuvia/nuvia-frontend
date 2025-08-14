@@ -61,9 +61,9 @@ snapApi.interceptors.response.use(
           }
 
           try {
+            error.config.headers.Authorization = `Bearer ${localStorage.getItem('access_token')}`;
             const result = await snapApi(error.config);
             maxRetryCount = 0;
-
             return Promise.resolve(result);
           } catch {
             maxRetryCount = 0;
