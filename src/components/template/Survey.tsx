@@ -270,8 +270,10 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
                 isRequired: question.isRequired,
                 sequence: question.sequence,
                 questionOptions: question.questionOptions.map((option) => ({
-                  ...option,
+                  id: option.id,
                   idx: option.id ?? Date.now(),
+                  label: option.label,
+                  sequence: option.sequence,
                 })),
               })),
             });

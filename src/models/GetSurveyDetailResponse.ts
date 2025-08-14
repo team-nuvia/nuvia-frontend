@@ -9,14 +9,14 @@ export interface QuestionOptionDetailNestedResponseDto {
   label: string;
 }
 
-export interface QuestionDetailNestedResponseDto extends Omit<AllQuestion, 'options'> {
+export interface QuestionDetailNestedResponseDto extends Omit<AllQuestion, 'questionOptions'> {
   id: number;
   title: string;
   description: string | null;
   isRequired: boolean;
   questionType: QuestionType;
   dataType: DataType;
-  options: QuestionOptionDetailNestedResponseDto[];
+  questionOptions: QuestionOptionDetailNestedResponseDto[];
 }
 
 export interface GetSurveyDetailResponse {

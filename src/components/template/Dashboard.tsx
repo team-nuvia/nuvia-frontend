@@ -22,136 +22,73 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Typography
+  Typography,
 } from '@mui/material';
 import { SurveyStatus } from '@share/enums/survey-status';
-import { ISurvey } from '@share/interface/isurvey';
+import { useQuery } from '@tanstack/react-query';
 import NextLink from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useContext, useLayoutEffect, useState } from 'react';
-
-// --- Mock Data ---
-
-// const recentSurveys = [
-//   {
-//     id: 1,
-//     title: '2024년 고객 만족도 조사',
-//     status: '진행중',
-//     responses: 1204,
-//     createdAt: '2024-06-28',
-//   },
-//   {
-//     id: 2,
-//     title: '신제품 아이디어 공모',
-//     status: '마감',
-//     responses: 350,
-//     createdAt: '2024-06-15',
-//   },
-//   {
-//     id: 3,
-//     title: '사내 복지 만족도 설문',
-//     status: '진행중',
-//     responses: 88,
-//     createdAt: '2024-07-02',
-//   },
-//   {
-//     id: 4,
-//     title: '서비스 UI/UX 개선 피드백',
-//     status: '초안',
-//     responses: 0,
-//     createdAt: '2024-07-04',
-//   },
-// ];
+import { useCallback, useContext, useLayoutEffect, useMemo } from 'react';
 
 const Dashboard = () => {
-  const [kpiData, setKpiData] = useState<
-    {
-      title: string;
-      type: 'number' | 'percentage';
-      total?: number;
-      value: number;
-      icon: React.ReactNode;
-      color: string;
-    }[]
-  >([
-    {
-      title: '총 설문 수',
-      type: 'number',
-      value: 0,
-      icon: <BarChart sx={{ fontSize: 40 }} />,
-      color: 'primary.main',
-    },
-    {
-      title: '총 응답 수',
-      type: 'number',
-      value: 0,
-      icon: <PeopleAlt sx={{ fontSize: 40 }} />,
-      color: 'success.main',
-    },
-    {
-      title: '평균 응답률',
-      type: 'percentage',
-      total: 0,
-      value: 0,
-      icon: <CheckCircleOutline sx={{ fontSize: 40 }} />,
-      color: 'warning.main',
-    },
-    {
-      title: '플랜 사용량',
-      type: 'percentage',
-      total: 0,
-      value: 0,
-      icon: <DonutLarge sx={{ fontSize: 40 }} />,
-      color: 'error.main',
-    },
-  ]);
-  const [recentSurveys, setRecentSurveys] = useState<
-    (Pick<ISurvey, 'id' | 'title' | 'status' | 'createdAt' | 'updatedAt' | 'hashedUniqueKey'> & { responses: number })[]
-  >([]);
+  const { data: metadataData, refetch: refetchMetadata } = useQuery({
+    queryKey: ['dashboard-metadata'],
+    queryFn: getDashboardMetadataServer,
+  });
+  const { data: recentSurveysData, refetch: refetchRecentSurveys } = useQuery({
+    queryKey: ['dashboard-recent-surveys'],
+    queryFn: getDashboardRecentSurveysServer,
+  });
+
+  useLayoutEffect(() => {
+    if (metadataData?.payload && recentSurveysData?.payload) {
+      endLoading();
+    }
+  }, [metadataData, recentSurveysData]);
+
+  const kpiData = useMemo(() => {
+    return [
+      {
+        title: '총 설문 수',
+        type: 'number',
+        value: metadataData?.payload?.totalSurveyCount ?? 0,
+        icon: <BarChart sx={{ fontSize: 40 }} />,
+        color: 'primary.main',
+      },
+      {
+        title: '총 응답 수',
+        type: 'number',
+        value: metadataData?.payload?.totalRespondentCount ?? 0,
+        icon: <PeopleAlt sx={{ fontSize: 40 }} />,
+        color: 'success.main',
+      },
+      {
+        title: '최근 30일 응답 증가율',
+        type: 'percentage',
+        total: metadataData?.payload?.respondentIncreaseRate.previousMonthRespondentCount ?? 0,
+        value:
+          ((metadataData?.payload?.respondentIncreaseRate.currentMonthRespondentCount ?? 0) -
+            (metadataData?.payload?.respondentIncreaseRate.previousMonthRespondentCount ?? 0)) *
+          100,
+        icon: <CheckCircleOutline sx={{ fontSize: 40 }} />,
+        color: 'warning.main',
+      },
+      {
+        title: '플랜 사용량',
+        type: 'percentage',
+        total: metadataData?.payload?.planUsage.limit ?? 0,
+        value: metadataData?.payload?.planUsage.usage ?? 0,
+        icon: <DonutLarge sx={{ fontSize: 40 }} />,
+        color: 'error.main',
+      },
+    ];
+  }, [metadataData]);
 
   const router = useRouter();
   const { endLoading } = useContext(LoadingContext);
-
-  useLayoutEffect(() => {
-    Promise.all([getDashboardMetadataServer(), getDashboardRecentSurveysServer()]).then(([metadata, recentSurveys]) => {
-      setKpiData([
-        {
-          title: '총 설문 수',
-          type: 'number',
-          value: metadata.payload?.totalSurveyCount ?? 0,
-          icon: <BarChart sx={{ fontSize: 40 }} />,
-          color: 'primary.main',
-        },
-        {
-          title: '총 응답 수',
-          type: 'number',
-          value: metadata.payload?.totalRespondentCount ?? 0,
-          icon: <PeopleAlt sx={{ fontSize: 40 }} />,
-          color: 'success.main',
-        },
-        {
-          title: '최근 30일 응답 증가율',
-          type: 'percentage',
-          total: metadata.payload?.respondentIncreaseRate.previousMonthRespondentCount ?? 0,
-          value:
-            ((metadata.payload?.respondentIncreaseRate.currentMonthRespondentCount ?? 0) -
-              (metadata.payload?.respondentIncreaseRate.previousMonthRespondentCount ?? 0)) *
-            100,
-          icon: <CheckCircleOutline sx={{ fontSize: 40 }} />,
-          color: 'warning.main',
-        },
-        {
-          title: '플랜 사용량',
-          type: 'percentage',
-          total: metadata.payload?.planUsage.limit ?? 0,
-          value: metadata.payload?.planUsage.usage ?? 0,
-          icon: <DonutLarge sx={{ fontSize: 40 }} />,
-          color: 'error.main',
-        },
-      ]);
-      setRecentSurveys(recentSurveys.payload ?? []);
-      endLoading();
-    });
+  const refetchDashboardData = useCallback(() => {
+    refetchMetadata();
+    refetchRecentSurveys();
   }, []);
 
   return (
@@ -163,7 +100,7 @@ const Dashboard = () => {
             <Typography variant="h4" component="h1" fontWeight="bold">
               대시보드
             </Typography>
-            <UserOrganizationSelect />
+            <UserOrganizationSelect refetchCallback={refetchDashboardData} />
           </Stack>
           <ActionButton
             variant="contained"
@@ -254,7 +191,7 @@ const Dashboard = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {recentSurveys.map((survey) => (
+                    {recentSurveysData?.payload?.map((survey) => (
                       <TableRow hover key={survey.id}>
                         <TableCell>
                           <Link component={NextLink} href={`/survey/view/${survey.hashedUniqueKey}`} underline="hover">
