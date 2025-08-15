@@ -277,6 +277,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                     error={questionTouched && Boolean(optionsErrors[optIndex]?.label)}
                     helperText={questionTouched && optionsErrors[optIndex]?.label}
                     required
+                    autoFocus={questionOptions?.length === optIndex + 1}
                   />
                 </Grid>
                 <Grid size={{ xs: 1 }}>
