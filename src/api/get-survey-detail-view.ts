@@ -1,8 +1,7 @@
-import { GetSurveyDetailResponse } from '@/models/GetSurveyDetailResponse';
+import { PreviewPayload } from '@/models/PreviewPayload';
 import { snapApi } from '.';
 
 export const getSurveyDetailView = async (hashedUniqueKey: string) => {
-  const response = await snapApi.get<ServerResponse<GetSurveyDetailResponse>>(`/surveys/view/${hashedUniqueKey}`);
-  console.log('🚀 ~ getSurveyDetailView ~ response:', response.data);
+  const response = await snapApi.get<ServerResponse<PreviewPayload>>(`/surveys/view/${hashedUniqueKey}`);
   return response.data;
 };

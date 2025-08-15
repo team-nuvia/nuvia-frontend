@@ -1,78 +1,143 @@
+import { AnswerPayload } from '@/models/AnswerPayload';
+import { PreviewPayload } from '@/models/PreviewPayload';
+import { createAnswer } from '@api/create-answer';
+import ActionButton from '@components/atom/ActionButton';
 import CommonText from '@components/atom/CommonText';
 import SurveyProgress from '@components/molecular/SurveyProgress';
 import UserDescription from '@components/molecular/UserDescription';
 import ResponseCard from '@components/organism/ResponseCard';
-import { ArrowBack, ArrowForward, Category, People } from '@mui/icons-material';
+import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
+import { ArrowBack, ArrowForward, Category, CheckCircle, Person, ThumbUp } from '@mui/icons-material';
 import SaveIcon from '@mui/icons-material/Save';
-import { Alert, Box, Button, Chip, CircularProgress, Container, Grid, Paper, Snackbar, Stack, useMediaQuery } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  CircularProgress,
+  Container,
+  Divider,
+  Fade,
+  Grid,
+  Paper,
+  Stack,
+  Typography,
+  useMediaQuery,
+} from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { TimeIcon } from '@mui/x-date-pickers/icons';
-import { IResponseSurveyQuestionWithAnswers } from '@share/dto/response-survey';
 import { QuestionType } from '@share/enums/question-type';
+import { useMutation } from '@tanstack/react-query';
 import { DateFormat } from '@util/dateFormat';
 import { isEmpty } from '@util/isEmpty';
-import axios from 'axios';
+import { isNil } from '@util/isNil';
+import { AxiosError } from 'axios';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useContext, useEffect, useMemo, useState } from 'react';
 
 interface ResponseSurveyProps {
-  survey: IResponseSurveyQuestionWithAnswers;
+  survey: PreviewPayload;
 }
 // --- COMPONENT ---
 const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
   // --- STATE ---
-  const [questions, setQuestions] = useState<IResponseSurveyQuestionWithAnswers['questions']>(survey.questions);
+  const router = useRouter();
+  const [questions, setQuestions] = useState<PreviewPayload['questions']>(survey.questions);
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const { addNotice } = useContext(GlobalSnackbarContext);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [direction, setDirection] = useState<'next' | 'previous'>('next');
-
-  useEffect(() => {
+  const getQuestionProcess = () => {
     const totalQuestions = questions.length;
     const answeredQuestions = questions.filter(
       (question) => question.isAnswered || (question.answers?.values().some((item) => !isEmpty(item)) && question.answers?.size > 0),
     ).length;
-    setProgress(Math.round((answeredQuestions / totalQuestions) * 100) || 0);
+    return Math.round((answeredQuestions / totalQuestions) * 100) || 0;
+  };
+  const { mutate: createAnswerMutate } = useMutation({
+    mutationFn: ({ surveyId, answerData }: { surveyId: number; answerData: AnswerPayload }) => createAnswer(surveyId, answerData),
+    onSuccess: (response) => {
+      console.log('🚀 ~ ResponseSurvey ~ response:', response);
+      if (response.httpStatus === 201) {
+        addNotice(response.message, 'success');
+        // Reset form
+        setIsSubmitted(true);
+        setQuestions([]);
+      } else {
+        addNotice(`오류: ${response.statusText}`, 'error');
+      }
+      setIsSubmitting(false);
+    },
+    onError: (error: AxiosError<ServerResponse<void>>) => {
+      console.log('🚀 ~ ResponseSurvey ~ error:', error);
+      addNotice(error?.response?.data?.message || '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
+      setIsSubmitting(false);
+    },
+  });
+
+  const isAllAnswered = useMemo(() => {
+    return getQuestionProcess() === 100;
+  }, [questions]);
+
+  useEffect(() => {
+    setProgress(getQuestionProcess());
   }, [questions, currentStep]);
 
-  function handleOptionChange<T extends string>(questionIdx: number, optionIdx: number, value: T) {
+  function handleOptionChange<T extends string>(questionIdx: number, optionIdx: number | null, value: T | null) {
     setErrors((errors) => {
       const newErrors = { ...errors };
       delete newErrors[questionIdx];
       return newErrors;
     });
-    setQuestions((questions) =>
-      questions.map((q) => {
+    setQuestions((questions) => {
+      return questions.map((q) => {
         if (q.idx === questionIdx) {
           if (q.questionType === QuestionType.SingleChoice) {
             q.answers?.clear();
-            q.answers?.set(optionIdx, value);
-          } else {
-            if (isEmpty(value) || value.length === 0) {
-              q.answers?.delete(optionIdx);
+            q.answers?.set(1, {
+              optionId: optionIdx,
+              value: null,
+            });
+          } else if (q.questionType === QuestionType.MultipleChoice) {
+            if (optionIdx === null) {
+              q.answers?.clear();
             } else {
-              q.answers?.set(optionIdx, value);
+              if (!value) {
+                q.answers?.delete(optionIdx as number);
+              } else {
+                q.answers?.set(optionIdx as number, {
+                  optionId: optionIdx,
+                  value: null,
+                });
+              }
+            }
+          } else {
+            if (value) {
+              q.answers?.set(1, {
+                optionId: null,
+                value: value,
+              });
+            } else {
+              q.answers?.delete(1);
             }
           }
-          q.answers = new Map(q.answers || []);
         }
-        return q;
-      }),
-    );
+        return { ...q };
+      });
+    });
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    console.log('🚀 ~ handleSubmit ~ questions:', questions);
-    const isAllAnswered = questions.every(
-      (item) => item.isAnswered || (item.answers?.size && item.answers?.size > 0 && item.answers?.values().some((item) => !isEmpty(item))),
-    );
     if (!isAllAnswered) {
       for (const q of questions) {
         if (q.isRequired && !q.isAnswered) {
@@ -87,39 +152,35 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
     }
 
     setIsSubmitting(true);
-    setError(null);
-    setSuccess(null);
+    // setError(null);
+    // setSuccess(null);
 
-    const surveyData = {
-      category: survey.category,
-      title: survey.title,
-      description: survey.description,
-      expires_at: survey.expiresAt,
-      isPublic: survey.isPublic,
-      questions: questions.map(({ id, ...rest }) => ({
-        ...rest,
-        questionOptions: (rest.questionOptions || []).map(({ id, ...optRest }) => optRest), // Remove client-side IDs
-      })),
+    const answerData: AnswerPayload = {
+      answers: questions.map(({ idx, ...rest }) => {
+        if (rest.questionType === QuestionType.MultipleChoice || rest.questionType === QuestionType.SingleChoice) {
+          const values = rest.answers.values();
+          const optionIds = Array.from(values)
+            .map(({ optionId }) => optionId)
+            .filter((optionId) => !isNil(optionId));
+          return {
+            questionId: rest.id ?? 0,
+            optionIds,
+            value: null,
+          };
+        }
+        const values = rest.answers.values();
+        const value = Array.from(values)
+          .map(({ value }) => value)
+          .filter((value) => !isNil(value) && value);
+        return {
+          questionId: rest.id ?? 0,
+          optionIds: null, // Remove client-side IDs
+          value: '' + value[0],
+        };
+      }),
     };
 
-    try {
-      // Using a placeholder API endpoint
-      const response = await axios.post('/api/nuvia/surveys', surveyData);
-
-      if (response.status === 201) {
-        const successMessage = '설문이 성공적으로 생성되었습니다!';
-        setSuccess(successMessage);
-        // Reset form
-        setQuestions([]);
-      } else {
-        setError(`오류: ${response.statusText}`);
-      }
-    } catch (err) {
-      setError('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
-      console.error(err);
-    } finally {
-      setIsSubmitting(false);
-    }
+    createAnswerMutate({ surveyId: survey.id ?? 0, answerData });
   };
 
   const validateCurrentQuestion = () => {
@@ -131,9 +192,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
 
     if (currentQuestion.isRequired) {
       if (!isAnswered || answers?.size === 0) {
-        if (currentQuestion.id) {
-          newErrors[currentQuestion.id] = '이 질문은 필수입니다';
-        }
+        newErrors[currentQuestion.idx] = '이 질문은 필수입니다';
         setErrors(newErrors);
         return false;
       }
@@ -142,10 +201,8 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
     for (const answer of answers?.values() || []) {
       if (currentQuestion.dataType === 'email' && isAnswered) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(answer)) {
-          if (currentQuestion.id) {
-            newErrors[currentQuestion.id] = '올바른 이메일 형식을 입력해주세요';
-          }
+        if (!emailRegex.test(answer.value as string)) {
+          newErrors[currentQuestion.idx] = '올바른 이메일 형식을 입력해주세요';
           setErrors(newErrors);
           return false;
         }
@@ -191,15 +248,123 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
   const currentQuestion = useMemo(() => {
     return questions[currentStep];
   }, [questions, currentStep]);
-  // console.log('🚀 ~ currentQuestion ~ currentQuestion:', currentQuestion);
   const isLastQuestion = currentStep === questions.length - 1;
 
-  /* 질문당 40초 */
-  const estimatedTime = `${questions.length * 40}초`;
+  if (isSubmitted) {
+    return (
+      <Container maxWidth="md" sx={{ py: 8 }}>
+        <motion.div
+          key={currentStep}
+          initial={{ opacity: 0, scale: 0.9, y: 50 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.9, y: -50 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+        >
+          <Card
+            sx={{
+              textAlign: 'center',
+              p: { xs: 4, md: 8 },
+              background: `linear-gradient(135deg, ${theme.palette.primary.light}, ${theme.palette.secondary.light})`,
+              borderRadius: 4,
+              boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ delay: 0.3, type: 'spring', stiffness: 150, damping: 10 }}
+            >
+              <CheckCircle color="success" sx={{ fontSize: 80, color: 'white', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))' }} />
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.6 }}>
+              <Typography
+                variant="h3"
+                sx={{
+                  mb: 3,
+                  fontWeight: 700,
+                  color: 'white',
+                  fontSize: { xs: '2rem', md: '3rem' },
+                  textShadow: '0 2px 10px rgba(0,0,0,0.3)',
+                }}
+              >
+                응답이 완료되었습니다!
+              </Typography>
+
+              <Typography
+                variant="h6"
+                sx={{
+                  mb: 5,
+                  color: 'rgba(255,255,255,0.95)',
+                  fontSize: { xs: '1.1rem', md: '1.3rem' },
+                  fontWeight: 400,
+                  letterSpacing: '0.5px',
+                }}
+              >
+                소중한 의견을 주셔서 감사합니다
+              </Typography>
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7, duration: 0.5 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: { xs: 'column', sm: 'row' },
+                  justifyContent: 'center',
+                  gap: { xs: 2, sm: 3 },
+                  mb: 6,
+                  alignItems: 'center',
+                }}
+              >
+                <Chip
+                  icon={<Person />}
+                  label={`총 ${survey.totalResponses + 1}명 참여`}
+                  sx={{
+                    backgroundColor: 'rgba(255,255,255,0.25)',
+                    color: 'white',
+                    fontWeight: 600,
+                    fontSize: '0.9rem',
+                    height: 40,
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255,255,255,0.3)',
+                    '& .MuiChip-icon': {
+                      color: 'white',
+                    },
+                  }}
+                />
+                <Chip
+                  icon={<ThumbUp />}
+                  label="피드백 반영 예정"
+                  sx={{
+                    backgroundColor: 'rgba(255,255,255,0.25)',
+                    color: 'white',
+                    fontWeight: 600,
+                    fontSize: '0.9rem',
+                    height: 40,
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255,255,255,0.3)',
+                    '& .MuiChip-icon': {
+                      color: 'white',
+                    },
+                  }}
+                />
+              </Box>
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9, duration: 0.5 }}>
+              <ActionButton size="large" variant="contained" shape="rounded" endIcon={<ArrowForward />} onClick={() => router.push('/')}>
+                홈으로 돌아가기
+              </ActionButton>
+            </motion.div>
+          </Card>
+        </motion.div>
+      </Container>
+    );
+  }
 
   // --- RENDER ---
   return (
-    <Container maxWidth="lg">
+    <Container maxWidth="md" sx={{ py: 4 }}>
       <Grid component="form" noValidate autoComplete="off" onSubmit={handleSubmit} container spacing={2} mt={5}>
         <Grid size={{ xs: 12 }}>
           <Paper
@@ -208,14 +373,17 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
             }}
           >
             <UserDescription
-              name={survey.name ?? 'John Doe'}
+              name={survey.author.name ?? 'John Doe'}
               content={
                 <Stack direction="row" alignItems="center" gap={1}>
                   <Stack direction="row" alignItems="center" gap={1}>
                     <Chip size="small" icon={<Category />} label={survey.category.name} />
-                    <Chip size="small" icon={<TimeIcon />} label={DateFormat.toKST('YYYY-MM-DD HH:mm', survey.expiresAt || new Date())} />
-                    <Chip size="small" icon={<TimeIcon />} label={estimatedTime} />
-                    <Chip size="small" icon={<People />} label={`${survey.participants}명`} />
+                    {survey.expiresAt ? (
+                      <Chip size="small" icon={<TimeIcon />} label={`${DateFormat.toKST('YYYY-MM-dd HH:mm', survey.expiresAt)} 까지`} />
+                    ) : (
+                      <Chip size="small" icon={<TimeIcon />} label="만료 없음" />
+                    )}
+                    <Chip size="small" icon={<TimeIcon />} label={`${survey.estimatedTime}분 소요`} />
                   </Stack>
                 </Stack>
               }
@@ -248,46 +416,40 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
                 exit={{ opacity: 0, x: direction === 'next' ? -100 : 100 }}
                 transition={{ duration: 0.3 }}
               >
-                <Paper>
-                  <ResponseCard
-                    key={currentQuestion.idx}
-                    id={currentQuestion.id}
-                    idx={currentQuestion.idx}
-                    index={currentStep + 1}
-                    title={currentQuestion.title}
-                    description={currentQuestion.description}
-                    questionType={currentQuestion.questionType}
-                    dataType={currentQuestion.dataType}
-                    isRequired={currentQuestion.isRequired}
-                    questionOptions={currentQuestion.questionOptions}
-                    answers={currentQuestion.answers}
-                    handleOptionChange={handleOptionChange}
-                    // handleOptionClear={handleOptionClear}
-                  />
-                  {errors[currentQuestion.idx] && (
+                <Card sx={{ mb: 4 }}>
+                  <CardContent sx={{ p: 4 }}>
+                    <ResponseCard
+                      key={currentQuestion.id || 'idx' + currentQuestion.idx}
+                      id={currentQuestion.id}
+                      idx={currentQuestion.idx}
+                      index={currentStep + 1}
+                      title={currentQuestion.title}
+                      description={currentQuestion.description}
+                      questionType={currentQuestion.questionType}
+                      dataType={currentQuestion.dataType}
+                      isRequired={currentQuestion.isRequired}
+                      questionOptions={currentQuestion.questionOptions}
+                      answers={currentQuestion.answers}
+                      handleOptionChange={handleOptionChange}
+                    />
+                    {/* {errors[currentQuestion.idx] && (
                     <CommonText color="error" variant="body2" px={4} pb={4}>
                       {errors[currentQuestion.idx]}
                     </CommonText>
-                  )}
-                </Paper>
+                  )} */}
+                    {errors[currentQuestion.idx] && (
+                      <Fade in>
+                        <Alert severity="error" sx={{ mt: 2 }}>
+                          {errors[currentQuestion.idx]}
+                        </Alert>
+                      </Fade>
+                    )}
+                  </CardContent>
+                </Card>
               </motion.div>
             )}
           </AnimatePresence>
         </Grid>
-
-        {/* <Grid size={{ xs: 12 }}>
-          <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end' }}>
-            <Button
-              variant="contained"
-              startIcon={<SaveIcon />}
-              color="primary"
-              onClick={handleSubmit}
-              disabled={progress !== 100 || isSubmitting}
-            >
-              {isSubmitting ? <CircularProgress size={24} /> : '설문 저장'}
-            </Button>
-          </Box>
-        </Grid> */}
 
         <Grid size={{ xs: 12 }}>
           {/* 네비게이션 버튼 */}
@@ -322,7 +484,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
                 variant="contained"
                 startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || !isAllAnswered}
                 sx={{ minWidth: 120 }}
               >
                 {isSubmitting ? '제출 중...' : '제출하기'}
@@ -335,17 +497,13 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
           </Box>
         </Grid>
       </Grid>
-
-      <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
-        <Alert onClose={() => setError(null)} severity="error" sx={{ width: '100%' }}>
-          {error}
-        </Alert>
-      </Snackbar>
-      <Snackbar open={!!success} autoHideDuration={6000} onClose={() => setSuccess(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
-        <Alert onClose={() => setSuccess(null)} severity="success" sx={{ width: '100%' }}>
-          {success}
-        </Alert>
-      </Snackbar>
+      {/* 하단 정보 */}
+      <Box sx={{ mt: 6, textAlign: 'center' }}>
+        <Divider sx={{ mb: 3 }} />
+        <Typography variant="caption" color="text.secondary">
+          이 설문은 Nuvia로 제작되었습니다 • 모든 응답은 안전하게 보호됩니다
+        </Typography>
+      </Box>
     </Container>
   );
 };

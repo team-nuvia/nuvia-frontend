@@ -47,10 +47,14 @@ const Dashboard = () => {
   }, [metadataData, recentSurveysData]);
 
   const kpiData = useMemo(() => {
+    const currentMonthRespondentCount = metadataData?.payload?.respondentIncreaseRate.currentMonthRespondentCount ?? 0;
+    const previousMonthRespondentCount = metadataData?.payload?.respondentIncreaseRate.previousMonthRespondentCount ?? 0;
+    const totalRespondentCount = metadataData?.payload?.totalRespondentCount ?? 0;
     return [
       {
         title: '총 설문 수',
         type: 'number',
+        total: 0,
         value: metadataData?.payload?.totalSurveyCount ?? 0,
         icon: <BarChart sx={{ fontSize: 40 }} />,
         color: 'primary.main',
@@ -58,18 +62,24 @@ const Dashboard = () => {
       {
         title: '총 응답 수',
         type: 'number',
-        value: metadataData?.payload?.totalRespondentCount ?? 0,
+        total: 0,
+        value: totalRespondentCount,
         icon: <PeopleAlt sx={{ fontSize: 40 }} />,
         color: 'success.main',
       },
       {
-        title: '최근 30일 응답 증가율',
+        title: '1개월 응답 증가율',
         type: 'percentage',
-        total: metadataData?.payload?.respondentIncreaseRate.previousMonthRespondentCount ?? 0,
-        value:
-          ((metadataData?.payload?.respondentIncreaseRate.currentMonthRespondentCount ?? 0) -
-            (metadataData?.payload?.respondentIncreaseRate.previousMonthRespondentCount ?? 0)) *
-          100,
+        total: previousMonthRespondentCount,
+        value: currentMonthRespondentCount - previousMonthRespondentCount,
+        icon: <CheckCircleOutline sx={{ fontSize: 40 }} />,
+        color: 'warning.main',
+      },
+      {
+        title: '1개월 응답 대칭 증감율',
+        type: 'percentage',
+        total: currentMonthRespondentCount + previousMonthRespondentCount,
+        value: currentMonthRespondentCount - previousMonthRespondentCount,
         icon: <CheckCircleOutline sx={{ fontSize: 40 }} />,
         color: 'warning.main',
       },
@@ -131,7 +141,7 @@ const Dashboard = () => {
                   ) : item.type === 'percentage' ? (
                     <Stack direction="row" alignItems="center" gap={1}>
                       <Typography variant="h6" component="div" fontWeight="bold">
-                        {((item.value / (item.total ?? 1)) * 100 || 0).toFixed(1)}%
+                        {item.total === 0 ? 'N/A' : `${((item.value / item.total) * 100 || 0).toFixed(1)}%`}
                       </Typography>
                       <Typography variant="caption" component="div" color="text.secondary">
                         {item.value}/{item.total}

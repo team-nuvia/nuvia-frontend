@@ -1,0 +1,322 @@
+import { deleteSurvey } from '@api/delete-survey';
+import { toggleSurveyVisibility } from '@api/toggle-survey-visibility';
+import { GlobalDialogContext } from '@context/GlobalDialogContext';
+import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
+import { Analytics, ContentCopy, Delete, Edit, MoreVert, People, Schedule, Share, TrendingUp, Visibility, VisibilityOff } from '@mui/icons-material';
+import { Box, Button, Card, CardContent, Chip, Grid, IconButton, Menu, MenuItem, TextField, Typography, useTheme } from '@mui/material';
+import { SurveyStatus } from '@share/enums/survey-status';
+import { SearchSurvey } from '@share/interface/search-survey';
+import { useMutation } from '@tanstack/react-query';
+import { DateFormat } from '@util/dateFormat';
+import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import { useContext, useState } from 'react';
+
+interface SurveyListItemCardProps {
+  survey: SearchSurvey;
+  refetchSurveyList: () => void;
+}
+const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey, refetchSurveyList }) => {
+  const router = useRouter();
+  const theme = useTheme();
+  const { handleOpenDialog } = useContext(GlobalDialogContext);
+  const { addNotice } = useContext(GlobalSnackbarContext);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const { mutate: mutateToggleVisibility } = useMutation({
+    mutationKey: ['toggleVisibility', survey.id],
+    mutationFn: toggleSurveyVisibility,
+    onSuccess: () => {
+      addNotice(`설문이 ${survey.isPublic ? '비활성화' : '활성화'}되었습니다`, 'success');
+      refetchSurveyList();
+    },
+    onError: () => {
+      addNotice('설문 활성화에 실패했습니다', 'error');
+    },
+  });
+  const { mutate: mutateDeleteSurvey } = useMutation({
+    mutationKey: ['deleteSurvey', survey.id],
+    mutationFn: deleteSurvey,
+    onSuccess: () => {
+      addNotice('설문이 삭제되었습니다', 'success');
+      refetchSurveyList();
+    },
+    onError: () => {
+      addNotice('설문 삭제에 실패했습니다', 'error');
+    },
+  });
+
+  const getStatusColor = (status: SearchSurvey['status']) => {
+    switch (status) {
+      case 'active':
+        return 'success';
+      case 'draft':
+        return 'warning';
+      case 'closed':
+        return 'default';
+      default:
+        return 'default';
+    }
+  };
+
+  const getStatusText = (status: SearchSurvey['status']) => {
+    switch (status) {
+      case 'active':
+        return '진행중';
+      case 'draft':
+        return '초안';
+      case 'closed':
+        return '종료';
+      default:
+        return status;
+    }
+  };
+
+  const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleRedirectEdit = () => {
+    router.push(`/survey/create?edit=${survey.id}`);
+    handleMenuClose();
+  };
+
+  const handleRedirectResults = () => {
+    router.push(`/survey/${survey.id}/results`);
+    handleMenuClose();
+  };
+
+  const handleDelete = () => {
+    handleOpenDialog('설문 삭제', '삭제된 설문은 복구 불가합니다. 삭제하시겠습니까?\n복구 가능한 구독제는 설명을 참조해주세요.', confirmDelete);
+    handleMenuClose();
+  };
+
+  const handleShare = () => {
+    handleOpenDialog(
+      '설문 공유',
+      <>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          아래 링크를 복사하여 설문을 공유하세요
+        </Typography>
+        <TextField
+          fullWidth
+          value={`${window.location.origin}/survey/view/${survey.hashedUniqueKey}`}
+          slotProps={{
+            input: {
+              readOnly: true,
+              endAdornment: (
+                <IconButton onClick={handleCopyLink}>
+                  <ContentCopy />
+                </IconButton>
+              ),
+            },
+          }}
+        />
+      </>,
+    );
+    handleMenuClose();
+  };
+
+  const handleViewResults = () => {
+    router.push(`/survey/${survey.id}/results`);
+    handleMenuClose();
+  };
+
+  const handleToggleVisibility = () => {
+    setAnchorEl(null);
+    const newStatus = !survey.isPublic;
+    mutateToggleVisibility({ surveyId: survey.id, isPublic: newStatus });
+    handleMenuClose();
+  };
+
+  const confirmDelete = () => {
+    mutateDeleteSurvey({ surveyId: survey.id.toString() });
+  };
+
+  const handleCopyLink = () => {
+    const link = `${window.location.origin}/survey/view/${survey.hashedUniqueKey}`;
+    navigator.clipboard.writeText(link);
+    addNotice('링크가 복사되었습니다', 'success');
+  };
+
+  return (
+    <Grid size={{ xs: 12, md: 6, lg: 4 }} key={survey.id}>
+      <motion.div layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }}>
+        <Card
+          sx={{
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            transition: 'all 0.3s',
+            '&:hover': {
+              transform: 'translateY(-4px)',
+              boxShadow: theme.shadows[8],
+            },
+          }}
+        >
+          <CardContent sx={{ flexGrow: 1, p: 3 }}>
+            {/* 헤더 */}
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                mb: 2,
+              }}
+            >
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                }}
+              >
+                <Chip label={getStatusText(survey.status)} color={getStatusColor(survey.status) as any} size="small" />
+                {survey.isPublic ? (
+                  <Visibility sx={{ fontSize: 16, color: 'text.secondary' }} />
+                ) : (
+                  <VisibilityOff sx={{ fontSize: 16, color: 'text.secondary' }} />
+                )}
+              </Box>
+              <IconButton size="small" onClick={handleMenuClick}>
+                <MoreVert />
+              </IconButton>
+            </Box>
+
+            {/* 제목 및 설명 */}
+            <Typography variant="h6" sx={{ mb: 1, fontWeight: 600, lineHeight: 1.3 }}>
+              {survey.title}
+            </Typography>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{
+                mb: 3,
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+              }}
+            >
+              {survey.description}
+            </Typography>
+
+            {/* 통계 */}
+            <Grid container spacing={2} sx={{ mb: 3 }}>
+              <Grid size={{ xs: 6 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                  }}
+                >
+                  <People sx={{ fontSize: 16, color: 'text.secondary' }} />
+                  <Typography variant="body2" color="text.secondary">
+                    {survey.responseAmount}명 응답
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid size={{ xs: 6 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                  }}
+                >
+                  <TrendingUp sx={{ fontSize: 16, color: 'text.secondary' }} />
+                  <Typography variant="body2" color="text.secondary">
+                    {survey.viewCount}회 조회
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid size={{ xs: 6 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                  }}
+                >
+                  <Schedule sx={{ fontSize: 16, color: 'text.secondary' }} />
+                  <Typography variant="body2" color="text.secondary">
+                    약 {survey.estimatedTime}분
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid size={{ xs: 6 }}>
+                <Typography variant="body2" color="text.secondary">
+                  {survey.questionAmount}개 질문
+                </Typography>
+              </Grid>
+            </Grid>
+
+            {/* 카테고리 */}
+            <Chip label={survey.category.name} size="small" variant="outlined" sx={{ mb: 2 }} />
+
+            {/* 날짜 */}
+            <Typography variant="caption" color="text.secondary">
+              생성일: {DateFormat.toKST('YYYY-MM-dd HH:mm', survey.createdAt)}
+            </Typography>
+          </CardContent>
+
+          {/* 액션 버튼 */}
+          <Box sx={{ p: 2, pt: 0 }}>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button size="small" variant="outlined" startIcon={<Edit />} onClick={handleRedirectEdit} sx={{ flexGrow: 1 }}>
+                편집
+              </Button>
+              {survey.responseAmount > 0 && (
+                <Button size="small" variant="contained" startIcon={<Analytics />} onClick={handleRedirectResults} sx={{ flexGrow: 1 }}>
+                  결과보기
+                </Button>
+              )}
+            </Box>
+          </Box>
+        </Card>
+      </motion.div>
+      {/* 메뉴 */}
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
+        <MenuItem onClick={handleRedirectEdit}>
+          <Edit sx={{ mr: 2 }} />
+          편집
+        </MenuItem>
+        {survey.status !== SurveyStatus.Draft && (
+          <MenuItem onClick={handleShare}>
+            <Share sx={{ mr: 2 }} />
+            공유
+          </MenuItem>
+        )}
+        {survey.responseAmount > 0 && (
+          <MenuItem onClick={handleViewResults}>
+            <Analytics sx={{ mr: 2 }} />
+            결과 보기
+          </MenuItem>
+        )}
+        <MenuItem onClick={handleToggleVisibility}>
+          {survey.isPublic ? (
+            <>
+              <VisibilityOff sx={{ mr: 2 }} />
+              비활성화
+            </>
+          ) : (
+            <>
+              <Visibility sx={{ mr: 2 }} />
+              활성화
+            </>
+          )}
+        </MenuItem>
+        <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
+          <Delete sx={{ mr: 2 }} />
+          삭제
+        </MenuItem>
+      </Menu>
+    </Grid>
+  );
+};
+
+export default SurveyListItemCard;

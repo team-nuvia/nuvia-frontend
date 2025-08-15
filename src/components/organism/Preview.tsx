@@ -1,14 +1,14 @@
+import { PreviewPayload } from '@/models/PreviewPayload';
 import CommonText from '@components/atom/CommonText';
 import ResponseSurvey from '@components/template/ResponseSurvey';
 import CloseIcon from '@mui/icons-material/Close';
 import FullscreenIcon from '@mui/icons-material/Fullscreen';
 import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 import { Box, Chip, Container, Divider, IconButton, Paper, Stack, Typography, useTheme } from '@mui/material';
-import { IResponseSurveyQuestionWithAnswers } from '@share/dto/response-survey';
 import { useState } from 'react';
 
 interface PreviewProps {
-  survey: IResponseSurveyQuestionWithAnswers;
+  survey: PreviewPayload;
   handleClose: () => void;
 }
 
