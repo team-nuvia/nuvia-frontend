@@ -2,6 +2,7 @@
 
 import { CreateSurveyPayload } from '@/models/CreateSurveyPayload';
 import { GetCategoryResponse } from '@/models/GetCategoryResponse';
+import { GetSurveyDetailResponse } from '@/models/GetSurveyDetailResponse';
 import { UpdateSurveyPayload } from '@/models/UpdateSurveyPayload';
 import { createSurvey } from '@api/create-survey';
 import { getCategories } from '@api/get-categories';
@@ -48,6 +49,7 @@ import { QuestionType } from '@share/enums/question-type';
 import { SurveyStatus } from '@share/enums/survey-status';
 import { AllQuestion } from '@share/interface/iquestion';
 import { useQuery } from '@tanstack/react-query';
+import { AxiosError } from 'axios';
 import dayjs from 'dayjs';
 import { useFormik } from 'formik';
 import { useRouter } from 'next/navigation';
@@ -75,7 +77,7 @@ const SurveySchema = Yup.object().shape({
         Yup.object().shape({
           id: Yup.number().nullable(),
           label: Yup.string().required('옵션 라벨은 필수입니다.'),
-          description: Yup.string(),
+          description: Yup.string().nullable(),
           sequence: Yup.number(),
         }),
       ),
@@ -111,6 +113,11 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
     queryKey: ['categories'],
     queryFn: () => getCategories(),
   });
+  const { data: surveyData } = useQuery<ServerResponse<GetSurveyDetailResponse>>({
+    queryKey: ['survey', id],
+    queryFn: () => getSurveyDetail(id as string),
+    enabled: !!id,
+  });
 
   // --- FORMIK ---
   const formik = useFormik({
@@ -124,6 +131,40 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
       }
     },
   });
+
+  useLayoutEffect(() => {
+    if (surveyData?.payload) {
+      const payload = surveyData.payload;
+      formik.setValues({
+        title: payload.title,
+        description: payload.description,
+        categoryId: payload.category.id.toString(),
+        status: payload.status,
+        expiresAt: payload.expiresAt,
+        isPublic: payload.isPublic,
+        questions: payload.questions.map((question) => ({
+          id: question.id,
+          idx: question.id ?? Date.now(),
+          title: question.title,
+          description: question.description,
+          questionType: question.questionType,
+          dataType: question.dataType,
+          isRequired: question.isRequired,
+          sequence: question.sequence,
+          questionOptions: question.questionOptions.map((option) => ({
+            id: option.id,
+            idx: option.id ?? Date.now(),
+            label: option.label,
+            description: option.description,
+            sequence: option.sequence,
+          })),
+        })),
+      });
+      endLoading();
+    } else {
+      endLoading();
+    }
+  }, [surveyData]);
 
   function validateAndReturnSurveyData(values: QuestionInitialValues) {
     console.log('🚀 ~ Survey ~ values:', values);
@@ -205,18 +246,21 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
       const response = await createSurvey(surveyData as CreateSurveyPayload);
 
       if (response.ok) {
-        addNotice('설문이 성공적으로 생성되었습니다!', 'success');
+        addNotice(response.reason || response.message, 'success');
         // Reset form
-        formik.resetForm();
+        router.push('/');
       } else {
-        addNotice(response.message, 'error');
+        addNotice(response.reason || response.message, 'error');
       }
-    } catch (err) {
-      console.error(err);
-      addNotice('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
+    } catch (err: any) {
+      const axiosError = err as AxiosError<ServerResponse<any>>;
+      console.error(axiosError);
+      addNotice(
+        (axiosError?.response?.data?.reason || axiosError?.response?.data?.message) ?? '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+        'error',
+      );
     } finally {
       setIsSubmitting(false);
-      router.push('/');
     }
   }
 
@@ -230,66 +274,67 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
       const response = await updateSurvey(id, surveyData as UpdateSurveyPayload);
 
       if (response.ok) {
-        addNotice('설문이 성공적으로 수정되었습니다!', 'success');
+        addNotice(response.reason || response.message, 'success');
         // Reset form
-        formik.resetForm();
         router.push('/');
       } else {
-        addNotice(response.message, 'error');
+        addNotice(response.reason || response.message, 'error');
       }
-    } catch (err) {
-      console.error(err);
-      addNotice('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
+    } catch (err: any) {
+      const axiosError = err as AxiosError<ServerResponse<any>>;
+      console.error(axiosError);
+      addNotice(
+        (axiosError?.response?.data?.reason || axiosError?.response?.data?.message) ?? '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+        'error',
+      );
     } finally {
       setIsSubmitting(false);
     }
   }
 
-  useLayoutEffect(() => {
-    console.log('🚀 ~ useLayoutEffect ~ isWrong:', id);
-    if (id) {
-      getSurveyDetail(id)
-        .then((survey) => {
-          console.log('🚀 ~ getSurveyDetail ~ survey:', survey);
-          if (survey.payload) {
-            const payload = survey.payload;
-            formik.setValues({
-              title: payload.title,
-              description: payload.description,
-              categoryId: payload.category.id.toString(),
-              status: payload.status,
-              expiresAt: payload.expiresAt,
-              isPublic: payload.isPublic,
-              questions: payload.questions.map((question) => ({
-                id: question.id,
-                idx: question.id ?? Date.now(),
-                title: question.title,
-                description: question.description,
-                questionType: question.questionType,
-                dataType: question.dataType,
-                isRequired: question.isRequired,
-                sequence: question.sequence,
-                questionOptions: question.questionOptions.map((option) => ({
-                  id: option.id,
-                  idx: option.id ?? Date.now(),
-                  label: option.label,
-                  description: option.description,
-                  sequence: option.sequence,
-                })),
-              })),
-            });
-          }
-          endLoading();
-        })
-        .catch((error) => {
-          console.log('🚀 ~ getSurveyDetail ~ error:', error);
-          addNotice('설문 정보를 불러오는데 실패했습니다.', 'error');
-          router.push('/');
-        });
-    } else {
-      endLoading();
-    }
-  }, []);
+  // useLayoutEffect(() => {
+  //   if (id) {
+  //     getSurveyDetail(id)
+  //       .then((survey) => {
+  //         if (survey.payload) {
+  //           const payload = survey.payload;
+  //           formik.setValues({
+  //             title: payload.title,
+  //             description: payload.description,
+  //             categoryId: payload.category.id.toString(),
+  //             status: payload.status,
+  //             expiresAt: payload.expiresAt,
+  //             isPublic: payload.isPublic,
+  //             questions: payload.questions.map((question) => ({
+  //               id: question.id,
+  //               idx: question.id ?? Date.now(),
+  //               title: question.title,
+  //               description: question.description,
+  //               questionType: question.questionType,
+  //               dataType: question.dataType,
+  //               isRequired: question.isRequired,
+  //               sequence: question.sequence,
+  //               questionOptions: question.questionOptions.map((option) => ({
+  //                 id: option.id,
+  //                 idx: option.id ?? Date.now(),
+  //                 label: option.label,
+  //                 description: option.description,
+  //                 sequence: option.sequence,
+  //               })),
+  //             })),
+  //           });
+  //         }
+  //         endLoading();
+  //       })
+  //       .catch((error) => {
+  //         console.log('🚀 ~ getSurveyDetail ~ error:', error);
+  //         addNotice('설문 정보를 불러오는데 실패했습니다.', 'error');
+  //         router.push('/');
+  //       });
+  //   } else {
+  //     endLoading();
+  //   }
+  // }, []);
 
   useEffect(() => {
     if (formik.isSubmitting && Object.keys(formik.errors).length > 0) {
