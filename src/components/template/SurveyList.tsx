@@ -2,8 +2,13 @@
 
 import LoadingContext from '@/context/LodingContext';
 import { getSurveyList } from '@api/get-survey-list';
+import { getSurveyMetadata } from '@api/get-survey-metadata';
+import { SURVEY_STATUS_LABELS } from '@common/variables';
+import ActionButton from '@components/atom/ActionButton';
 import SurveyListItemCard from '@components/molecular/SurveyListItemCard';
-import { Add, Search } from '@mui/icons-material';
+import SurveyBinDialog from '@components/organism/SurveyBinDialog';
+import { GlobalDialogContext } from '@context/GlobalDialogContext';
+import { Add, Delete, Search } from '@mui/icons-material';
 import {
   Box,
   Button,
@@ -16,12 +21,14 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  Stack,
   Tab,
   Tabs,
   TextField,
   Tooltip,
   Typography,
 } from '@mui/material';
+import { MetadataStatusType } from '@share/enums/metadata-status-type';
 import { SurveyStatus } from '@share/enums/survey-status';
 import { SearchSurvey } from '@share/interface/search-survey';
 import { useQuery } from '@tanstack/react-query';
@@ -33,6 +40,7 @@ export default function SurveyList() {
   const router = useRouter();
   const [surveys, setSurveys] = useState<SearchSurvey[]>([]);
   const { endLoading } = useContext(LoadingContext);
+  const { handleOpenDialog, handleCloseDialog } = useContext(GlobalDialogContext);
   const [selectedTab, setSelectedTab] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -40,6 +48,10 @@ export default function SurveyList() {
     queryKey: ['surveyList'],
     queryFn: () =>
       getSurveyList({ page: 1, limit: 10, search: '', status: ['all', SurveyStatus.Active, SurveyStatus.Draft, SurveyStatus.Closed][selectedTab] }),
+  });
+  const { data: surveyMetadata, refetch: refetchSurveyMetadata } = useQuery({
+    queryKey: ['surveyMetadata'],
+    queryFn: () => getSurveyMetadata(MetadataStatusType.SurveyList),
   });
 
   useLayoutEffect(() => {
@@ -57,12 +69,16 @@ export default function SurveyList() {
     router.push('/survey/create');
   };
 
-  const totalResponses = surveys?.reduce((sum, survey) => sum + survey.responseAmount, 0) ?? 0;
-  const activeSurveys = surveys?.filter((s) => s.status === 'active').length ?? 0;
-  const totalViews = surveys?.reduce((sum, survey) => sum + survey.viewCount, 0) ?? 0;
+  const handlePopTrash = () => {
+    handleOpenDialog({
+      title: '휴지통',
+      content: <SurveyBinDialog refetchSurveyList={refetch} />,
+      useConfirm: false,
+    });
+  };
 
   return (
-    <Container maxWidth="lg" sx={{ pt: 12, pb: 8 }}>
+    <Container maxWidth="lg" sx={{ py: 8 }}>
       {/* 헤더 */}
       <Box sx={{ mb: 6 }}>
         <Typography variant="h3" sx={{ mb: 2, fontWeight: 600 }}>
@@ -79,7 +95,7 @@ export default function SurveyList() {
           <Card>
             <CardContent sx={{ textAlign: 'center', p: 3 }}>
               <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
-                {surveys?.length ?? 0}
+                {surveyMetadata?.payload?.totalSurveyCount ?? 0}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 총 설문 수
@@ -91,7 +107,7 @@ export default function SurveyList() {
           <Card>
             <CardContent sx={{ textAlign: 'center', p: 3 }}>
               <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
-                {activeSurveys}
+                {surveyMetadata?.payload?.activeSurveyCount ?? 0}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 진행중인 설문
@@ -103,7 +119,7 @@ export default function SurveyList() {
           <Card>
             <CardContent sx={{ textAlign: 'center', p: 3 }}>
               <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
-                {totalResponses.toLocaleString()}
+                {surveyMetadata?.payload?.totalRespondentCount ?? 0}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 총 응답 수
@@ -115,7 +131,7 @@ export default function SurveyList() {
           <Card>
             <CardContent sx={{ textAlign: 'center', p: 3 }}>
               <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
-                {totalViews.toLocaleString()}
+                {surveyMetadata?.payload?.totalViewCount ?? 0}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 총 조회 수
@@ -153,9 +169,11 @@ export default function SurveyList() {
               <InputLabel>상태</InputLabel>
               <Select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} label="상태">
                 <MenuItem value={'all'}>전체</MenuItem>
-                <MenuItem value={SurveyStatus.Active}>진행중</MenuItem>
-                <MenuItem value={SurveyStatus.Draft}>초안</MenuItem>
-                <MenuItem value={SurveyStatus.Closed}>종료</MenuItem>
+                {Object.values(SurveyStatus).map((status) => (
+                  <MenuItem key={status} value={status}>
+                    {SURVEY_STATUS_LABELS[status]}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
           </Box>
@@ -163,14 +181,19 @@ export default function SurveyList() {
       </Card>
 
       {/* 탭 */}
-      <Box sx={{ mb: 3 }}>
+      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
         <Tabs value={selectedTab} onChange={(_, newValue) => setSelectedTab(newValue)}>
           <Tab label="전체" />
-          <Tab label="진행중" />
-          <Tab label="초안" />
-          <Tab label="종료" />
+          {Object.values(SurveyStatus).map((status) => (
+            <Tab key={status} label={SURVEY_STATUS_LABELS[status]} />
+          ))}
         </Tabs>
-      </Box>
+        <Tooltip title="휴지통">
+          <ActionButton startIcon={<Delete />} onClick={handlePopTrash} color="error" variant="outlined" shape="rounded">
+            휴지통
+          </ActionButton>
+        </Tooltip>
+      </Stack>
 
       {/* 설문 목록 */}
       {surveys?.length === 0 ? (
@@ -193,7 +216,7 @@ export default function SurveyList() {
         <Grid container spacing={3}>
           <AnimatePresence>
             {surveys?.map((survey) => (
-              <SurveyListItemCard key={survey.id} survey={survey} refetchSurveyList={refetch} />
+              <SurveyListItemCard key={survey.id} survey={survey} refetchSurveyList={refetch} refetchSurveyMetadata={refetchSurveyMetadata} />
             ))}
           </AnimatePresence>
         </Grid>

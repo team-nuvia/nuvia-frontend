@@ -193,7 +193,12 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       addNotice('최소 1개의 질문이 필요합니다.', 'error');
       return;
     }
-    handleOpenDialog('질문 삭제', '삭제된 질문은 복구 불가합니다. 삭제하시겠습니까?', confirmRemoveQuestion);
+    handleOpenDialog({
+      title: '질문 삭제',
+      content: '삭제된 질문은 복구 불가합니다. 삭제하시겠습니까?',
+      actionCallback: confirmRemoveQuestion,
+      useConfirm: true,
+    });
   };
 
   const confirmRemoveQuestion = () => {

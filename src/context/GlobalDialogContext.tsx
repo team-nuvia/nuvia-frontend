@@ -11,7 +11,17 @@ interface GlobalDialogContextProps {
 interface GlobalDialogContextType {
   open: boolean;
   handleCloseDialog: () => void;
-  handleOpenDialog: (title: string, content: string | React.ReactNode, actionCallback?: () => void) => void;
+  handleOpenDialog: ({
+    title,
+    content,
+    actionCallback,
+    useConfirm,
+  }: {
+    title: string;
+    content: string | React.ReactNode;
+    actionCallback?: () => void;
+    useConfirm?: boolean;
+  }) => void;
 }
 
 export const GlobalDialogContext = createContext<GlobalDialogContextType>({
@@ -21,6 +31,7 @@ export const GlobalDialogContext = createContext<GlobalDialogContextType>({
 });
 
 const GlobalDialogProvider: React.FC<GlobalDialogContextProps> = ({ children }) => {
+  const [useConfirm, setUseConfirm] = useState(true);
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState<string | React.ReactNode>('');
@@ -40,15 +51,27 @@ const GlobalDialogProvider: React.FC<GlobalDialogContextProps> = ({ children }) 
     handleCloseDialog();
   };
 
-  const handleOpenDialog = (title: string, content: string | React.ReactNode, actionCallback?: () => void) => {
+  const handleOpenDialog = ({
+    title,
+    content,
+    actionCallback,
+    useConfirm,
+  }: {
+    title: string;
+    content: string | React.ReactNode;
+    actionCallback?: () => void;
+    useConfirm?: boolean;
+  }) => {
     setTitle(title);
     setContent(content);
+    setUseConfirm(useConfirm ?? true);
     setConfirmAction(() => actionCallback || (() => {}));
     handleOpen();
   };
 
   const handleCloseDialog = () => {
     handleClose();
+    setUseConfirm(true);
     setConfirmAction(() => () => {});
   };
 
@@ -86,9 +109,11 @@ const GlobalDialogProvider: React.FC<GlobalDialogContextProps> = ({ children }) 
           </DialogContent>
           <DialogActions>
             <ActionButton onClick={handleCloseDialog}>닫기</ActionButton>
-            <ActionButton ref={confirmButtonRef} onClick={handleAction}>
-              확인
-            </ActionButton>
+            {useConfirm && (
+              <ActionButton ref={confirmButtonRef} onClick={handleAction}>
+                확인
+              </ActionButton>
+            )}
           </DialogActions>
         </Dialog>
       </Portal>

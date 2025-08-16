@@ -1,7 +1,7 @@
 'use client';
 
-import { getDashboardMetadataServer } from '@api/get-dashboard-metadata.server';
 import { getDashboardRecentSurveysServer } from '@api/get-dashboard-recent-surveys-server';
+import { getSurveyMetadata } from '@api/get-survey-metadata';
 import { SURVEY_STATUS_LABELS } from '@common/variables';
 import ActionButton from '@components/atom/ActionButton';
 import UserOrganizationSelect from '@components/molecular/UserOrganizationSelect';
@@ -24,8 +24,10 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
+import { MetadataStatusType } from '@share/enums/metadata-status-type';
 import { SurveyStatus } from '@share/enums/survey-status';
 import { useQuery } from '@tanstack/react-query';
+import { DateFormat } from '@util/dateFormat';
 import NextLink from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useContext, useLayoutEffect, useMemo } from 'react';
@@ -33,7 +35,7 @@ import { useCallback, useContext, useLayoutEffect, useMemo } from 'react';
 const Dashboard = () => {
   const { data: metadataData, refetch: refetchMetadata } = useQuery({
     queryKey: ['dashboard-metadata'],
-    queryFn: getDashboardMetadataServer,
+    queryFn: () => getSurveyMetadata(MetadataStatusType.Dashboard),
   });
   const { data: recentSurveysData, refetch: refetchRecentSurveys } = useQuery({
     queryKey: ['dashboard-recent-surveys'],
@@ -197,6 +199,7 @@ const Dashboard = () => {
                     <TableRow>
                       <TableCell>설문 제목</TableCell>
                       <TableCell align="center">상태</TableCell>
+                      <TableCell align="center">마감기한</TableCell>
                       <TableCell align="right">응답 수</TableCell>
                     </TableRow>
                   </TableHead>
@@ -215,6 +218,7 @@ const Dashboard = () => {
                             color={survey.status === SurveyStatus.Active ? 'success' : survey.status === SurveyStatus.Draft ? 'default' : 'warning'}
                           />
                         </TableCell>
+                        <TableCell align="center">{survey.expiresAt ? DateFormat.toKST('YYYY-MM-dd HH:mm', survey.expiresAt) : '기한없음'}</TableCell>
                         <TableCell align="right">{survey.responses}</TableCell>
                       </TableRow>
                     ))}

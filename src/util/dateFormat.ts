@@ -39,13 +39,13 @@ export class DateFormat {
     });
   }
 
-  static toUTC(format: string = 'YYYY-MM-dd HH:mm:ss', date: string | Date = new Date()) {
-    const base = new Date(date);
+  static toUTC(format: string = 'YYYY-MM-dd HH:mm:ss', date: string | Date | null = null) {
+    const base = date ? new Date(date) : new Date();
     return this.convert(format, base);
   }
 
-  static toKST(format: string = 'YYYY-MM-dd HH:mm:ss', date: string | Date = new Date()) {
-    const base = new Date(date);
+  static toKST(format: string = 'YYYY-MM-dd HH:mm:ss', date: string | Date | null = null) {
+    const base = date ? new Date(date) : new Date();
     base.setHours(base.getHours() + 9);
     return this.convert(format, base);
   }

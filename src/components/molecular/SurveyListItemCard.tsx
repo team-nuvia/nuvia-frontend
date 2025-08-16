@@ -1,8 +1,23 @@
 import { deleteSurvey } from '@api/delete-survey';
 import { toggleSurveyVisibility } from '@api/toggle-survey-visibility';
+import { updateSurveyStatus } from '@api/update-survey-status';
+import { SURVEY_STATUS_LABELS } from '@common/variables';
 import { GlobalDialogContext } from '@context/GlobalDialogContext';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
-import { Analytics, ContentCopy, Delete, Edit, MoreVert, People, Schedule, Share, TrendingUp, Visibility, VisibilityOff } from '@mui/icons-material';
+import {
+  Analytics,
+  ChangeCircle,
+  ContentCopy,
+  Delete,
+  Edit,
+  MoreVert,
+  People,
+  Schedule,
+  Share,
+  TrendingUp,
+  Visibility,
+  VisibilityOff,
+} from '@mui/icons-material';
 import { Box, Button, Card, CardContent, Chip, Grid, IconButton, Menu, MenuItem, TextField, Typography, useTheme } from '@mui/material';
 import { SurveyStatus } from '@share/enums/survey-status';
 import { SearchSurvey } from '@share/interface/search-survey';
@@ -15,13 +30,15 @@ import { useContext, useState } from 'react';
 interface SurveyListItemCardProps {
   survey: SearchSurvey;
   refetchSurveyList: () => void;
+  refetchSurveyMetadata: () => void;
 }
-const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey, refetchSurveyList }) => {
+const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey, refetchSurveyList, refetchSurveyMetadata }) => {
   const router = useRouter();
   const theme = useTheme();
   const { handleOpenDialog } = useContext(GlobalDialogContext);
   const { addNotice } = useContext(GlobalSnackbarContext);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [subAnchorEl, setSubAnchorEl] = useState<null | HTMLElement>(null);
   const { mutate: mutateToggleVisibility } = useMutation({
     mutationKey: ['toggleVisibility', survey.id],
     mutationFn: toggleSurveyVisibility,
@@ -39,9 +56,22 @@ const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey, refetch
     onSuccess: () => {
       addNotice('설문이 삭제되었습니다', 'success');
       refetchSurveyList();
+      refetchSurveyMetadata();
     },
     onError: () => {
       addNotice('설문 삭제에 실패했습니다', 'error');
+    },
+  });
+  const { mutate: mutateUpdateStatus } = useMutation({
+    mutationKey: ['updateStatus', survey.id],
+    mutationFn: ({ status }: { status: SurveyStatus }) => updateSurveyStatus(survey.id, status),
+    onSuccess: () => {
+      addNotice('설문 상태가 변경되었습니다', 'success');
+      refetchSurveyList();
+      refetchSurveyMetadata();
+    },
+    onError: () => {
+      addNotice('설문 상태 변경에 실패했습니다', 'error');
     },
   });
 
@@ -60,12 +90,12 @@ const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey, refetch
 
   const getStatusText = (status: SearchSurvey['status']) => {
     switch (status) {
-      case 'active':
-        return '진행중';
-      case 'draft':
-        return '초안';
-      case 'closed':
-        return '종료';
+      case SurveyStatus.Active:
+        return SURVEY_STATUS_LABELS[SurveyStatus.Active];
+      case SurveyStatus.Draft:
+        return SURVEY_STATUS_LABELS[SurveyStatus.Draft];
+      case SurveyStatus.Closed:
+        return SURVEY_STATUS_LABELS[SurveyStatus.Closed];
       default:
         return status;
     }
@@ -90,33 +120,40 @@ const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey, refetch
   };
 
   const handleDelete = () => {
-    handleOpenDialog('설문 삭제', '삭제된 설문은 복구 불가합니다. 삭제하시겠습니까?\n복구 가능한 구독제는 설명을 참조해주세요.', confirmDelete);
+    handleOpenDialog({
+      title: '설문 삭제',
+      content: '삭제된 설문은 관리자 권한부터 복구 가능합니다. 삭제하시겠습니까?',
+      actionCallback: confirmDelete,
+      useConfirm: true,
+    });
     handleMenuClose();
   };
 
   const handleShare = () => {
-    handleOpenDialog(
-      '설문 공유',
-      <>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          아래 링크를 복사하여 설문을 공유하세요
-        </Typography>
-        <TextField
-          fullWidth
-          value={`${window.location.origin}/survey/view/${survey.hashedUniqueKey}`}
-          slotProps={{
-            input: {
-              readOnly: true,
-              endAdornment: (
-                <IconButton onClick={handleCopyLink}>
-                  <ContentCopy />
-                </IconButton>
-              ),
-            },
-          }}
-        />
-      </>,
-    );
+    handleOpenDialog({
+      title: '설문 공유',
+      content: (
+        <>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            아래 링크를 복사하여 설문을 공유하세요
+          </Typography>
+          <TextField
+            fullWidth
+            value={`${window.location.origin}/survey/view/${survey.hashedUniqueKey}`}
+            slotProps={{
+              input: {
+                readOnly: true,
+                endAdornment: (
+                  <IconButton onClick={handleCopyLink}>
+                    <ContentCopy />
+                  </IconButton>
+                ),
+              },
+            }}
+          />
+        </>
+      ),
+    });
     handleMenuClose();
   };
 
@@ -140,6 +177,15 @@ const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey, refetch
     const link = `${window.location.origin}/survey/view/${survey.hashedUniqueKey}`;
     navigator.clipboard.writeText(link);
     addNotice('링크가 복사되었습니다', 'success');
+  };
+
+  const handleOpenStatusMenu = (event: React.MouseEvent<HTMLElement>) => {
+    console.log('handleOpenStatusMenu');
+    setSubAnchorEl(event.currentTarget);
+  };
+
+  const handleCloseStatusMenu = () => {
+    setSubAnchorEl(null);
   };
 
   return (
@@ -174,7 +220,11 @@ const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey, refetch
                   gap: 1,
                 }}
               >
-                <Chip label={getStatusText(survey.status)} color={getStatusColor(survey.status) as any} size="small" />
+                <Chip
+                  label={getStatusText(survey.isExpired ? SurveyStatus.Closed : survey.status)}
+                  color={getStatusColor(survey.isExpired ? SurveyStatus.Closed : survey.status) as any}
+                  size="small"
+                />
                 {survey.isPublic ? (
                   <Visibility sx={{ fontSize: 16, color: 'text.secondary' }} />
                 ) : (
@@ -280,12 +330,24 @@ const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey, refetch
         </Card>
       </motion.div>
       {/* 메뉴 */}
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+      >
         <MenuItem onClick={handleRedirectEdit}>
           <Edit sx={{ mr: 2 }} />
           편집
         </MenuItem>
-        {survey.status !== SurveyStatus.Draft && (
+        {survey.status === SurveyStatus.Draft && (
           <MenuItem onClick={handleShare}>
             <Share sx={{ mr: 2 }} />
             공유
@@ -297,6 +359,50 @@ const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey, refetch
             결과 보기
           </MenuItem>
         )}
+        <MenuItem
+          onClick={handleOpenStatusMenu}
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <ChangeCircle sx={{ mr: 2 }} />
+            상태 변경
+          </Box>
+        </MenuItem>
+        <Menu
+          anchorEl={subAnchorEl}
+          open={Boolean(subAnchorEl)}
+          onClose={handleCloseStatusMenu}
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'left',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          sx={{
+            '& .MuiPaper-root': {
+              mr: 0.5,
+            },
+          }}
+        >
+          <MenuItem onClick={() => mutateUpdateStatus({ status: SurveyStatus.Draft })}>
+            <Edit sx={{ mr: 2 }} />
+            {SURVEY_STATUS_LABELS[SurveyStatus.Draft]}
+          </MenuItem>
+          <MenuItem onClick={() => mutateUpdateStatus({ status: SurveyStatus.Active })}>
+            <TrendingUp sx={{ mr: 2 }} />
+            {SURVEY_STATUS_LABELS[SurveyStatus.Active]}
+          </MenuItem>
+          <MenuItem onClick={() => mutateUpdateStatus({ status: SurveyStatus.Closed })}>
+            <Schedule sx={{ mr: 2 }} />
+            {SURVEY_STATUS_LABELS[SurveyStatus.Closed]}
+          </MenuItem>
+        </Menu>
         <MenuItem onClick={handleToggleVisibility}>
           {survey.isPublic ? (
             <>

@@ -4,6 +4,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DataType } from '@share/enums/data-type';
 import { QuestionType } from '@share/enums/question-type';
+import { SurveyStatus } from '@share/enums/survey-status';
 import ResponseSurvey from './ResponseSurvey';
 
 const meta = {
@@ -17,8 +18,15 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   args: {
     survey: {
+      id: 1,
+      hashedUniqueKey: '1234567890',
+      subscriptionId: 1,
       title: '고객 만족도 조사',
-      name: 'John Doe',
+      author: {
+        id: 1,
+        name: 'John Doe',
+        profileUrl: 'https://via.placeholder.com/150',
+      },
       description: '저희 서비스에 대한 솔직한 의견을 들려주세요. 소중한 피드백을 바탕으로 더 나은 서비스를 제공하겠습니다.',
       expiresAt: new Date('2025-07-05'),
       isPublic: true,
@@ -26,7 +34,13 @@ export const Default: Story = {
         id: 1,
         name: 'customer',
       },
-      participants: 10,
+      totalResponses: 10,
+      respondentCount: 10,
+      viewCount: 10,
+      status: SurveyStatus.Active,
+      questionCount: 10,
+      isOwner: true,
+      estimatedTime: 10,
       createdAt: new Date(),
       updatedAt: new Date(),
       questions: [

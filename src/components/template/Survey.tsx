@@ -8,6 +8,7 @@ import { getCategories } from '@api/get-categories';
 import { getSurveyDetail } from '@api/get-survey-detail';
 import { updateSurvey } from '@api/update-survey';
 import { QUESTION_DATA_TYPE_MAP, QUESTION_TYPE_ICONS, QUESTION_TYPE_MAP } from '@common/global';
+import { SURVEY_STATUS_LABELS } from '@common/variables';
 import { AddQuestionSheet } from '@components/molecular/AddQuestionSheet';
 import Preview from '@components/organism/Preview';
 import QuestionCard from '@components/organism/QuestionCard';
@@ -379,8 +380,9 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
                   value={formik.values.status}
                   onChange={formik.handleChange}
                 >
-                  <FormControlLabel value={SurveyStatus.Draft} control={<Radio />} label="초안" />
+                  <FormControlLabel value={SurveyStatus.Draft} control={<Radio />} label={SURVEY_STATUS_LABELS[SurveyStatus.Draft]} />
                   <FormControlLabel value={SurveyStatus.Active} control={<Radio />} label="발행" />
+                  <FormControlLabel value={SurveyStatus.Closed} control={<Radio />} label={SURVEY_STATUS_LABELS[SurveyStatus.Closed]} />
                 </RadioGroup>
 
                 <Select

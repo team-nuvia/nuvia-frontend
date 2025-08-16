@@ -12,4 +12,11 @@ export const SURVEY_STATUS_LABELS = {
   [SurveyStatus.Active]: '진행중',
   [SurveyStatus.Draft]: '초안',
   [SurveyStatus.Closed]: '마감',
-};
+} as const;
+export type SURVEY_STATUS_LABELS = (typeof SURVEY_STATUS_LABELS)[keyof typeof SURVEY_STATUS_LABELS];
+
+export const MetadataStatusType = {
+  SurveyList: 'surveyList',
+  Dashboard: 'dashboard',
+} as const;
+export type MetadataStatusType = (typeof MetadataStatusType)[keyof typeof MetadataStatusType];
