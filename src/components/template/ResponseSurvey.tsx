@@ -1,6 +1,8 @@
 import { AnswerPayload } from '@/models/AnswerPayload';
 import { PreviewPayload } from '@/models/PreviewPayload';
+import { ValidateFirstAnswerResponse } from '@/models/ValidateFirstAnswerResponse';
 import { createAnswer } from '@api/create-answer';
+import { validateFirstSurveyAnswer } from '@api/validate-first-answer';
 import ActionButton from '@components/atom/ActionButton';
 import CommonText from '@components/atom/CommonText';
 import SurveyProgress from '@components/molecular/SurveyProgress';
@@ -29,20 +31,68 @@ import {
 import { useTheme } from '@mui/material/styles';
 import { TimeIcon } from '@mui/x-date-pickers/icons';
 import { QuestionType } from '@share/enums/question-type';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { DateFormat } from '@util/dateFormat';
 import { isEmpty } from '@util/isEmpty';
 import { isNil } from '@util/isNil';
 import { AxiosError } from 'axios';
+import { useFormik } from 'formik';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useContext, useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import * as Yup from 'yup';
+
+// --- Start Answer Schema ---
+const AnswerStartSchema = Yup.object().shape({
+  userAgent: Yup.string(),
+  startAt: Yup.date().nullable(),
+});
+const startAnswerInitialValues: StartAnswerInitialValues = {
+  userAgent:'',
+  startAt: new Date(),
+};
+
+// --- In progress Answer Schema ---
+const AnswerInProgressSchema = Yup.object().shape({
+  answers: Yup.array().of(
+    Yup.object().shape({
+      questionId: Yup.number().required('질문 ID는 필수입니다.'),
+      optionIds: Yup.array().of(Yup.number()).nullable(),
+      value: Yup.string().nullable(),
+    }),
+  ),
+});
+const answerInitialValues: AnswerInitialValues = {
+  answers: [],
+};
 
 interface ResponseSurveyProps {
   survey: PreviewPayload;
 }
 // --- COMPONENT ---
 const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
+  const { data: surveyData } = useQuery<ServerResponse<ValidateFirstAnswerResponse>>({
+    queryKey: ['survey', survey.id],
+    queryFn: () => validateFirstSurveyAnswer(survey.id as number),
+    enabled: !!survey.id,
+  });
+
+  const answerFormik = useFormik({
+    initialValues: answerInitialValues,
+    validationSchema: AnswerInProgressSchema,
+    onSubmit: (values) => {
+      console.log('🚀 ~ ResponseSurvey ~ values:', values);
+    },
+  });
+
+  const startAnswerFormik = useFormik({
+    initialValues: startAnswerInitialValues,
+    validationSchema: AnswerStartSchema,
+    onSubmit: (values) => {
+      console.log('🚀 ~ ResponseSurvey ~ values:', values);
+    },
+  });
+
   // --- STATE ---
   const router = useRouter();
   const [questions, setQuestions] = useState<PreviewPayload['questions']>(survey.questions);
@@ -87,6 +137,16 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
   const isAllAnswered = useMemo(() => {
     return getQuestionProcess() === 100;
   }, [questions]);
+
+  useLayoutEffect(() => {
+    startAnswerFormik.setFieldValue('userAgent', navigator.userAgent);
+
+    // send request start answer and receive server hashed token, cookies
+    // 첫 응답 시작이면?
+    if (!surveyData?.payload?.isFirstAnswer) {
+      startAnswerFormik.handleSubmit();
+    }
+  }, [surveyData]);
 
   useEffect(() => {
     setProgress(getQuestionProcess());
@@ -153,8 +213,6 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
     }
 
     setIsSubmitting(true);
-    // setError(null);
-    // setSuccess(null);
 
     const answerData: AnswerPayload = {
       answers: questions.map(({ idx, ...rest }) => {
@@ -212,14 +270,6 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
 
     setErrors(newErrors);
     return true;
-    // if (currentQuestion.dataType === 'email' && isAnswered) {
-    //   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    //   if (!emailRegex.test(answer)) {
-    //     newErrors[currentQuestion.id] = '올바른 이메일 형식을 입력해주세요';
-    //     setErrors(newErrors);
-    //     return false;
-    //   }
-    // }
   };
 
   const handleNext = () => {
@@ -400,7 +450,6 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
 
         <Grid size={{ xs: 12 }}>
           {/* 본인 설문 상세 조회 시 활성화 */}
-          {/* <Chip label={survey.isPublic ? '공개' : '비공개'} /> */}
           <Paper sx={{ p: 4 }}>
             <SurveyProgress progress={progress} />
           </Paper>
@@ -433,11 +482,6 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
                       answers={currentQuestion.answers}
                       handleOptionChange={handleOptionChange}
                     />
-                    {/* {errors[currentQuestion.idx] && (
-                    <CommonText color="error" variant="body2" px={4} pb={4}>
-                      {errors[currentQuestion.idx]}
-                    </CommonText>
-                  )} */}
                     {errors[currentQuestion.idx] && (
                       <Fade in>
                         <Alert severity="error" sx={{ mt: 2 }}>

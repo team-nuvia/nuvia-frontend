@@ -81,13 +81,6 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
     if (dataType === DataType.Rating) {
       /* 설문 응답할 때 처리 */
       return (
-        // <Rating
-        //   size="large"
-        //   value={answers?.get(1) ? Number(answers?.get(1)) : 0}
-        //   onChange={(_, value) =>
-        //     handleOptionChange(id, 1, value?.toString() || '1')
-        //   }
-        // />
         <Box sx={{ textAlign: 'center' }}>
           <Rating
             size="large"
@@ -120,7 +113,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
           size="small"
           label="이메일"
           type="email"
-          value={answers?.get(1)?.value}
+          value={answers?.get(1)?.value ?? ''}
           onChange={(e) => handleOptionChange(idx, 1, e.target.value)}
         />
       );
@@ -132,7 +125,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
           size="small"
           label="링크"
           type="url"
-          value={answers?.get(1)?.value}
+          value={answers?.get(1)?.value ?? ''}
           onChange={(e) => handleOptionChange(idx, 1, e.target.value)}
         />
       );
@@ -248,7 +241,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
         size="small"
         label="단답형 답변"
         type={inputValueType}
-        value={answers?.get(1)}
+        value={answers?.get(1)?.value ?? ''}
         onChange={(e) => {
           handleOptionChange(idx, 1, e.target.value);
         }}
@@ -296,13 +289,13 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
             {...(dataType === DataType.Rating && {
               slotProps: { htmlInput: { min: 0, max: 5, step: 1 } },
             })}
-            value={answers?.get(1)?.value}
+            value={answers?.get(1)?.value ?? ''}
             onChange={(e) => handleOptionChange(idx, 1, e.target.value)}
           />
         )}
         {questionType === QuestionType.SingleChoice && (
           <FormControl component="fieldset" fullWidth /* error={hasError} */>
-            <RadioGroup value={answers?.get(1)?.value || ''} onChange={(e) => handleOptionChange(idx, 1, e.target.value)}>
+            <RadioGroup value={answers?.get(1)?.optionId || ''} onChange={(e) => handleOptionChange(idx, 1, e.target.value)}>
               {questionOptions?.map((option) => (
                 <FormControlLabel
                   key={option.id || 'idx' + option.idx}

@@ -115,7 +115,7 @@ const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey, refetch
   };
 
   const handleRedirectResults = () => {
-    router.push(`/survey/${survey.id}/results`);
+    router.push(`/survey/${survey.id}/analysis`);
     handleMenuClose();
   };
 
@@ -153,12 +153,8 @@ const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey, refetch
           />
         </>
       ),
+      useConfirm: false,
     });
-    handleMenuClose();
-  };
-
-  const handleViewResults = () => {
-    router.push(`/survey/${survey.id}/results`);
     handleMenuClose();
   };
 
@@ -347,14 +343,14 @@ const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey, refetch
           <Edit sx={{ mr: 2 }} />
           편집
         </MenuItem>
-        {survey.status === SurveyStatus.Draft && (
+        {survey.status === SurveyStatus.Active && (
           <MenuItem onClick={handleShare}>
             <Share sx={{ mr: 2 }} />
             공유
           </MenuItem>
         )}
         {survey.responseAmount > 0 && (
-          <MenuItem onClick={handleViewResults}>
+          <MenuItem onClick={handleRedirectResults}>
             <Analytics sx={{ mr: 2 }} />
             결과 보기
           </MenuItem>

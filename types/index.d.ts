@@ -50,6 +50,12 @@ export declare global {
   /* Analysis Types */
   export type QuestionType = 'single' | 'multiple' | 'number' | 'date' | 'text';
 
+  export interface AnswerResponseItem {
+    questionId: number;
+    optionIds: number[] | null;
+    value: string | null;
+  }
+
   export interface OverviewStats {
     totalResponses: number;
     avgResponsesPerSurvey: number;
