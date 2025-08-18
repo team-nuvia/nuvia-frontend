@@ -1,7 +1,7 @@
 'use client';
 
-import { getDashboardMetadataServer } from '@api/get-dashboard-metadata.server';
 import { getDashboardRecentSurveysServer } from '@api/get-dashboard-recent-surveys-server';
+import { getSurveyMetadata } from '@api/get-survey-metadata';
 import { SURVEY_STATUS_LABELS } from '@common/variables';
 import ActionButton from '@components/atom/ActionButton';
 import UserOrganizationSelect from '@components/molecular/UserOrganizationSelect';
@@ -24,8 +24,10 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
+import { MetadataStatusType } from '@share/enums/metadata-status-type';
 import { SurveyStatus } from '@share/enums/survey-status';
 import { useQuery } from '@tanstack/react-query';
+import { DateFormat } from '@util/dateFormat';
 import NextLink from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useContext, useLayoutEffect, useMemo } from 'react';
@@ -33,7 +35,7 @@ import { useCallback, useContext, useLayoutEffect, useMemo } from 'react';
 const Dashboard = () => {
   const { data: metadataData, refetch: refetchMetadata } = useQuery({
     queryKey: ['dashboard-metadata'],
-    queryFn: getDashboardMetadataServer,
+    queryFn: () => getSurveyMetadata(MetadataStatusType.Dashboard),
   });
   const { data: recentSurveysData, refetch: refetchRecentSurveys } = useQuery({
     queryKey: ['dashboard-recent-surveys'],
@@ -47,10 +49,14 @@ const Dashboard = () => {
   }, [metadataData, recentSurveysData]);
 
   const kpiData = useMemo(() => {
+    const currentMonthRespondentCount = metadataData?.payload?.respondentIncreaseRate.currentMonthRespondentCount ?? 0;
+    const previousMonthRespondentCount = metadataData?.payload?.respondentIncreaseRate.previousMonthRespondentCount ?? 0;
+    const totalRespondentCount = metadataData?.payload?.totalRespondentCount ?? 0;
     return [
       {
         title: '총 설문 수',
         type: 'number',
+        total: 0,
         value: metadataData?.payload?.totalSurveyCount ?? 0,
         icon: <BarChart sx={{ fontSize: 40 }} />,
         color: 'primary.main',
@@ -58,18 +64,24 @@ const Dashboard = () => {
       {
         title: '총 응답 수',
         type: 'number',
-        value: metadataData?.payload?.totalRespondentCount ?? 0,
+        total: 0,
+        value: totalRespondentCount,
         icon: <PeopleAlt sx={{ fontSize: 40 }} />,
         color: 'success.main',
       },
       {
-        title: '최근 30일 응답 증가율',
+        title: '1개월 응답 증가율',
         type: 'percentage',
-        total: metadataData?.payload?.respondentIncreaseRate.previousMonthRespondentCount ?? 0,
-        value:
-          ((metadataData?.payload?.respondentIncreaseRate.currentMonthRespondentCount ?? 0) -
-            (metadataData?.payload?.respondentIncreaseRate.previousMonthRespondentCount ?? 0)) *
-          100,
+        total: previousMonthRespondentCount,
+        value: currentMonthRespondentCount - previousMonthRespondentCount,
+        icon: <CheckCircleOutline sx={{ fontSize: 40 }} />,
+        color: 'warning.main',
+      },
+      {
+        title: '1개월 응답 대칭 증감율',
+        type: 'percentage',
+        total: currentMonthRespondentCount + previousMonthRespondentCount,
+        value: currentMonthRespondentCount - previousMonthRespondentCount,
         icon: <CheckCircleOutline sx={{ fontSize: 40 }} />,
         color: 'warning.main',
       },
@@ -131,7 +143,7 @@ const Dashboard = () => {
                   ) : item.type === 'percentage' ? (
                     <Stack direction="row" alignItems="center" gap={1}>
                       <Typography variant="h6" component="div" fontWeight="bold">
-                        {((item.value / (item.total ?? 1)) * 100 || 0).toFixed(1)}%
+                        {item.total === 0 ? 'N/A' : `${((item.value / item.total) * 100 || 0).toFixed(1)}%`}
                       </Typography>
                       <Typography variant="caption" component="div" color="text.secondary">
                         {item.value}/{item.total}
@@ -187,6 +199,7 @@ const Dashboard = () => {
                     <TableRow>
                       <TableCell>설문 제목</TableCell>
                       <TableCell align="center">상태</TableCell>
+                      <TableCell align="center">마감기한</TableCell>
                       <TableCell align="right">응답 수</TableCell>
                     </TableRow>
                   </TableHead>
@@ -205,6 +218,7 @@ const Dashboard = () => {
                             color={survey.status === SurveyStatus.Active ? 'success' : survey.status === SurveyStatus.Draft ? 'default' : 'warning'}
                           />
                         </TableCell>
+                        <TableCell align="center">{survey.expiresAt ? DateFormat.toKST('YYYY-MM-dd HH:mm', survey.expiresAt) : '기한없음'}</TableCell>
                         <TableCell align="right">{survey.responses}</TableCell>
                       </TableRow>
                     ))}

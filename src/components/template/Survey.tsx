@@ -1,7 +1,6 @@
 'use client';
 
 import { CreateSurveyPayload } from '@/models/CreateSurveyPayload';
-import { GetCategoryResponse } from '@/models/GetCategoryResponse';
 import { GetSurveyDetailResponse } from '@/models/GetSurveyDetailResponse';
 import { UpdateSurveyPayload } from '@/models/UpdateSurveyPayload';
 import { createSurvey } from '@api/create-survey';
@@ -9,6 +8,8 @@ import { getCategories } from '@api/get-categories';
 import { getSurveyDetail } from '@api/get-survey-detail';
 import { updateSurvey } from '@api/update-survey';
 import { QUESTION_DATA_TYPE_MAP, QUESTION_TYPE_ICONS, QUESTION_TYPE_MAP } from '@common/global';
+import { SURVEY_STATUS_LABELS } from '@common/variables';
+import { AddQuestionSheet } from '@components/molecular/AddQuestionSheet';
 import Preview from '@components/organism/Preview';
 import QuestionCard from '@components/organism/QuestionCard';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
@@ -33,9 +34,6 @@ import {
   Radio,
   RadioGroup,
   Select,
-  SpeedDial,
-  SpeedDialAction,
-  SpeedDialIcon,
   Stack,
   Switch,
   TextField,
@@ -47,6 +45,7 @@ import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { DataType } from '@share/enums/data-type';
 import { QuestionType } from '@share/enums/question-type';
 import { SurveyStatus } from '@share/enums/survey-status';
+import { ICategory } from '@share/interface/icategory';
 import { AllQuestion } from '@share/interface/iquestion';
 import { useQuery } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
@@ -106,10 +105,11 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
   const theme = useTheme();
 
   /* state */
+  const SUBMIT_BUTTON_TEXT = id ? '설문 수정' : '설문 저장';
   const [isPreview, setIsPreview] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { data: categories } = useQuery<ServerResponse<GetCategoryResponse[]>>({
+  const { data: categories } = useQuery<ServerResponse<ICategory[]>>({
     queryKey: ['categories'],
     queryFn: () => getCategories(),
   });
@@ -275,8 +275,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
 
       if (response.ok) {
         addNotice(response.reason || response.message, 'success');
-        // Reset form
-        router.push('/');
+        router.push('/survey');
       } else {
         addNotice(response.reason || response.message, 'error');
       }
@@ -291,50 +290,6 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
       setIsSubmitting(false);
     }
   }
-
-  // useLayoutEffect(() => {
-  //   if (id) {
-  //     getSurveyDetail(id)
-  //       .then((survey) => {
-  //         if (survey.payload) {
-  //           const payload = survey.payload;
-  //           formik.setValues({
-  //             title: payload.title,
-  //             description: payload.description,
-  //             categoryId: payload.category.id.toString(),
-  //             status: payload.status,
-  //             expiresAt: payload.expiresAt,
-  //             isPublic: payload.isPublic,
-  //             questions: payload.questions.map((question) => ({
-  //               id: question.id,
-  //               idx: question.id ?? Date.now(),
-  //               title: question.title,
-  //               description: question.description,
-  //               questionType: question.questionType,
-  //               dataType: question.dataType,
-  //               isRequired: question.isRequired,
-  //               sequence: question.sequence,
-  //               questionOptions: question.questionOptions.map((option) => ({
-  //                 id: option.id,
-  //                 idx: option.id ?? Date.now(),
-  //                 label: option.label,
-  //                 description: option.description,
-  //                 sequence: option.sequence,
-  //               })),
-  //             })),
-  //           });
-  //         }
-  //         endLoading();
-  //       })
-  //       .catch((error) => {
-  //         console.log('🚀 ~ getSurveyDetail ~ error:', error);
-  //         addNotice('설문 정보를 불러오는데 실패했습니다.', 'error');
-  //         router.push('/');
-  //       });
-  //   } else {
-  //     endLoading();
-  //   }
-  // }, []);
 
   useEffect(() => {
     if (formik.isSubmitting && Object.keys(formik.errors).length > 0) {
@@ -425,8 +380,9 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
                   value={formik.values.status}
                   onChange={formik.handleChange}
                 >
-                  <FormControlLabel value={SurveyStatus.Draft} control={<Radio />} label="초안" />
+                  <FormControlLabel value={SurveyStatus.Draft} control={<Radio />} label={SURVEY_STATUS_LABELS[SurveyStatus.Draft]} />
                   <FormControlLabel value={SurveyStatus.Active} control={<Radio />} label="발행" />
+                  <FormControlLabel value={SurveyStatus.Closed} control={<Radio />} label={SURVEY_STATUS_LABELS[SurveyStatus.Closed]} />
                 </RadioGroup>
 
                 <Select
@@ -477,7 +433,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
                   미리보기
                 </Button>
                 <Button type="submit" variant="contained" startIcon={<SaveIcon />} color="primary" disabled={isSubmitting}>
-                  {isSubmitting ? <CircularProgress size={24} /> : '설문 저장'}
+                  {isSubmitting ? <CircularProgress size={24} /> : SUBMIT_BUTTON_TEXT}
                 </Button>
               </Stack>
             </Box>
@@ -514,46 +470,68 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
         </Grid>
 
         {isMobile && (
-          <SpeedDial ariaLabel="Add Question Speed Dial" sx={{ position: 'fixed', bottom: 16, right: 16 }} icon={<SpeedDialIcon />}>
-            {Object.entries(QUESTION_TYPE_ICONS)
-              .toReversed()
-              .map(([key, icon]) => (
-                <SpeedDialAction
-                  key={key}
-                  icon={icon}
-                  slotProps={{
-                    tooltip: { title: QUESTION_TYPE_MAP[key as QuestionType] },
-                  }}
-                  onClick={() =>
-                    handleAddQuestion(
-                      QUESTION_DATA_TYPE_MAP[key as QuestionType | DataType].key,
-                      QUESTION_DATA_TYPE_MAP[key as QuestionType | DataType].type,
-                    )
-                  }
-                />
-              ))}
-          </SpeedDial>
+          <AddQuestionSheet onPick={(qType, dType) => handleAddQuestion(qType, dType)} />
+          // <SpeedDial ariaLabel="Add Question Speed Dial" sx={{ position: 'fixed', bottom: 16, right: 16 }} icon={<SpeedDialIcon />}>
+          //   {Object.entries(QUESTION_TYPE_ICONS)
+          //     .toReversed()
+          //     .map(([key, icon]) => (
+          //       <SpeedDialAction
+          //         key={key}
+          //         icon={icon}
+          //         slotProps={{
+          //           tooltip: { title: QUESTION_TYPE_MAP[key as QuestionType] },
+          //         }}
+          //         onClick={() =>
+          //           handleAddQuestion(
+          //             QUESTION_DATA_TYPE_MAP[key as QuestionType | DataType].key,
+          //             QUESTION_DATA_TYPE_MAP[key as QuestionType | DataType].type,
+          //           )
+          //         }
+          //       />
+          //     ))}
+          // </SpeedDial>
         )}
       </Box>
 
       {isPreview && (
         <Preview
           survey={{
+            id: id ? Number(id) : null,
+            hashedUniqueKey: '',
+            subscriptionId: 0,
+            viewCount: 0,
+            estimatedTime: 0,
+            totalResponses: 0,
+            questionCount: 0,
+            respondentCount: 0,
+            isOwner: false,
             title: formik.values.title,
-            name: '미리보기 사용자',
+            author: {
+              id: 0,
+              name: '미리보기 사용자',
+              profileUrl: null,
+            },
             description: formik.values.description,
             category: categories?.payload?.find((category) => category.id === Number(formik.values.categoryId)) || { id: 0, name: '' },
-            expiresAt: formik.values.expiresAt || null,
+            expiresAt: formik.values.expiresAt || new Date(),
             isPublic: formik.values.isPublic,
-            participants: 0,
+            status: formik.values.status,
+            createdAt: new Date(),
+            updatedAt: new Date(),
             questions: formik.values.questions.map((question) => ({
               ...question,
               id: question.id,
               idx: question.idx,
+              title: question.title,
+              description: question.description,
+              questionType: question.questionType,
+              dataType: question.dataType,
+              isRequired: question.isRequired,
+              questionOptions: question.questionOptions,
+              answers: new Map(),
+              isAnswered: false,
               sequence: question.sequence,
             })),
-            createdAt: new Date(),
-            updatedAt: new Date(),
           }}
           handleClose={() => setIsPreview(false)}
         />

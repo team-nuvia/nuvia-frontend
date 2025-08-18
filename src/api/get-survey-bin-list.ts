@@ -1,24 +1,21 @@
 import { GetPaginatedResponse } from '@/models/GetPaginatedResponse';
-import { SearchSurvey } from '@share/interface/search-survey';
+import { GetSurveyBinListResponse } from '@/models/GetSurveyBinListResponse';
 import { snapApi } from '.';
 
-export const getSurveyList = async ({
+export const getSurveyBinList = async ({
   page,
   limit,
   search,
-  status,
 }: Partial<{
   page: number;
   limit: number;
   search: string;
-  status: string;
-}>): Promise<ServerResponse<GetPaginatedResponse<SearchSurvey>>> => {
+}>): Promise<ServerResponse<GetPaginatedResponse<GetSurveyBinListResponse>>> => {
   const queryString = new URLSearchParams({
     page: page?.toString() ?? '',
     limit: limit?.toString() ?? '',
     search: search ?? '',
-    status: status ?? '',
   });
-  const response = await snapApi.get<ServerResponse<GetPaginatedResponse<SearchSurvey>>>(`/surveys?${queryString.toString()}`);
+  const response = await snapApi.get<ServerResponse<GetPaginatedResponse<GetSurveyBinListResponse>>>(`/surveys/bin?${queryString.toString()}`);
   return response.data;
 };

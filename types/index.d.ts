@@ -46,6 +46,72 @@ export declare global {
     const ReactComponent: React.FunctionComponent<React.SVGProps<SVGSVGElement>>;
     export default ReactComponent;
   }
+
+  /* Analysis Types */
+  export type QuestionType = 'single' | 'multiple' | 'number' | 'date' | 'text';
+
+  export interface AnswerResponseItem {
+    questionId: number;
+    optionIds: number[] | null;
+    value: string | null;
+  }
+
+  export interface OverviewStats {
+    totalResponses: number;
+    avgResponsesPerSurvey: number;
+    growth30dPct: number;
+    completionRate?: number | null;
+  }
+  export interface TrendPoint {
+    date: string;
+    count: number;
+  }
+  export interface OverviewPayload {
+    surveyId: string;
+    title: string;
+    periodLabel: string;
+    stats: OverviewStats;
+    dailyTrend: TrendPoint[];
+  }
+
+  export interface ChoiceBucket {
+    value: string;
+    count: number;
+  }
+  export interface NumberBin {
+    x0: number;
+    x1: number;
+    count: number;
+  }
+  export interface DateBucket {
+    date: string;
+    count: number;
+  }
+  export interface TextSample {
+    snippet: string;
+    count?: number;
+  }
+
+  export type Distribution =
+    | { type: 'single'; buckets: ChoiceBucket[] }
+    | { type: 'multiple'; buckets: ChoiceBucket[] }
+    | { type: 'number'; bins: NumberBin[] }
+    | { type: 'date'; buckets: DateBucket[] }
+    | { type: 'text'; samples: TextSample[] };
+
+  export interface QuestionDistribution {
+    questionId: string;
+    questionTitle: string;
+    questionType: QuestionType;
+    distribution: Distribution;
+    totalAnswers: number;
+    note?: string;
+  }
+
+  export interface AnalysisPageData {
+    overview: OverviewPayload;
+    questions: QuestionDistribution[];
+  }
 }
 declare module '@mui/material/styles' {
   interface Palette {
