@@ -1,3 +1,4 @@
+import { AllQuestion } from '@share/interface/iquestion';
 import { PreviewPayload } from './PreviewPayload';
 
 // export interface QuestionOptionDetailNestedResponseDto {
@@ -40,4 +41,6 @@ import { PreviewPayload } from './PreviewPayload';
 //   updatedAt: Date;
 // }
 
-export interface GetSurveyDetailResponse extends PreviewPayload {}
+export interface GetSurveyDetailResponse extends Omit<PreviewPayload, 'questions'> {
+  questions: Omit<AllQuestion, 'questionAnswers' | 'isAnswered'>[];
+}

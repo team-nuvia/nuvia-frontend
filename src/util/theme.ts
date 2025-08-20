@@ -1,5 +1,5 @@
 'use client';
-import { Components, createTheme, Theme, ThemeOptions } from '@mui/material/styles';
+import { Components, createTheme, Theme } from '@mui/material/styles';
 
 const commonColor = {
   primary: {
@@ -143,7 +143,8 @@ const components: Components<Omit<Theme, 'components'>> = {
           size: 'xlarge',
         },
         style: {
-          padding: '0.5rem',
+          paddingInline: '1.2rem',
+          paddingBlock: '0.8rem',
           fontSize: '1.1rem',
         },
       },
@@ -208,4 +209,5 @@ const darkTheme = createTheme({
   },
 });
 
-export { lightTheme, darkTheme };
+export { darkTheme, lightTheme };
+

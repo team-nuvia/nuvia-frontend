@@ -158,6 +158,8 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
             description: option.description,
             sequence: option.sequence,
           })),
+          questionAnswers: new Map(),
+          isAnswered: false,
         })),
       });
       endLoading();
@@ -205,6 +207,8 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
             label: option.label,
             sequence: option.sequence,
           })),
+          questionAnswers: new Map(),
+          isAnswered: false,
         })),
       };
 
@@ -228,6 +232,8 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
             label: optRest.label,
             sequence: optRest.sequence,
           })), // Remove client-side IDs
+          questionAnswers: new Map(),
+          isAnswered: false,
         })),
         // managementPassword: managementPassword,
       };
@@ -301,17 +307,17 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
   // --- HANDLERS ---
   const handleAddQuestion = (questionType: QuestionType, dataType?: DataType) => {
     const isSelectable = questionType === QuestionType.SingleChoice || questionType === QuestionType.MultipleChoice;
-    const newQuestion: Omit<AllQuestion, 'answers'> = {
+    const newQuestion: Omit<AllQuestion, 'questionAnswers'> = {
       id: null,
       idx: Date.now(),
       title: '',
       description: null,
       questionType,
-      dataType: dataType || DataType.Text,
+      dataType: dataType || DataType.Text,  
       isRequired: false,
       // isAnswered: false,
       questionOptions: isSelectable ? [{ id: null, label: '', sequence: 0, idx: Date.now() }] : [],
-      // answers: new Map(),
+      isAnswered: false,
       sequence: formik.values.questions.length ?? 0,
     };
     formik.setFieldValue('questions', [...formik.values.questions, newQuestion]);
@@ -502,6 +508,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
             viewCount: 0,
             estimatedTime: 0,
             totalResponses: 0,
+            questionAnswers: [],
             questionCount: 0,
             respondentCount: 0,
             isOwner: false,
@@ -528,8 +535,6 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
               dataType: question.dataType,
               isRequired: question.isRequired,
               questionOptions: question.questionOptions,
-              answers: new Map(),
-              isAnswered: false,
               sequence: question.sequence,
             })),
           }}

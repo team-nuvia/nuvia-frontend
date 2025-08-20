@@ -31,6 +31,7 @@ export const Default: Story = {
         profileUrl: 'test',
       },
       estimatedTime: 10,
+      questionAnswers: [],
       questions: [
         {
           id: 1,
@@ -42,7 +43,6 @@ export const Default: Story = {
           dataType: DataType.Text,
           isRequired: true,
           questionOptions: [],
-          answers: new Map(),
         },
       ],
       isPublic: true,

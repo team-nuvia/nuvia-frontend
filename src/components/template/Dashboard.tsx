@@ -33,6 +33,8 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useContext, useLayoutEffect, useMemo } from 'react';
 
 const Dashboard = () => {
+  const router = useRouter();
+  const { endLoading } = useContext(LoadingContext);
   const { data: metadataData, refetch: refetchMetadata } = useQuery({
     queryKey: ['dashboard-metadata'],
     queryFn: () => getSurveyMetadata(MetadataStatusType.Dashboard),
@@ -96,8 +98,6 @@ const Dashboard = () => {
     ];
   }, [metadataData]);
 
-  const router = useRouter();
-  const { endLoading } = useContext(LoadingContext);
   const refetchDashboardData = useCallback(() => {
     refetchMetadata();
     refetchRecentSurveys();

@@ -56,6 +56,15 @@ export declare global {
     value: string | null;
   }
 
+  export interface StartAnswerInitialValues {
+    userAgent: string;
+    startAt: Date | null;
+  }
+
+  export interface AnswerInitialValues {
+    answers: AnswerResponseItem[];
+  }
+
   export interface OverviewStats {
     totalResponses: number;
     avgResponsesPerSurvey: number;

@@ -1,3 +1,3 @@
 export interface ValidateFirstAnswerResponse {
-  isFirstAnswer: boolean;
+  isFirst: boolean;
 }

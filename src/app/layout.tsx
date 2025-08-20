@@ -26,8 +26,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: `${BRAND_NAME} - Quick Survey Platform`,
-  description: 'Create and manage surveys with ease',
+  title: `${BRAND_NAME} - 빠르고 간편한 설문 플랫폼`,
+  description: '설문을 쉽고 빠르게 생성하고 관리하세요',
 };
 
 export default function RootLayout({
