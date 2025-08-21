@@ -25,9 +25,9 @@ import {
   Typography,
 } from '@mui/material';
 import { MetadataStatusType } from '@share/enums/metadata-status-type';
-import { SurveyStatus } from '@share/enums/survey-status';
 import { useQuery } from '@tanstack/react-query';
 import { DateFormat } from '@util/dateFormat';
+import { getSurveyStatusColor } from '@util/getSurveyStatusColor';
 import NextLink from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useContext, useLayoutEffect, useMemo } from 'react';
@@ -38,10 +38,14 @@ const Dashboard = () => {
   const { data: metadataData, refetch: refetchMetadata } = useQuery({
     queryKey: ['dashboard-metadata'],
     queryFn: () => getSurveyMetadata(MetadataStatusType.Dashboard),
+    refetchOnReconnect: 'always',
+    refetchOnWindowFocus: 'always',
   });
   const { data: recentSurveysData, refetch: refetchRecentSurveys } = useQuery({
     queryKey: ['dashboard-recent-surveys'],
     queryFn: getDashboardRecentSurveysServer,
+    refetchOnReconnect: 'always',
+    refetchOnWindowFocus: 'always',
   });
 
   useLayoutEffect(() => {
@@ -72,6 +76,14 @@ const Dashboard = () => {
         color: 'success.main',
       },
       {
+        title: '플랜 사용량',
+        type: 'percentage',
+        total: metadataData?.payload?.planUsage.limit ?? 0,
+        value: metadataData?.payload?.planUsage.usage ?? 0,
+        icon: <DonutLarge sx={{ fontSize: 40 }} />,
+        color: 'error.main',
+      },
+      {
         title: '1개월 응답 증가율',
         type: 'percentage',
         total: previousMonthRespondentCount,
@@ -80,20 +92,12 @@ const Dashboard = () => {
         color: 'warning.main',
       },
       {
-        title: '1개월 응답 대칭 증감율',
+        title: '응답 증감율',
         type: 'percentage',
         total: currentMonthRespondentCount + previousMonthRespondentCount,
         value: currentMonthRespondentCount - previousMonthRespondentCount,
         icon: <CheckCircleOutline sx={{ fontSize: 40 }} />,
         color: 'warning.main',
-      },
-      {
-        title: '플랜 사용량',
-        type: 'percentage',
-        total: metadataData?.payload?.planUsage.limit ?? 0,
-        value: metadataData?.payload?.planUsage.usage ?? 0,
-        icon: <DonutLarge sx={{ fontSize: 40 }} />,
-        color: 'error.main',
       },
     ];
   }, [metadataData]);
@@ -142,12 +146,20 @@ const Dashboard = () => {
                     </Typography>
                   ) : item.type === 'percentage' ? (
                     <Stack direction="row" alignItems="center" gap={1}>
-                      <Typography variant="h6" component="div" fontWeight="bold">
-                        {item.total === 0 ? 'N/A' : `${((item.value / item.total) * 100 || 0).toFixed(1)}%`}
-                      </Typography>
-                      <Typography variant="caption" component="div" color="text.secondary">
-                        {item.value}/{item.total}
-                      </Typography>
+                      {item.total === 0 ? (
+                        <Typography variant="h6" component="div" fontWeight="bold">
+                          데이터 부족
+                        </Typography>
+                      ) : (
+                        <>
+                          <Typography variant="h6" component="div" fontWeight="bold">
+                            {`${((item.value / item.total) * 100 || 0).toFixed(1)}%`}
+                          </Typography>
+                          <Typography variant="caption" component="div" color="text.secondary">
+                            {item.value}/{item.total}
+                          </Typography>
+                        </>
+                      )}
                     </Stack>
                   ) : (
                     <Typography variant="h6" component="div" fontWeight="bold">
@@ -212,11 +224,7 @@ const Dashboard = () => {
                           </Link>
                         </TableCell>
                         <TableCell align="center">
-                          <Chip
-                            label={SURVEY_STATUS_LABELS[survey.status]}
-                            size="small"
-                            color={survey.status === SurveyStatus.Active ? 'success' : survey.status === SurveyStatus.Draft ? 'default' : 'warning'}
-                          />
+                          <Chip label={SURVEY_STATUS_LABELS[survey.status]} size="small" color={getSurveyStatusColor(survey.status)} />
                         </TableCell>
                         <TableCell align="center">{survey.expiresAt ? DateFormat.toKST('YYYY-MM-dd HH:mm', survey.expiresAt) : '기한없음'}</TableCell>
                         <TableCell align="right">{survey.responses}</TableCell>

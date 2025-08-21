@@ -4,6 +4,7 @@ import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import { Add } from '@mui/icons-material';
 import { Chip, Stack, TextField, Typography } from '@mui/material';
 import { useMutation } from '@tanstack/react-query';
+import { AxiosError } from 'axios';
 import { useContext, useState } from 'react';
 
 export default function InviteDialog({ subscriptionId }: { subscriptionId: number }) {
@@ -12,13 +13,14 @@ export default function InviteDialog({ subscriptionId }: { subscriptionId: numbe
   const { addNotice } = useContext(GlobalSnackbarContext);
   const { mutate: inviteUsersMutate } = useMutation({
     mutationFn: () => inviteUsers(subscriptionId, emails),
-    onSuccess: () => {
-      addNotice('초대 이메일이 발송되었습니다.', 'success');
+    onSuccess: (data) => {
+      addNotice(data?.message ?? '초대 이메일이 발송되었습니다.', 'success');
       setEmails([]);
       setInputValue('');
     },
-    onError: () => {
-      addNotice('초대 이메일 발송에 실패했습니다.', 'error');
+    onError: (error: AxiosError<ServerResponse<null>>) => {
+      console.log('error!:', error);
+      addNotice(error?.response?.data?.message ?? '초대 이메일 발송에 실패했습니다.', 'error');
     },
   });
 

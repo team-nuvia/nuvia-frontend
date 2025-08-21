@@ -43,9 +43,9 @@ export default function RootLayout({
             <AppRouterCacheProvider>
               <ThemeProvider theme={lightTheme}>
                 <CssBaseline />
-                <GlobalDialogProvider>
-                  <GlobalSnackbarSettingProvider>
-                    <GlobalSnackbar>
+                <GlobalSnackbarSettingProvider>
+                  <GlobalSnackbar>
+                    <GlobalDialogProvider>
                       <LoadingProvider>
                         {/* <Suspense fallback={<Loading />}> */}
                         <Header />
@@ -53,9 +53,9 @@ export default function RootLayout({
                         <Footer />
                         {/* </Suspense> */}
                       </LoadingProvider>
-                    </GlobalSnackbar>
-                  </GlobalSnackbarSettingProvider>
-                </GlobalDialogProvider>
+                    </GlobalDialogProvider>
+                  </GlobalSnackbar>
+                </GlobalSnackbarSettingProvider>
               </ThemeProvider>
             </AppRouterCacheProvider>
           </AuthenticationProvider>

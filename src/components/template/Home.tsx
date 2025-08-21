@@ -2,201 +2,337 @@
 
 import CommonButton from '@components/atom/CommonButton';
 import CommonText from '@components/atom/CommonText';
-import Showbox from '@components/atom/Showbox';
-import ReviewCard from '@components/organism/ReviewCard';
-import SolutionCard from '@components/organism/SolutionCard';
+import LinkText from '@components/atom/LinkText';
+import { AnalysisOverviewCards } from '@components/molecular/AnalysisOverviewCards';
+import BrandHead from '@components/molecular/BrandHead';
+import Preview from '@components/organism/Preview';
 import LoadingContext from '@context/LodingContext';
-import { Analytics, Ballot, BarChart, Create, LockOpen, PersonAdd, PhotoCamera, Share, Timer } from '@mui/icons-material';
-import { Grid, Stack, useTheme } from '@mui/material';
+import { Analytics, BarChart, Create, Download, Share } from '@mui/icons-material';
+import { Box, Card, CardContent, Container, Divider, Grid, Stack, useTheme } from '@mui/material';
+import { DataType } from '@share/enums/data-type';
+import { QuestionType } from '@share/enums/question-type';
+import { SurveyStatus } from '@share/enums/survey-status';
 import { useContext, useLayoutEffect } from 'react';
 
-interface HomeProps {}
+/**
+ * Landing Page (unauthenticated)
+ * - Mirrors the wireframe shared in chat
+ * - Uses existing atoms/molecular/organism components
+ * - MUI v7 compatible (no deprecated APIs)
+ */
 
-const IntroSection = () => {
-  return (
-    <Stack gap={4} alignItems="center" py={10} px={5}>
-      {/* TODO: CommonText 등으로 대제목, 소제목, 일러스트 카드 */}
-      <Showbox>
-        <CommonText variant="h3" align="center" thickness="bold" gutterBottom>
-          설문, 가볍게 만들 수 있다면 얼마나 좋을까요?
-        </CommonText>
-      </Showbox>
-      <Showbox>
-        <CommonText align="center" color="text.secondary">
-          질문 하나로 시작되는 대화, 더 쉽게 만들 수 있다면?
-        </CommonText>
-      </Showbox>
-      <Showbox>
-        <CommonText align="center" color="text.secondary">
-          📊 복잡한 설문 도구 일러스트
-        </CommonText>
-      </Showbox>
-    </Stack>
-  );
-};
-
-const FeatureSection = () => {
+const HeroSection = () => {
   const theme = useTheme();
-
-  const steps = [
-    {
-      icon: <Create sx={{ fontSize: 48, color: theme.palette.primary.main }} />,
-      title: '설문 만들기',
-      description: '직관적인 인터페이스로 빠르게 설문을 생성하세요',
-    },
-    {
-      icon: <Share sx={{ fontSize: 48, color: theme.palette.primary.main }} />,
-      title: '공유하기',
-      description: '링크 하나로 어디든 간편하게 공유할 수 있어요',
-    },
-    {
-      icon: <Analytics sx={{ fontSize: 48, color: theme.palette.primary.main }} />,
-      title: '통계 보기',
-      description: '실시간으로 응답을 확인하고 분석하세요',
-    },
-  ];
-
   return (
-    <Stack gap={4} alignItems="center" py={10} px={5}>
-      {/* TODO: CommonText, StatisticsCard, SettingItem 등으로 3가지 카드 */}
-      <Showbox>
-        <CommonText variant="h3" align="center" thickness="bold" gutterBottom>
-          누비아는 설문을 더 쉽고, 더 빠르게 만듭니다
-        </CommonText>
-      </Showbox>
-      <Showbox>
-        <CommonText align="center" color="text.secondary">
-          질문하고, 공유하고, 결과를 받는 일 — 단 5분이면 충분합니다.
-        </CommonText>
-      </Showbox>
-      <Stack direction="row" gap={3} justifyContent="center">
-        {steps.map((step, idx) => (
-          <Showbox key={idx} flex={1}>
-            <SolutionCard icon={step.icon} title={step.title} description={step.description} direction="column" />
-          </Showbox>
-        ))}
-      </Stack>
-    </Stack>
+    <Box component="section" sx={{ py: { xs: 8, md: 12 } }}>
+      <Container maxWidth="lg">
+        <Grid container spacing={{ xs: 4, md: 6 }} alignItems="center">
+          <Grid sx={{ xs: 12, md: 7 }}>
+            <Stack spacing={2}>
+              <CommonText variant="overline" color="primary" sx={{ letterSpacing: 1.2 }}>
+                SURVEY · RESEARCH · INSIGHTS
+              </CommonText>
+              <CommonText variant="h3" sx={{ fontWeight: 800, lineHeight: 1.2 }}>
+                당신의 질문이, 사회의 데이터가 됩니다.
+              </CommonText>
+              <CommonText variant="body1" color="text.secondary">
+                설문 생성 → 응답 수집 → 상관분석 대시보드. Nuvia가 리서치를 자동화합니다.
+              </CommonText>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} mt={1}>
+                <CommonButton variant="contained" size="large" href="/auth/signup">
+                  지금 무료로 시작하기
+                </CommonButton>
+                <CommonButton variant="outlined" size="large" href="/sample-report">
+                  샘플 리포트 보기
+                </CommonButton>
+              </Stack>
+            </Stack>
+          </Grid>
+          <Grid sx={{ xs: 12, md: 5 }}>
+            <Box
+              sx={{
+                borderRadius: 3,
+                border: '1px solid',
+                borderColor: 'divider',
+                overflow: 'hidden',
+              }}
+            >
+              {/* Dashboard Preview Placeholder (replace with real image if available) */}
+              <Preview
+                isDemo
+                handleClose={() => {}}
+                survey={{
+                  id: 1,
+                  hashedUniqueKey: '1234567890',
+                  subscriptionId: 1,
+                  category: {
+                    id: 1,
+                    name: 'test',
+                  },
+                  title: 'test',
+                  description: 'test',
+                  author: {
+                    id: 1,
+                    name: 'test',
+                    profileUrl: 'test',
+                  },
+                  estimatedTime: 10,
+                  questionAnswers: [],
+                  questions: [
+                    {
+                      id: 1,
+                      idx: 1,
+                      sequence: 1,
+                      title: 'test',
+                      description: 'test',
+                      questionType: QuestionType.ShortText,
+                      dataType: DataType.Text,
+                      isRequired: true,
+                      questionOptions: [],
+                      questionAnswers: new Map(),
+                    },
+                  ],
+                  isPublic: true,
+                  status: SurveyStatus.Active,
+                  questionCount: 10,
+                  respondentCount: 10,
+                  viewCount: 10,
+                  totalResponses: 10,
+                  isOwner: true,
+                  expiresAt: new Date(),
+                  createdAt: new Date(),
+                  updatedAt: new Date(),
+                }}
+              />
+            </Box>
+          </Grid>
+        </Grid>
+      </Container>
+    </Box>
   );
 };
 
-const SpecialFeatureSection = () => {
+const SocialProof = () => (
+  <Box component="section" sx={{ py: 4 }}>
+    <Container maxWidth="lg">
+      <Stack direction={{ xs: 'column', md: 'row' }} alignItems="center" spacing={3}>
+        <BrandHead title="Nuvia" width={36} height={36} primaryColor={'#565656'} secondaryColor={'#787878'} />
+        <Divider flexItem orientation="vertical" />
+        <CommonText variant="body2" color="text.secondary">
+          투명한 데이터 기준 · 익명 참여 보장 · 결과 공개 기준 제공
+        </CommonText>
+      </Stack>
+    </Container>
+  </Box>
+);
+
+const FeatureCard = ({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) => (
+  <Card sx={{ height: '100%', borderRadius: 3 }}>
+    <CardContent>
+      <Stack spacing={1.5}>
+        <Box>{icon}</Box>
+        <CommonText variant="h6" sx={{ fontWeight: 700 }}>
+          {title}
+        </CommonText>
+        <CommonText variant="body2" color="text.secondary">
+          {description}
+        </CommonText>
+      </Stack>
+    </CardContent>
+  </Card>
+);
+
+const FeaturesSection = () => {
   const theme = useTheme();
-
-  const items = [
-    {
-      icon: <PhotoCamera sx={{ fontSize: 48, color: theme.palette.primary.main }} />,
-      title: '이미지 응답 지원',
-      desc: '텍스트뿐만 아니라 이미지로도 응답받을 수 있어요 📸',
-    },
-    {
-      icon: <LockOpen sx={{ fontSize: 48, color: theme.palette.primary.main }} />,
-      title: '비회원 설문 가능',
-      desc: '로그인 없이도 바로 시작할 수 있어요 🔓',
-    },
-    {
-      icon: <Timer sx={{ fontSize: 48, color: theme.palette.primary.main }} />,
-      title: '응답 제한 기능',
-      desc: '응답 수 제한도 직접 설정할 수 있어요',
-    },
-    {
-      icon: <BarChart sx={{ fontSize: 48, color: theme.palette.primary.main }} />,
-      title: '통계 자동 시각화',
-      desc: '설문 결과, 자동으로 정리해드릴게요 📊',
-    },
-  ];
-
   return (
-    <Stack gap={4} py={10} px={5}>
-      {/* TODO: 4가지 특별 기능 카드 */}
-      <Showbox>
-        <CommonText variant="h3" align="center" thickness="bold" gutterBottom>
-          누비아만의 특별한 기능들
-        </CommonText>
-      </Showbox>
-      <Stack gap={3} flexWrap="wrap">
-        {items.map((item, idx) => (
-          <Showbox key={idx} width="100%">
-            <SolutionCard icon={item.icon} title={item.title} description={item.desc} direction="row" />
-          </Showbox>
-        ))}
-      </Stack>
-    </Stack>
+    <Box component="section" sx={{ py: { xs: 8, md: 10 } }}>
+      <Container maxWidth="lg">
+        <Grid container spacing={3}>
+          <Grid sx={{ xs: 12, md: 4 }}>
+            <FeatureCard icon={<Create sx={{ fontSize: 42 }} />} title="빠른 설문 제작" description="템플릿과 직관적 UI로 5분 만에 설문 배포" />
+          </Grid>
+          <Grid sx={{ xs: 12, md: 4 }}>
+            <FeatureCard
+              icon={<Analytics sx={{ fontSize: 42 }} />}
+              title="상관분석 대시보드"
+              description="응답자 특성/문항 상관관계를 자동으로 시각화"
+            />
+          </Grid>
+          <Grid sx={{ xs: 12, md: 4 }}>
+            <FeatureCard icon={<Download sx={{ fontSize: 42 }} />} title="데이터 내보내기" description="CSV/JSON으로 결과를 내려받아 2차 분석" />
+          </Grid>
+        </Grid>
+      </Container>
+    </Box>
   );
 };
 
-const ReviewSection = () => {
-  const data = [
-    {
-      txt: '설문 하나 만드는데 5분도 안 걸렸어요! 정말 간단하고 직관적이에요.',
-      who: '스타트업 PM 유정*',
-      av: 'Y',
-    },
-    {
-      txt: '예쁘고 기능도 좋아요!',
-      who: '프리랜서 디자이너 김효*',
-      av: 'K',
-    },
-    {
-      txt: '비회원도 쉽게 참여할 수 있어서 응답률이 확실히 높아졌어요.',
-      who: '마케터 이수*',
-      av: 'L',
-    },
-  ];
+const HowItWorksSection = () => (
+  <Box component="section" sx={{ py: { xs: 8, md: 10 }, backgroundColor: 'background.default' }}>
+    <Container maxWidth="lg">
+      <CommonText variant="h5" sx={{ fontWeight: 800, mb: 3 }}>
+        어떻게 작동하나요?
+      </CommonText>
+      <Grid container spacing={3}>
+        <Grid sx={{ xs: 12, md: 4 }}>
+          <FeatureCard icon={<Create />} title="1. 설문 만들기" description="맞춤형 질문으로 설문 구성" />
+        </Grid>
+        <Grid sx={{ xs: 12, md: 4 }}>
+          <FeatureCard icon={<Share />} title="2. 공유/참여" description="링크/QR로 손쉽게 배포" />
+        </Grid>
+        <Grid sx={{ xs: 12, md: 4 }}>
+          <FeatureCard icon={<BarChart />} title="3. 인사이트" description="대시보드에서 상관분석 확인" />
+        </Grid>
+      </Grid>
+    </Container>
+  </Box>
+);
 
-  return (
-    <Stack gap={4} alignItems="center" py={10} px={5}>
-      {/* TODO: ReviewCard 컴포넌트로 후기 4개 */}
-      <Showbox>
-        <CommonText variant="h3" align="center" thickness="bold" gutterBottom>
-          사용자들의 생생한 후기
+const GallerySection = () => (
+  <Box component="section" sx={{ py: { xs: 8, md: 10 } }}>
+    <Container maxWidth="lg">
+      <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+        <CommonText variant="h5" sx={{ fontWeight: 800 }}>
+          설문 갤러리 미리보기
         </CommonText>
-      </Showbox>
-      <Grid container spacing={4}>
-        {data.map((t, idx) => (
-          <Grid key={idx} size={{ xs: 2, sm: 4, md: 4 }}>
-            <Showbox>
-              <ReviewCard {...t} />
-            </Showbox>
+        <LinkText to="/gallery" variant="body2">
+          더 보기 →
+        </LinkText>
+      </Stack>
+      {/* Placeholder using existing Preview organism */}
+      <Preview
+        isDemo
+        handleClose={() => {}}
+        survey={{
+          id: 1,
+          hashedUniqueKey: '1234567890',
+          subscriptionId: 1,
+          category: {
+            id: 1,
+            name: 'test',
+          },
+          title: 'test',
+          description: 'test',
+          author: {
+            id: 1,
+            name: 'test',
+            profileUrl: 'test',
+          },
+          estimatedTime: 10,
+          questionAnswers: [],
+          questions: [
+            {
+              id: 1,
+              idx: 1,
+              sequence: 1,
+              title: 'test',
+              description: 'test',
+              questionType: QuestionType.ShortText,
+              dataType: DataType.Text,
+              isRequired: true,
+              questionOptions: [],
+              questionAnswers: new Map(),
+            },
+          ],
+          isPublic: true,
+          status: SurveyStatus.Active,
+          questionCount: 10,
+          respondentCount: 10,
+          viewCount: 10,
+          totalResponses: 10,
+          isOwner: true,
+          expiresAt: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }}
+      />
+    </Container>
+  </Box>
+);
+
+const SampleReportSection = () => (
+  <Box component="section" sx={{ py: { xs: 8, md: 10 }, backgroundColor: 'background.paper' }}>
+    <Container maxWidth="lg">
+      <Grid container spacing={3} alignItems="center">
+        <Grid sx={{ xs: 12, md: 8 }}>
+          <CommonText variant="h5" sx={{ fontWeight: 800, mb: 1 }}>
+            Z세대 소비 성향 리포트 (미리보기)
+          </CommonText>
+          <CommonText variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            실제 예시 리포트로 Nuvia의 분석 품질을 확인해 보세요.
+          </CommonText>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+            <CommonButton variant="contained" href="/sample-report">
+              리포트 보기
+            </CommonButton>
+            <CommonButton variant="text" href="/pricing">
+              가격 보기
+            </CommonButton>
+          </Stack>
+        </Grid>
+        <Grid sx={{ xs: 12, md: 4 }}>
+          <Card sx={{ borderRadius: 3 }}>
+            <CardContent>
+              <AnalysisOverviewCards loading />
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+    </Container>
+  </Box>
+);
+
+const PricingSection = () => (
+  <Box component="section" sx={{ py: { xs: 8, md: 10 } }}>
+    <Container maxWidth="lg">
+      <CommonText variant="h5" sx={{ fontWeight: 800, mb: 3 }}>
+        간단한 구독으로 시작하세요
+      </CommonText>
+      <Grid container spacing={3}>
+        {[
+          { name: 'Free', desc: '월 X개 설문 생성', cta: '무료로 시작' },
+          { name: 'Pro', desc: '월 X개↑ · 고급 분석', cta: '시작하기' },
+          { name: 'Team', desc: '협업 · 권한 · SSO', cta: '문의하기' },
+        ].map((tier) => (
+          <Grid sx={{ xs: 12, md: 4 }} key={tier.name}>
+            <Card sx={{ height: '100%', borderRadius: 3 }}>
+              <CardContent>
+                <Stack spacing={1.25}>
+                  <CommonText variant="h6" sx={{ fontWeight: 700 }}>
+                    {tier.name}
+                  </CommonText>
+                  <CommonText variant="body2" color="text.secondary">
+                    {tier.desc}
+                  </CommonText>
+                  <CommonButton variant={tier.name === 'Pro' ? 'contained' : 'outlined'} href="/pricing">
+                    {tier.cta}
+                  </CommonButton>
+                </Stack>
+              </CardContent>
+            </Card>
           </Grid>
         ))}
       </Grid>
-    </Stack>
-  );
-};
+    </Container>
+  </Box>
+);
 
-const CTASection = () => {
-  const theme = useTheme();
-  return (
-    <Stack
-      gap={3}
-      alignItems="center"
-      py={10}
-      px={5}
-      sx={{
-        background: `linear-gradient(135deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.main} 100%)`,
-      }}
-    >
-      {/* TODO: CommonText, CommonButton 2개 */}
-      <CommonText color="white" variant="h4">
-        지금, 당신만의 설문을 만들어보세요
-      </CommonText>
-      <CommonText color="white" variant="body2">
-        5분이면 충분합니다. 지금 바로 시작해보세요!
-      </CommonText>
-      <Stack direction="row" gap={2}>
-        <CommonButton variant="contained" size="large" color="white" sx={{ color: (theme) => theme.palette.primary.main }} startIcon={<Ballot />}>
-          비회원으로 설문 만들기 시작하기
-        </CommonButton>
-        <CommonButton variant="outlined" size="large" color="white" startIcon={<PersonAdd />}>
-          회원가입하고 통계 분석까지 받아보세요
+const CTASection = () => (
+  <Box component="section" sx={{ py: { xs: 8, md: 12 } }}>
+    <Container maxWidth="lg">
+      <Stack alignItems="center" spacing={2}>
+        <CommonText variant="h5" sx={{ fontWeight: 800 }}>
+          지금 바로 설문을 시작해 보세요.
+        </CommonText>
+        <CommonButton size="large" variant="contained" href="/auth/signup">
+          무료로 시작하기
         </CommonButton>
       </Stack>
-    </Stack>
-  );
-};
+    </Container>
+  </Box>
+);
 
-const Home: React.FC<HomeProps> = () => {
+const Home: React.FC = () => {
   const { endLoading } = useContext(LoadingContext);
 
   useLayoutEffect(() => {
@@ -204,11 +340,14 @@ const Home: React.FC<HomeProps> = () => {
   }, []);
 
   return (
-    <Stack flex={1} gap={10}>
-      <IntroSection />
-      <FeatureSection />
-      <SpecialFeatureSection />
-      <ReviewSection />
+    <Stack flex={1} gap={10} minHeight="100dvh" sx={{ backgroundColor: 'background.default' }}>
+      <HeroSection />
+      <SocialProof />
+      <FeaturesSection />
+      <HowItWorksSection />
+      <GallerySection />
+      <SampleReportSection />
+      <PricingSection />
       <CTASection />
     </Stack>
   );

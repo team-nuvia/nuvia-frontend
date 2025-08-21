@@ -23,29 +23,27 @@ const validationSchema = yup.object().shape({
   password: yup.string().min(8, '비밀번호는 8자 이상이어야 합니다.').max(13, '비밀번호는 13자 이하여야 합니다.').required('비밀번호를 입력해주세요.'),
 });
 
-interface LoginProps {}
-const Login: React.FC<LoginProps> = () => {
+interface LoginProps {
+  action?: string;
+  token?: string;
+  redirect?: string;
+}
+const Login: React.FC<LoginProps> = ({ action, token, redirect }) => {
   const { startLoading, endLoading } = useContext(LoadingContext);
   const { fetchUser, user } = useContext(AuthenticationContext);
   const { addNotice } = useContext(GlobalSnackbarContext);
   const router = useRouter();
-  const formik = useFormik<{ email: string; password: string }>({
-    initialValues: {
-      email: '',
-      password: '',
-    },
-    validationSchema,
-    onSubmit: (values) => {
-      handleSubmit(values);
-    },
-  });
   const { mutate: loginMutation } = useMutation({
     mutationFn: (values: { email: string; password: string }) => login(values.email, values.password),
     mutationKey: ['login'],
     onSuccess: (response) => {
       addNotice(response.message, 'success');
       fetchUser();
-      router.push('/');
+      if (action === 'invitation' && redirect && token) {
+        router.push(`${redirect}?q=${token}`);
+      } else {
+        router.push('/');
+      }
     },
     onError: (error) => {
       const axiosError = error as AxiosError;
@@ -58,10 +56,16 @@ const Login: React.FC<LoginProps> = () => {
       }
     },
   });
-
-  useLayoutEffect(() => {
-    startLoading('페이지 로드 중...');
-  }, []);
+  const formik = useFormik<{ email: string; password: string }>({
+    initialValues: {
+      email: '',
+      password: '',
+    },
+    validationSchema,
+    onSubmit: (values) => {
+      loginMutation(values);
+    },
+  });
 
   useEffect(() => {
     if (!isNil(user)) {
@@ -72,23 +76,6 @@ const Login: React.FC<LoginProps> = () => {
     }
   }, []);
 
-  async function handleSubmit(values: { email: string; password: string }) {
-    loginMutation(values);
-    // try {
-    //   const response = await login(values.email, values.password);
-    //   console.log('🚀 ~ handleSubmit ~ response:', response);
-    //   if (response.ok) {
-    //     await fetchUser();
-    //     addNotice(response.message, 'success');
-    //     router.push('/');
-    //   } else {
-    //     addNotice(response.message, 'error');
-    //   }
-    // } catch (error: unknown) {
-    //   console.log('🚀 ~ handleSubmit ~ error:', error);
-    //   addNotice(error instanceof AxiosError ? error.response?.data.message : '알 수 없는 오류가 발생했습니다.', 'error');
-    // }
-  }
 
   return (
     <Box

@@ -269,7 +269,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             )} */}
 
             {(questionOptions || []).map((option, optIndex) => (
-              <Grid container spacing={1} key={option.idx} alignItems="center">
+              <Grid container spacing={1} key={idx + '-' + option.idx} alignItems="center">
                 <Grid size={{ xs: 11 }}>
                   <TextField
                     fullWidth

@@ -10,9 +10,10 @@ import { useState } from 'react';
 interface PreviewProps {
   survey: PreviewPayload;
   handleClose: () => void;
+  isDemo?: boolean;
 }
 
-const Preview: React.FC<PreviewProps> = ({ survey, handleClose }) => {
+const Preview: React.FC<PreviewProps> = ({ survey, handleClose, isDemo = false }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const theme = useTheme();
 
@@ -28,19 +29,29 @@ const Preview: React.FC<PreviewProps> = ({ survey, handleClose }) => {
 
   return (
     <Paper
-      sx={{
-        p: isFullscreen ? 0 : 2,
-        position: 'fixed',
-        top: isFullscreen ? 0 : 15,
-        left: isFullscreen ? 0 : 15,
-        right: isFullscreen ? 0 : 15,
-        bottom: isFullscreen ? 0 : 15,
-        zIndex: 1000,
-        overflow: 'auto',
-        backgroundColor: 'background.paper',
-        boxShadow: isFullscreen ? 'none' : theme.shadows[24],
-        borderRadius: isFullscreen ? 0 : theme.shape.borderRadius,
-      }}
+      sx={
+        isDemo
+          ? {
+              p: isFullscreen ? 0 : 2,
+              overflow: 'auto',
+              backgroundColor: 'background.paper',
+              boxShadow: isFullscreen ? 'none' : theme.shadows[24],
+              borderRadius: isFullscreen ? 0 : theme.shape.borderRadius,
+            }
+          : {
+              p: isFullscreen ? 0 : 2,
+              position: 'fixed',
+              top: isFullscreen ? 0 : 15,
+              left: isFullscreen ? 0 : 15,
+              right: isFullscreen ? 0 : 15,
+              bottom: isFullscreen ? 0 : 15,
+              zIndex: 1000,
+              overflow: 'auto',
+              backgroundColor: 'background.paper',
+              boxShadow: isFullscreen ? 'none' : theme.shadows[24],
+              borderRadius: isFullscreen ? 0 : theme.shape.borderRadius,
+            }
+      }
       onKeyDown={handleKeyDown}
       tabIndex={0}
     >
@@ -52,18 +63,22 @@ const Preview: React.FC<PreviewProps> = ({ survey, handleClose }) => {
                 미리보기
                 <Chip label="미리보기 모드" size="small" color="primary" variant="outlined" />
               </CommonText>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                ESC 키를 눌러 닫을 수 있습니다
-              </Typography>
+              {!isDemo && (
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                  ESC 키를 눌러 닫을 수 있습니다
+                </Typography>
+              )}
             </Box>
-            <Stack direction="row" spacing={1}>
-              <IconButton onClick={toggleFullscreen} title={isFullscreen ? '전체화면 해제' : '전체화면'}>
-                {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
-              </IconButton>
-              <IconButton onClick={handleClose} title="닫기">
-                <CloseIcon />
-              </IconButton>
-            </Stack>
+            {!isDemo && (
+              <Stack direction="row" spacing={1}>
+                <IconButton onClick={toggleFullscreen} title={isFullscreen ? '전체화면 해제' : '전체화면'}>
+                  {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
+                </IconButton>
+                <IconButton onClick={handleClose} title="닫기">
+                  <CloseIcon />
+                </IconButton>
+              </Stack>
+            )}
           </Stack>
 
           <Box sx={{ mb: 2 }}>

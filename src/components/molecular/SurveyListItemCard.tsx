@@ -23,6 +23,7 @@ import { SurveyStatus } from '@share/enums/survey-status';
 import { SearchSurvey } from '@share/interface/search-survey';
 import { useMutation } from '@tanstack/react-query';
 import { DateFormat } from '@util/dateFormat';
+import { getSurveyStatusColor } from '@util/getSurveyStatusColor';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useContext, useState } from 'react';
@@ -74,19 +75,6 @@ const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey, refetch
       addNotice('설문 상태 변경에 실패했습니다', 'error');
     },
   });
-
-  const getStatusColor = (status: SearchSurvey['status']) => {
-    switch (status) {
-      case 'active':
-        return 'success';
-      case 'draft':
-        return 'warning';
-      case 'closed':
-        return 'default';
-      default:
-        return 'default';
-    }
-  };
 
   const getStatusText = (status: SearchSurvey['status']) => {
     switch (status) {
@@ -218,7 +206,7 @@ const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey, refetch
               >
                 <Chip
                   label={getStatusText(survey.isExpired ? SurveyStatus.Closed : survey.status)}
-                  color={getStatusColor(survey.isExpired ? SurveyStatus.Closed : survey.status) as any}
+                  color={getSurveyStatusColor(survey.isExpired ? SurveyStatus.Closed : survey.status) as any}
                   size="small"
                 />
                 {survey.isPublic ? (
@@ -386,15 +374,15 @@ const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey, refetch
             },
           }}
         >
-          <MenuItem onClick={() => mutateUpdateStatus({ status: SurveyStatus.Draft })}>
+          <MenuItem selected={survey.status === SurveyStatus.Draft} onClick={() => mutateUpdateStatus({ status: SurveyStatus.Draft })}>
             <Edit sx={{ mr: 2 }} />
             {SURVEY_STATUS_LABELS[SurveyStatus.Draft]}
           </MenuItem>
-          <MenuItem onClick={() => mutateUpdateStatus({ status: SurveyStatus.Active })}>
+          <MenuItem selected={survey.status === SurveyStatus.Active} onClick={() => mutateUpdateStatus({ status: SurveyStatus.Active })}>
             <TrendingUp sx={{ mr: 2 }} />
             {SURVEY_STATUS_LABELS[SurveyStatus.Active]}
           </MenuItem>
-          <MenuItem onClick={() => mutateUpdateStatus({ status: SurveyStatus.Closed })}>
+          <MenuItem selected={survey.status === SurveyStatus.Closed} onClick={() => mutateUpdateStatus({ status: SurveyStatus.Closed })}>
             <Schedule sx={{ mr: 2 }} />
             {SURVEY_STATUS_LABELS[SurveyStatus.Closed]}
           </MenuItem>

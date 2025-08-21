@@ -83,13 +83,10 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
   const [direction, setDirection] = useState<'next' | 'previous'>('next');
   const getQuestionProcess = () => {
     const totalQuestions = questions.length;
-    console.log('🚀 ~ getQuestionProcess ~ totalQuestions:', totalQuestions);
     const answeredQuestions = questions.filter((question) => {
       const values = Array.from(question.questionAnswers?.values?.() ?? []);
       return question.isAnswered || (values.some((item) => !isEmpty(item)) && question.questionAnswers?.size > 0);
     }).length;
-    console.log('🚀 ~ getQuestionProcess ~ answeredQuestions:', answeredQuestions);
-    console.log('🚀 ~ getQuestionProcess ~ questions:', questions);
     return Math.round((answeredQuestions / totalQuestions) * 100) || 0;
   };
   const { mutate: autoSaveMutate } = useMutation({

@@ -5,6 +5,8 @@ import InviteDialog from '@components/organism/InviteDialog';
 import { GlobalDialogContext } from '@context/GlobalDialogContext';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import { MenuItem, Select, Stack } from '@mui/material';
+import { SubscriptionTargetType } from '@share/enums/subscription-target-type';
+import { UserRole, UserRoleList } from '@share/enums/user-role';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useContext } from 'react';
 
@@ -15,6 +17,8 @@ const UserOrganizationSelect: React.FC<UserOrganizationSelectProps> = ({ refetch
   const { data, refetch } = useQuery({
     queryKey: ['user-organizations'],
     queryFn: getUserOrganizations,
+    refetchOnWindowFocus: 'always',
+    refetchOnReconnect: 'always',
   });
   const { handleOpenDialog } = useContext(GlobalDialogContext);
   const { mutate: updateUserOrganizationMutation } = useMutation({
@@ -61,9 +65,12 @@ const UserOrganizationSelect: React.FC<UserOrganizationSelectProps> = ({ refetch
           </MenuItem>
         ))}
       </Select>
-      <ActionButton variant="contained" color="primary" size="medium" startIcon={<GroupAddIcon />} onClick={handleOpenInviteDialog}>
-        초대 코드 생성
-      </ActionButton>
+      {UserRoleList.indexOf(currentOrganization.permission.role) >= UserRoleList.indexOf(UserRole.Admin) &&
+        currentOrganization.target === SubscriptionTargetType.Organization && (
+          <ActionButton variant="contained" color="primary" size="medium" startIcon={<GroupAddIcon />} onClick={handleOpenInviteDialog}>
+            초대 코드 생성
+          </ActionButton>
+        )}
     </Stack>
   );
 };

@@ -52,6 +52,7 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({ children }) =>
       </Stack>
       {loading && (
         <Stack
+          flex={1}
           direction="row"
           justifyContent="center"
           alignItems="center"
