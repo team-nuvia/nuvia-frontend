@@ -66,12 +66,16 @@ const GlobalDialogProvider: React.FC<GlobalDialogContextProps> = ({ children }) 
     setContent(content);
     setUseConfirm(useConfirm ?? true);
     setConfirmAction(() => actionCallback || (() => {}));
-    handleOpen();
+    setTimeout(() => {
+      handleOpen();
+    }, 100);
   };
 
   const handleCloseDialog = () => {
+    setTimeout(() => {
+      setUseConfirm(true);
+    }, 100);
     handleClose();
-    setUseConfirm(true);
     setConfirmAction(() => () => {});
   };
 

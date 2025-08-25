@@ -1,8 +1,6 @@
-import { AnswerPayload } from '@/models/AnswerPayload';
+import { AnswerEachPayload, AnswerPayload } from '@/models/AnswerPayload';
 import { PreviewPayload } from '@/models/PreviewPayload';
-import { ValidateFirstAnswerResponse } from '@/models/ValidateFirstAnswerResponse';
 import { createAnswer } from '@api/create-answer';
-import { validateFirstSurveyAnswer } from '@api/validate-first-answer';
 import ActionButton from '@components/atom/ActionButton';
 import CommonText from '@components/atom/CommonText';
 import SurveyProgress from '@components/molecular/SurveyProgress';
@@ -30,16 +28,16 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { TimeIcon } from '@mui/x-date-pickers/icons';
+import { AnswerStatus } from '@share/enums/answer-status';
 import { QuestionType } from '@share/enums/question-type';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { DateFormat } from '@util/dateFormat';
 import { isEmpty } from '@util/isEmpty';
 import { isNil } from '@util/isNil';
 import { AxiosError } from 'axios';
-import { useFormik } from 'formik';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { useContext, useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import * as Yup from 'yup';
 
 // --- Start Answer Schema ---
@@ -48,7 +46,7 @@ const AnswerStartSchema = Yup.object().shape({
   startAt: Yup.date().nullable(),
 });
 const startAnswerInitialValues: StartAnswerInitialValues = {
-  userAgent:'',
+  userAgent: '',
   startAt: new Date(),
 };
 
@@ -67,32 +65,11 @@ const answerInitialValues: AnswerInitialValues = {
 };
 
 interface ResponseSurveyProps {
+  isDemo?: boolean;
   survey: PreviewPayload;
 }
 // --- COMPONENT ---
-const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
-  const { data: surveyData } = useQuery<ServerResponse<ValidateFirstAnswerResponse>>({
-    queryKey: ['survey', survey.id],
-    queryFn: () => validateFirstSurveyAnswer(survey.id as number),
-    enabled: !!survey.id,
-  });
-
-  const answerFormik = useFormik({
-    initialValues: answerInitialValues,
-    validationSchema: AnswerInProgressSchema,
-    onSubmit: (values) => {
-      console.log('🚀 ~ ResponseSurvey ~ values:', values);
-    },
-  });
-
-  const startAnswerFormik = useFormik({
-    initialValues: startAnswerInitialValues,
-    validationSchema: AnswerStartSchema,
-    onSubmit: (values) => {
-      console.log('🚀 ~ ResponseSurvey ~ values:', values);
-    },
-  });
-
+const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false }) => {
   // --- STATE ---
   const router = useRouter();
   const [questions, setQuestions] = useState<PreviewPayload['questions']>(survey.questions);
@@ -108,11 +85,28 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
   const getQuestionProcess = () => {
     const totalQuestions = questions.length;
     const answeredQuestions = questions.filter((question) => {
-      const values = Array.from(question.answers?.values?.() ?? []);
-      return question.isAnswered || (values.some((item) => !isEmpty(item)) && question.answers?.size > 0);
+      const values = Array.from(question.questionAnswers?.values?.() ?? []);
+      return question.isAnswered || (values.some((item) => !isEmpty(item)) && question.questionAnswers?.size > 0);
     }).length;
     return Math.round((answeredQuestions / totalQuestions) * 100) || 0;
   };
+  const { mutate: autoSaveMutate } = useMutation({
+    mutationFn: ({ surveyId, answerData }: { surveyId: number; answerData: AnswerPayload }) => createAnswer(surveyId, answerData),
+    onSuccess: (response) => {
+      console.log('🚀 ~ ResponseSurvey ~ response:', response);
+      if (response.httpStatus === 201) {
+        addNotice(response.message, 'success');
+      } else {
+        addNotice(`오류: ${response.statusText}`, 'error');
+      }
+      setIsSubmitting(false);
+    },
+    onError: (error: AxiosError<ServerResponse<void>>) => {
+      console.log('🚀 ~ ResponseSurvey ~ error:', error);
+      addNotice(error?.response?.data?.message || '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
+      setIsSubmitting(false);
+    },
+  });
   const { mutate: createAnswerMutate } = useMutation({
     mutationFn: ({ surveyId, answerData }: { surveyId: number; answerData: AnswerPayload }) => createAnswer(surveyId, answerData),
     onSuccess: (response) => {
@@ -133,20 +127,18 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
       setIsSubmitting(false);
     },
   });
+  // const answerFormik = useFormik({
+  //   initialValues: answerInitialValues,
+  //   validationSchema: AnswerInProgressSchema,
+  //   onSubmit: (values) => {
+  //     console.log('🚀 ~ ResponseSurvey ~ values:', values);
+  //     createAnswerMutate({ surveyId: survey.id ?? 0, answerData: values as AnswerPayload });
+  //   },
+  // });
 
   const isAllAnswered = useMemo(() => {
     return getQuestionProcess() === 100;
   }, [questions]);
-
-  useLayoutEffect(() => {
-    startAnswerFormik.setFieldValue('userAgent', navigator.userAgent);
-
-    // send request start answer and receive server hashed token, cookies
-    // 첫 응답 시작이면?
-    if (!surveyData?.payload?.isFirstAnswer) {
-      startAnswerFormik.handleSubmit();
-    }
-  }, [surveyData]);
 
   useEffect(() => {
     setProgress(getQuestionProcess());
@@ -162,32 +154,34 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
       return questions.map((q) => {
         if (q.idx === questionIdx) {
           if (q.questionType === QuestionType.SingleChoice) {
-            q.answers?.clear();
-            q.answers?.set(1, {
-              optionId: optionIdx,
-              value: null,
-            });
+            if (value && !isNaN(+value)) {
+              q.questionAnswers?.clear();
+              q.questionAnswers?.set(1, {
+                optionId: +value,
+                value: null,
+              });
+            }
           } else if (q.questionType === QuestionType.MultipleChoice) {
             if (optionIdx === null) {
-              q.answers?.clear();
+              q.questionAnswers?.clear();
             } else {
               if (!value) {
-                q.answers?.delete(optionIdx as number);
+                q.questionAnswers?.delete(optionIdx as number);
               } else {
-                q.answers?.set(optionIdx as number, {
+                q.questionAnswers?.set(optionIdx as number, {
                   optionId: optionIdx,
                   value: null,
                 });
               }
             }
           } else {
-            if (value) {
-              q.answers?.set(1, {
+            if (value && value !== 'undefined') {
+              q.questionAnswers?.set(1, {
                 optionId: null,
                 value: value,
               });
             } else {
-              q.answers?.delete(1);
+              q.questionAnswers?.delete(1);
             }
           }
         }
@@ -195,6 +189,45 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
       });
     });
   }
+
+  const handleSaveAnswer = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+
+    setIsSubmitting(true);
+
+    const answerData: AnswerPayload = {
+      status: AnswerStatus.Saved,
+      answers: questions.reduce((acc: AnswerEachPayload[], { idx, ...rest }) => {
+        if (rest.questionType === QuestionType.MultipleChoice || rest.questionType === QuestionType.SingleChoice) {
+          const values = rest.questionAnswers.values();
+          const optionIds = Array.from(values)
+            .map(({ optionId }) => optionId)
+            .filter((optionId) => !isNil(optionId));
+          if (optionIds.length > 0) {
+            acc.push({
+              questionId: rest.id ?? 0,
+              optionIds,
+              value: null,
+            });
+          }
+        }
+        const values = rest.questionAnswers.values();
+        const value = Array.from(values)
+          .map(({ value }) => value)
+          .filter((value) => !isNil(value) && value);
+        if (value[0]) {
+          acc.push({
+            questionId: rest.id ?? 0,
+            optionIds: null, // Remove client-side IDs
+            value: '' + value[0],
+          });
+        }
+        return acc;
+      }, []),
+    };
+
+    autoSaveMutate({ surveyId: survey.id ?? 0, answerData });
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -215,9 +248,10 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
     setIsSubmitting(true);
 
     const answerData: AnswerPayload = {
+      status: AnswerStatus.Completed,
       answers: questions.map(({ idx, ...rest }) => {
         if (rest.questionType === QuestionType.MultipleChoice || rest.questionType === QuestionType.SingleChoice) {
-          const values = rest.answers.values();
+          const values = rest.questionAnswers.values();
           const optionIds = Array.from(values)
             .map(({ optionId }) => optionId)
             .filter((optionId) => !isNil(optionId));
@@ -227,7 +261,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
             value: null,
           };
         }
-        const values = rest.answers.values();
+        const values = rest.questionAnswers.values();
         const value = Array.from(values)
           .map(({ value }) => value)
           .filter((value) => !isNil(value) && value);
@@ -245,7 +279,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
   const validateCurrentQuestion = () => {
     if (!currentQuestion) return true;
 
-    const answers = questions[currentStep].answers;
+    const answers = questions[currentStep].questionAnswers;
     const isAnswered = answers?.values().some((item) => !isEmpty(item));
     const newErrors = { ...errors };
 
@@ -273,7 +307,8 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
   };
 
   const handleNext = () => {
-    if (validateCurrentQuestion()) {
+    const currentValidate = validateCurrentQuestion();
+    if (currentValidate) {
       questions[currentStep].isAnswered = true;
       setQuestions(questions);
       setDirection('next');
@@ -288,7 +323,10 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
     setTimeout(() => {
       setCurrentStep((prev) => Math.max(0, prev - 1));
       if (!questions[currentStep - 1].isRequired) {
-        if (questions[currentStep - 1].answers?.values().some((item) => isEmpty(item)) || questions[currentStep - 1].answers?.size === 0) {
+        if (
+          questions[currentStep - 1].questionAnswers?.values().some((item) => isEmpty(item)) ||
+          questions[currentStep - 1].questionAnswers?.size === 0
+        ) {
           questions[currentStep - 1].isAnswered = false;
           setQuestions(questions);
         }
@@ -403,7 +441,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
             </motion.div>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9, duration: 0.5 }}>
-              <ActionButton size="large" variant="contained" shape="rounded" endIcon={<ArrowForward />} onClick={() => router.push('/')}>
+              <ActionButton size="xlarge" variant="contained" shape="rounded" endIcon={<ArrowForward />} onClick={() => router.push('/')}>
                 홈으로 돌아가기
               </ActionButton>
             </motion.div>
@@ -416,7 +454,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
   // --- RENDER ---
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
-      <Grid component="form" noValidate autoComplete="off" onSubmit={handleSubmit} container spacing={2} mt={5}>
+      <Grid component="form" noValidate autoComplete="off" onSubmit={isDemo ? () => {} : handleSubmit} container spacing={2} mt={5}>
         <Grid size={{ xs: 12 }}>
           <Paper
             sx={{
@@ -438,6 +476,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
                   </Stack>
                 </Stack>
               }
+              profileImage={survey.author.profileUrl}
             />
             <CommonText variant="h4" thickness="bold" mb={2}>
               {survey.title}
@@ -479,7 +518,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
                       dataType={currentQuestion.dataType}
                       isRequired={currentQuestion.isRequired}
                       questionOptions={currentQuestion.questionOptions}
-                      answers={currentQuestion.answers}
+                      answers={currentQuestion.questionAnswers}
                       handleOptionChange={handleOptionChange}
                     />
                     {errors[currentQuestion.idx] && (
@@ -524,21 +563,33 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
               ))}
             </Box>
 
-            {isLastQuestion ? (
+            <Stack direction="row" gap={1}>
               <Button
+                type="button"
                 variant="contained"
-                startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
-                type="submit"
-                disabled={isSubmitting || !isAllAnswered}
+                startIcon={<SaveIcon />}
+                onClick={isDemo ? () => {} : handleSaveAnswer}
                 sx={{ minWidth: 120 }}
               >
-                {isSubmitting ? '제출 중...' : '제출하기'}
+                임시 저장
               </Button>
-            ) : (
-              <Button variant="contained" endIcon={<ArrowForward />} onClick={handleNext} sx={{ minWidth: 120 }}>
-                다음
-              </Button>
-            )}
+
+              {isLastQuestion ? (
+                <Button
+                  variant="contained"
+                  startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
+                  type="submit"
+                  disabled={isSubmitting || !isAllAnswered}
+                  sx={{ minWidth: 120 }}
+                >
+                  {isSubmitting ? '제출 중...' : '제출하기'}
+                </Button>
+              ) : (
+                <Button type="button" variant="contained" endIcon={<ArrowForward />} onClick={handleNext} sx={{ minWidth: 120 }}>
+                  다음
+                </Button>
+              )}
+            </Stack>
           </Box>
         </Grid>
       </Grid>

@@ -47,11 +47,12 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({ children }) =>
 
   return (
     <LoadingContext.Provider value={{ loading, startLoading, endLoading }}>
-      <Stack flex={1} sx={{ position: 'relative' }}>
+      <Stack id="wrap" flex={1} sx={{ position: 'relative' }}>
         {children}
       </Stack>
       {loading && (
         <Stack
+          flex={1}
           direction="row"
           justifyContent="center"
           alignItems="center"

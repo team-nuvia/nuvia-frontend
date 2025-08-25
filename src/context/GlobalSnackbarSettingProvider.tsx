@@ -21,7 +21,6 @@ export const GlobalSnackbarSettingProvider = ({ children }: { children: React.Re
       <SnackbarProvider
         maxSnack={maxSnack ?? 3}
         preventDuplicate={false}
-        style={{ zIndex: 100000 }}
         autoHideDuration={3000}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         transitionDuration={150}

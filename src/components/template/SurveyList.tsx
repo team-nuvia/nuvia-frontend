@@ -47,7 +47,12 @@ export default function SurveyList() {
   const { data, refetch, isLoading } = useQuery({
     queryKey: ['surveyList'],
     queryFn: () =>
-      getSurveyList({ page: 1, limit: 10, search: '', status: ['all', SurveyStatus.Active, SurveyStatus.Draft, SurveyStatus.Closed][selectedTab] }),
+      getSurveyList({
+        page: 1,
+        limit: 10,
+        search: searchQuery,
+        status: ['all', SurveyStatus.Draft, SurveyStatus.Active, SurveyStatus.Closed][selectedTab],
+      }),
   });
   const { data: surveyMetadata, refetch: refetchSurveyMetadata } = useQuery({
     queryKey: ['surveyMetadata'],

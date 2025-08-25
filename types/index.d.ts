@@ -56,6 +56,15 @@ export declare global {
     value: string | null;
   }
 
+  export interface StartAnswerInitialValues {
+    userAgent: string;
+    startAt: Date | null;
+  }
+
+  export interface AnswerInitialValues {
+    answers: AnswerResponseItem[];
+  }
+
   export interface OverviewStats {
     totalResponses: number;
     avgResponsesPerSurvey: number;
@@ -154,5 +163,12 @@ declare module '@mui/material/Typography' {
 
   declare interface TypographyOwnProps {
     thickness?: 'thin' | 'regular' | 'medium' | 'bold';
+  }
+}
+
+declare module '@mui/material/Chip' {
+  declare interface ChipPropsColorOverrides {
+    black: true;
+    white: true;
   }
 }

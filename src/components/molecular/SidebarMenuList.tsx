@@ -2,33 +2,26 @@
 
 import { Stack } from '@mui/material';
 import { usePathname } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import SidebarButton from '../atom/SidebarButton';
 
 interface SidebarMenuListProps {
   menus: MenuModel[];
+  isCollapsed?: boolean;
 }
-const SidebarMenuList: React.FC<SidebarMenuListProps> = ({ menus }) => {
+
+const SidebarMenuList: React.FC<SidebarMenuListProps> = ({ menus, isCollapsed = false }) => {
   const [selected, setSelected] = useState<MenuModel | null>(null);
   const pathname = usePathname();
-  const currentSelect = useMemo(() => {
-    return pathname;
-  }, [pathname]);
 
   useEffect(() => {
-    const selectedMenu = menus.find((menu) =>
-      currentSelect.startsWith(menu.to),
-    );
-
-    if (selectedMenu) {
-      setSelected(selectedMenu ?? menus[0]);
-    }
-  }, [currentSelect]);
+    const selectedMenu = menus.filter((menu) => pathname.startsWith(menu.to));
+    setSelected(selectedMenu[selectedMenu.length - 1] ?? null);
+  }, [pathname, menus]);
 
   const onClick = (menu: MenuModel) => {
     setSelected(menu);
   };
-
   return (
     <Stack px={2} gap={1}>
       {menus.map((menu) => (
@@ -38,6 +31,7 @@ const SidebarMenuList: React.FC<SidebarMenuListProps> = ({ menus }) => {
           selected={selected}
           onClick={onClick}
           color={selected?.name === menu.name ? 'primary' : 'black'}
+          isCollapsed={isCollapsed}
         />
       ))}
     </Stack>

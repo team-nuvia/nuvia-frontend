@@ -7,3 +7,10 @@ body {
   display: flex;
   flex-direction: column;
 }
+
+.notistack-SnackbarContainer {
+  &,
+  [class^='go'] {
+    z-index: 100000 !important;
+  }
+}

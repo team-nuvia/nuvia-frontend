@@ -61,7 +61,8 @@ export const Default: Story = {
               label: '옵션 1',
             },
           ],
-          answers: new Map(),
+          questionAnswers: new Map(),
+          isAnswered: true,
         },
         {
           id: 2,
@@ -98,7 +99,8 @@ export const Default: Story = {
               label: '옵션 4',
             },
           ],
-          answers: new Map(),
+          questionAnswers: new Map(),
+          isAnswered: true,
         },
         {
           id: 3,
@@ -114,7 +116,8 @@ export const Default: Story = {
             { id: 2, idx: 2, sequence: 2, label: '옵션 2' },
             { id: 3, idx: 3, sequence: 3, label: '옵션 3' },
           ],
-          answers: new Map(),
+          questionAnswers: new Map(),
+          isAnswered: true,
         },
         {
           id: 4,
@@ -126,7 +129,8 @@ export const Default: Story = {
           dataType: DataType.Date,
           isRequired: false,
           questionOptions: [{ id: 1, idx: 1, sequence: 1, label: '옵션 1' }],
-          answers: new Map(),
+          questionAnswers: new Map(),
+          isAnswered: true,
         },
         {
           id: 5,
@@ -138,7 +142,8 @@ export const Default: Story = {
           dataType: DataType.Rating,
           isRequired: false,
           questionOptions: [{ id: 1, idx: 1, sequence: 1, label: '옵션 1' }],
-          answers: new Map(),
+          questionAnswers: new Map(),
+          isAnswered: true,
         },
         {
           id: 6,
@@ -150,7 +155,8 @@ export const Default: Story = {
           dataType: DataType.Image,
           isRequired: false,
           questionOptions: [{ id: 1, idx: 1, sequence: 1, label: '옵션 1' }],
-          answers: new Map(),
+          questionAnswers: new Map(),
+          isAnswered: true,
         },
         {
           id: 7,
@@ -162,7 +168,8 @@ export const Default: Story = {
           dataType: DataType.Link,
           isRequired: false,
           questionOptions: [{ id: 1, idx: 1, sequence: 1, label: '옵션 1' }],
-          answers: new Map(),
+          questionAnswers: new Map(),
+          isAnswered: true,
         },
         {
           id: 8,
@@ -188,7 +195,8 @@ export const Default: Story = {
               label: '옵션 3',
             },
           ],
-          answers: new Map(),
+          questionAnswers: new Map(),
+          isAnswered: true,
         },
         {
           id: 9,
@@ -214,9 +222,11 @@ export const Default: Story = {
               label: '옵션 3',
             },
           ],
-          answers: new Map(),
+          questionAnswers: new Map(),
+          isAnswered: true,
         },
       ],
+      questionAnswers: [],
     },
   },
   decorators: [

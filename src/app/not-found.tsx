@@ -1,8 +1,8 @@
 import NotFound from '@/components/template/NotFound';
 
-const NotFoundPage = () => {
+const Page = () => {
   return <NotFound />;
 };
 
 
-export default NotFound;
+export default Page;
