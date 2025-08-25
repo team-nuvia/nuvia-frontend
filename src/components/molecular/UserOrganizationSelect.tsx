@@ -6,8 +6,9 @@ import { GlobalDialogContext } from '@context/GlobalDialogContext';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
 import { MenuItem, Select, Stack } from '@mui/material';
 import { SubscriptionTargetType } from '@share/enums/subscription-target-type';
-import { UserRole, UserRoleList } from '@share/enums/user-role';
+import { UserRole } from '@share/enums/user-role';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { roleAtLeast } from '@util/roleAtLeast';
 import { useContext } from 'react';
 
 interface UserOrganizationSelectProps {
@@ -58,14 +59,17 @@ const UserOrganizationSelect: React.FC<UserOrganizationSelectProps> = ({ refetch
             updateUserOrganizationMutation({ organizationId: organization.id });
           }
         }}
+        sx={{
+          fontSize: 12,
+        }}
       >
         {organizations?.map((organization) => (
-          <MenuItem key={organization.id} value={organization.id}>
+          <MenuItem key={organization.id} value={organization.id} sx={{ fontSize: 12 }}>
             {organization.name}
           </MenuItem>
         ))}
       </Select>
-      {UserRoleList.indexOf(currentOrganization.permission.role) >= UserRoleList.indexOf(UserRole.Admin) &&
+      {roleAtLeast(UserRole.Admin, currentOrganization?.permission.role) &&
         currentOrganization.target === SubscriptionTargetType.Organization && (
           <ActionButton variant="contained" color="primary" size="medium" startIcon={<GroupAddIcon />} onClick={handleOpenInviteDialog}>
             초대 코드 생성

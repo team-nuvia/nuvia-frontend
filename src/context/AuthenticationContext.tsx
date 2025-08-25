@@ -9,10 +9,13 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
-import { createContext, useCallback, useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
+import { createContext, useCallback, useLayoutEffect, useState } from 'react';
 
 interface AuthenticationContextType {
   user: GetMeResponse | null;
+  isLoading: boolean;
+  isVerified: boolean;
   setUser: (user: GetMeResponse | null) => void;
   clearUser: () => PromiseServerResponse<LogoutResponse>;
   fetchUser: () => Promise<void>;
@@ -20,6 +23,8 @@ interface AuthenticationContextType {
 
 export const AuthenticationContext = createContext<AuthenticationContextType>({
   user: null,
+  isLoading: false,
+  isVerified: false,
   setUser: () => {},
   clearUser: async () => {},
   fetchUser: async () => {},
@@ -27,17 +32,38 @@ export const AuthenticationContext = createContext<AuthenticationContextType>({
 
 const AuthenticationProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<GetMeResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
+  const pathname = usePathname();
   const { mutate: verifyToken } = useMutation({
     mutationFn: () => getVerify(),
     onSuccess: async (data) => {
       if (data.ok && data.payload?.verified) {
         const response = await getUsersMe();
         setUser(response.payload);
+        setIsLoading(false);
+        setIsVerified(true);
       }
     },
     onError: async (error) => {
       if (error instanceof AxiosError && error.code === 'ERR_NETWORK') {
         await clearUser();
+      }
+      setIsLoading(false);
+      setIsVerified(false);
+    },
+  });
+  const { mutate: logoutMutation } = useMutation({
+    mutationFn: () => logout(),
+    mutationKey: ['logout'],
+    onSuccess: () => {
+      setUser(null);
+      localStorage.removeItem('access_token');
+      verifyToken();
+    },
+    onError: (error) => {
+      if (error instanceof AxiosError && error.code === 'ERR_NETWORK') {
+        localStorage.removeItem('access_token');
       }
     },
   });
@@ -51,20 +77,22 @@ const AuthenticationProvider = ({ children }: { children: React.ReactNode }) => 
       return;
     }
 
+    setIsLoading(true);
+    setIsVerified(false);
     verifyToken();
   }, []);
 
   const clearUser = useCallback(async () => {
-    setUser(null);
-    return await logout();
+    setIsLoading(true);
+    logoutMutation();
   }, [user]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     fetchUser();
-  }, []);
+  }, [pathname]);
 
   return (
-    <AuthenticationContext.Provider value={{ user, setUser, clearUser, fetchUser }}>
+    <AuthenticationContext.Provider value={{ user, setUser, clearUser, fetchUser, isLoading, isVerified }}>
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ko">
         {children}
       </LocalizationProvider>

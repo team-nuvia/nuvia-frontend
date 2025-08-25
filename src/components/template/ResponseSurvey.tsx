@@ -65,10 +65,11 @@ const answerInitialValues: AnswerInitialValues = {
 };
 
 interface ResponseSurveyProps {
+  isDemo?: boolean;
   survey: PreviewPayload;
 }
 // --- COMPONENT ---
-const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
+const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false }) => {
   // --- STATE ---
   const router = useRouter();
   const [questions, setQuestions] = useState<PreviewPayload['questions']>(survey.questions);
@@ -453,7 +454,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
   // --- RENDER ---
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
-      <Grid component="form" noValidate autoComplete="off" onSubmit={handleSubmit} container spacing={2} mt={5}>
+      <Grid component="form" noValidate autoComplete="off" onSubmit={isDemo ? () => {} : handleSubmit} container spacing={2} mt={5}>
         <Grid size={{ xs: 12 }}>
           <Paper
             sx={{
@@ -475,6 +476,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
                   </Stack>
                 </Stack>
               }
+              profileImage={survey.author.profileUrl}
             />
             <CommonText variant="h4" thickness="bold" mb={2}>
               {survey.title}
@@ -562,7 +564,13 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey }) => {
             </Box>
 
             <Stack direction="row" gap={1}>
-              <Button type="button" variant="contained" startIcon={<SaveIcon />} onClick={handleSaveAnswer} sx={{ minWidth: 120 }}>
+              <Button
+                type="button"
+                variant="contained"
+                startIcon={<SaveIcon />}
+                onClick={isDemo ? () => {} : handleSaveAnswer}
+                sx={{ minWidth: 120 }}
+              >
                 임시 저장
               </Button>
 

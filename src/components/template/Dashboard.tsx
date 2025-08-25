@@ -1,62 +1,81 @@
 'use client';
 
+import { getLast7DaysResponseCount } from '@api/get-daily-response-count';
 import { getDashboardRecentSurveysServer } from '@api/get-dashboard-recent-surveys-server';
 import { getSurveyMetadata } from '@api/get-survey-metadata';
 import { SURVEY_STATUS_LABELS } from '@common/variables';
-import ActionButton from '@components/atom/ActionButton';
-import UserOrganizationSelect from '@components/molecular/UserOrganizationSelect';
+import CommonText from '@components/atom/CommonText';
+import Loading from '@components/atom/Loading';
+import WelcomeDashboard from '@components/organism/WelcomeDashboard';
+import { AuthenticationContext } from '@context/AuthenticationContext';
 import LoadingContext from '@context/LodingContext';
-import { Add, BarChart, CheckCircleOutline, DonutLarge, PeopleAlt } from '@mui/icons-material';
-import {
-  Box,
-  Card,
-  Chip,
-  Container,
-  Grid,
-  Link,
-  Paper,
-  Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Typography,
-} from '@mui/material';
+import { useBlackRouter } from '@hooks/useBlackRouter';
+import { BarChart, CheckCircleOutline, DonutLarge, PeopleAlt } from '@mui/icons-material';
+import { Box, Card, Container, Grid, Paper, Stack, Typography } from '@mui/material';
+import { DataGrid, GridColDef, GridRowsProp } from '@mui/x-data-grid';
 import { MetadataStatusType } from '@share/enums/metadata-status-type';
+import { SurveyStatus } from '@share/enums/survey-status';
 import { useQuery } from '@tanstack/react-query';
-import { DateFormat } from '@util/dateFormat';
-import { getSurveyStatusColor } from '@util/getSurveyStatusColor';
-import NextLink from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useCallback, useContext, useLayoutEffect, useMemo } from 'react';
+import { useContext, useLayoutEffect, useMemo } from 'react';
+import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 const Dashboard = () => {
-  const router = useRouter();
+  const router = useBlackRouter();
+  const { isVerified, isLoading } = useContext(AuthenticationContext);
   const { endLoading } = useContext(LoadingContext);
-  const { data: metadataData, refetch: refetchMetadata } = useQuery({
+  const { data: metadataData, isLoading: isMetadataLoading } = useQuery({
     queryKey: ['dashboard-metadata'],
     queryFn: () => getSurveyMetadata(MetadataStatusType.Dashboard),
     refetchOnReconnect: 'always',
     refetchOnWindowFocus: 'always',
   });
-  const { data: recentSurveysData, refetch: refetchRecentSurveys } = useQuery({
+  const { data: recentSurveysData, isLoading: isRecentSurveysLoading } = useQuery({
     queryKey: ['dashboard-recent-surveys'],
     queryFn: getDashboardRecentSurveysServer,
     refetchOnReconnect: 'always',
     refetchOnWindowFocus: 'always',
   });
+  const { data: last7Days, isLoading: isDailyResponseLoading } = useQuery({
+    queryKey: ['daily-response-count'],
+    queryFn: getLast7DaysResponseCount,
+    refetchOnReconnect: 'always',
+    refetchOnWindowFocus: 'always',
+  });
 
   useLayoutEffect(() => {
-    if (metadataData?.payload && recentSurveysData?.payload) {
-      endLoading();
+    if (!isLoading && isVerified) {
+      if (!isRecentSurveysLoading && !isMetadataLoading && !isDailyResponseLoading) {
+        if (metadataData?.payload && recentSurveysData?.payload) {
+          endLoading();
+        } else {
+          router.push('/');
+        }
+      }
     }
-  }, [metadataData, recentSurveysData]);
+  }, [metadataData, recentSurveysData, isVerified, endLoading, router, isLoading, isRecentSurveysLoading, isMetadataLoading, isDailyResponseLoading]);
+
+  // 7일간 응답 추이 데이터 생성
+  const responseTrendData = useMemo(() => {
+    // 실제 API 데이터가 있으면 사용, 없으면 더미 데이터 표시
+    const currentDay = new Date().getDay();
+    if (last7Days?.payload) {
+      return last7Days.payload.map((day, index) => ({
+        date: day.date,
+        label: ['일', '월', '화', '수', '목', '금', '토'][(currentDay + index + 1) % 7],
+        responses: day.count,
+      }));
+    }
+
+    // API 데이터가 로딩 중이거나 없을 때는 더미 데이터로 표시
+    return last7Days?.payload?.map((day, index) => ({
+      date: day.date,
+      label: ['일', '월', '화', '수', '목', '금', '토'][(currentDay + index + 1) % 7],
+      responses: Math.floor(Math.random() * 50) + 10, // 임시 더미 데이터
+    }));
+  }, [last7Days]);
 
   const kpiData = useMemo(() => {
-    const currentMonthRespondentCount = metadataData?.payload?.respondentIncreaseRate.currentMonthRespondentCount ?? 0;
-    const previousMonthRespondentCount = metadataData?.payload?.respondentIncreaseRate.previousMonthRespondentCount ?? 0;
+    const totalCompletedRespondentCount = metadataData?.payload?.totalCompletedRespondentCount ?? 0;
     const totalRespondentCount = metadataData?.payload?.totalRespondentCount ?? 0;
     return [
       {
@@ -84,28 +103,60 @@ const Dashboard = () => {
         color: 'error.main',
       },
       {
-        title: '1개월 응답 증가율',
+        title: '평균 응답율',
         type: 'percentage',
-        total: previousMonthRespondentCount,
-        value: currentMonthRespondentCount - previousMonthRespondentCount,
-        icon: <CheckCircleOutline sx={{ fontSize: 40 }} />,
-        color: 'warning.main',
-      },
-      {
-        title: '응답 증감율',
-        type: 'percentage',
-        total: currentMonthRespondentCount + previousMonthRespondentCount,
-        value: currentMonthRespondentCount - previousMonthRespondentCount,
+        total: totalRespondentCount,
+        value: totalCompletedRespondentCount,
         icon: <CheckCircleOutline sx={{ fontSize: 40 }} />,
         color: 'warning.main',
       },
     ];
   }, [metadataData]);
 
-  const refetchDashboardData = useCallback(() => {
-    refetchMetadata();
-    refetchRecentSurveys();
-  }, []);
+  const rows: GridRowsProp =
+    recentSurveysData?.payload?.map((survey) => ({
+      id: survey.id,
+      title: survey.title,
+      hashedUniqueKey: survey.hashedUniqueKey,
+      status: survey.status,
+      expiresAt: survey.expiresAt,
+      responses: survey.responses,
+    })) ?? [];
+
+  const columns: GridColDef[] = [
+    {
+      field: 'title',
+      headerName: '설문 제목',
+      width: 200,
+      renderCell: (params) => (
+        <CommonText
+          component="a"
+          thickness="regular"
+          fontSize={16}
+          color="primary.main"
+          sx={{
+            cursor: 'pointer',
+            '&:hover': {
+              textDecoration: 'underline',
+            },
+          }}
+          title={window.location.href + 'survey/view/' + params.row.hashedUniqueKey}
+          onClick={() => {
+            router.push(`/survey/view/${params.row.hashedUniqueKey}`);
+          }}
+        >
+          {params.value}
+        </CommonText>
+      ),
+    },
+    { field: 'status', headerName: '상태', width: 100, valueFormatter: (value) => SURVEY_STATUS_LABELS[value as SurveyStatus] },
+    { field: 'expiresAt', headerName: '마감기한', width: 100 },
+    { field: 'responses', headerName: '응답 수', width: 100 },
+  ];
+
+  if (isLoading) {
+    return <Loading />;
+  }
 
   return (
     <Box sx={{ flexGrow: 1, bgcolor: 'grey.50', p: 4 }}>
@@ -113,22 +164,8 @@ const Dashboard = () => {
         {/* Header */}
         <Stack direction="row" justifyContent="space-between" alignItems="center" mb={4}>
           <Stack direction="row" alignItems="center" gap={1}>
-            <Typography variant="h4" component="h1" fontWeight="bold">
-              대시보드
-            </Typography>
-            <UserOrganizationSelect refetchCallback={refetchDashboardData} />
+            <WelcomeDashboard />
           </Stack>
-          <ActionButton
-            variant="contained"
-            color="primary"
-            size="large"
-            startIcon={<Add />}
-            onClick={() => {
-              router.push('/survey/create');
-            }}
-          >
-            새 설문 만들기
-          </ActionButton>
         </Stack>
 
         {/* KPI Cards */}
@@ -146,20 +183,12 @@ const Dashboard = () => {
                     </Typography>
                   ) : item.type === 'percentage' ? (
                     <Stack direction="row" alignItems="center" gap={1}>
-                      {item.total === 0 ? (
-                        <Typography variant="h6" component="div" fontWeight="bold">
-                          데이터 부족
-                        </Typography>
-                      ) : (
-                        <>
-                          <Typography variant="h6" component="div" fontWeight="bold">
-                            {`${((item.value / item.total) * 100 || 0).toFixed(1)}%`}
-                          </Typography>
-                          <Typography variant="caption" component="div" color="text.secondary">
-                            {item.value}/{item.total}
-                          </Typography>
-                        </>
-                      )}
+                      <Typography variant="h6" component="div" fontWeight="bold">
+                        {`${((item.value / item.total) * 100 || 0).toFixed(1)}%`}
+                      </Typography>
+                      <Typography variant="caption" component="div" color="text.secondary">
+                        {item.value}/{item.total}
+                      </Typography>
                     </Stack>
                   ) : (
                     <Typography variant="h6" component="div" fontWeight="bold">
@@ -175,64 +204,76 @@ const Dashboard = () => {
             </Grid>
           ))}
         </Grid>
-
         {/* Main Content */}
         <Grid container spacing={4} sx={{ mt: 2 }}>
           {/* Response Trends Chart */}
-          <Grid size={{ xs: 12, md: 7 }}>
-            <Paper elevation={2} sx={{ p: 3, height: '400px' }}>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Paper elevation={2} sx={{ p: 3, height: 420, display: 'flex', flexDirection: 'column', gap: 3 }}>
               <Typography variant="h6" fontWeight="bold" gutterBottom>
-                응답 트렌드
+                최근 7일간 응답 추이
               </Typography>
-              <Box
-                sx={{
-                  height: 'calc(100% - 48px)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'text.secondary',
-                }}
-              >
+              <Stack direction="row" justifyContent="center" alignItems="center" pb={3} sx={{ color: 'text.secondary', height: '100%' }}>
                 {/* TODO: Chart.js 또는 Recharts와 같은 라이브러리를 사용하여 차트 구현 */}
-                <Typography>차트가 여기에 표시됩니다.</Typography>
-              </Box>
+                {/* <Typography>차트가 여기에 표시됩니다.</Typography> */}
+                {/* 최근 7일간 응답 추이 차트 - rechart로 작성 */}
+
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={responseTrendData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="label" tick={{ fontSize: 12 }} tickLine={false} />
+                    <YAxis tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
+                    <Tooltip
+                      formatter={(value: any) => [`${value}개`, '응답 수']}
+                      labelFormatter={(label, payload) => `${label} (${payload?.[0]?.payload?.date})`}
+                    />
+                    <Legend />
+                    <Line
+                      type="monotone"
+                      dataKey="responses"
+                      stroke="#8884d8"
+                      strokeWidth={2}
+                      dot={{ fill: '#8884d8', strokeWidth: 2, r: 4 }}
+                      activeDot={{ r: 6, stroke: '#8884d8', strokeWidth: 2, fill: '#fff' }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </Stack>
             </Paper>
           </Grid>
 
           {/* Recent Surveys Table */}
-          <Grid size={{ xs: 12, md: 5 }}>
-            <Paper elevation={2} sx={{ p: 3, height: '400px' }}>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Paper elevation={2} sx={{ p: 3, height: 420, display: 'flex', flexDirection: 'column', gap: 3 }}>
               <Typography variant="h6" fontWeight="bold" gutterBottom>
                 최근 설문
               </Typography>
-              <TableContainer>
-                <Table size="small">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>설문 제목</TableCell>
-                      <TableCell align="center">상태</TableCell>
-                      <TableCell align="center">마감기한</TableCell>
-                      <TableCell align="right">응답 수</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {recentSurveysData?.payload?.map((survey) => (
-                      <TableRow hover key={survey.id}>
-                        <TableCell>
-                          <Link component={NextLink} href={`/survey/view/${survey.hashedUniqueKey}`} underline="hover">
-                            {survey.title}
-                          </Link>
-                        </TableCell>
-                        <TableCell align="center">
-                          <Chip label={SURVEY_STATUS_LABELS[survey.status]} size="small" color={getSurveyStatusColor(survey.status)} />
-                        </TableCell>
-                        <TableCell align="center">{survey.expiresAt ? DateFormat.toKST('YYYY-MM-dd HH:mm', survey.expiresAt) : '기한없음'}</TableCell>
-                        <TableCell align="right">{survey.responses}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+              <Stack direction="row" justifyContent="center" alignItems="center" sx={{ color: 'text.secondary', height: '100%', pb: 3 }}>
+                <DataGrid
+                  rows={rows}
+                  columns={columns}
+                  density="compact"
+                  slots={{
+                    footer: () => null, // Render nothing for the footer
+                  }}
+                  sx={{
+                    backgroundColor: (theme) => theme.palette.background.paper,
+                    border: 'none',
+                    '& .MuiDataGrid-root': {
+                      outline: 'none',
+                      border: 'none',
+                    },
+                    '& .MuiDataGrid-cell': {
+                      borderBottom: 'none',
+                    },
+                    '& .MuiDataGrid-columnHeaders': {
+                      borderBottom: 'none',
+                    },
+                    '& .MuiDataGrid-columnSeparator': {
+                      display: 'none',
+                    },
+                  }}
+                />
+              </Stack>
             </Paper>
           </Grid>
         </Grid>

@@ -1,6 +1,6 @@
 'use client';
 
-import NotFound from '@/app/survey/view/[hash]/not-found';
+import NotFound from '@/app/(site)/(dashboard)/survey/view/[hash]/not-found';
 import { GetSurveyDetailResponse } from '@/models/GetSurveyDetailResponse';
 import { refreshJws } from '@api/refresh-jws';
 import { startAnswer } from '@api/start-answer';

@@ -9,9 +9,11 @@ import { getSurveyDetail } from '@api/get-survey-detail';
 import { updateSurvey } from '@api/update-survey';
 import { QUESTION_DATA_TYPE_MAP, QUESTION_TYPE_ICONS, QUESTION_TYPE_MAP } from '@common/global';
 import { SURVEY_STATUS_LABELS } from '@common/variables';
+import Loading from '@components/atom/Loading';
 import { AddQuestionSheet } from '@components/molecular/AddQuestionSheet';
 import Preview from '@components/organism/Preview';
 import QuestionCard from '@components/organism/QuestionCard';
+import { AuthenticationContext } from '@context/AuthenticationContext';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import LoadingContext from '@context/LodingContext';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
@@ -103,6 +105,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
   const { addNotice } = useContext(GlobalSnackbarContext);
   const router = useRouter();
   const theme = useTheme();
+  const { isLoading, isVerified } = useContext(AuthenticationContext);
 
   /* state */
   const SUBMIT_BUTTON_TEXT = id ? '설문 수정' : '설문 저장';
@@ -133,6 +136,10 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
   });
 
   useLayoutEffect(() => {
+    if (!isVerified) {
+      router.back();
+    }
+
     if (surveyData?.payload) {
       const payload = surveyData.payload;
       formik.setValues({
@@ -313,7 +320,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
       title: '',
       description: null,
       questionType,
-      dataType: dataType || DataType.Text,  
+      dataType: dataType || DataType.Text,
       isRequired: false,
       // isAnswered: false,
       questionOptions: isSelectable ? [{ id: null, label: '', sequence: 0, idx: Date.now() }] : [],
@@ -326,6 +333,10 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
   const handlePreview = () => {
     setIsPreview(true);
   };
+
+  if (isLoading || !isVerified) {
+    return <Loading />;
+  }
 
   // --- RENDER ---
   return (

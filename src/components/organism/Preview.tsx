@@ -57,19 +57,17 @@ const Preview: React.FC<PreviewProps> = ({ survey, handleClose, isDemo = false }
     >
       {!isFullscreen && (
         <Container>
-          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-            <Box>
-              <CommonText variant="h3" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                미리보기
-                <Chip label="미리보기 모드" size="small" color="primary" variant="outlined" />
-              </CommonText>
-              {!isDemo && (
+          {!isDemo && (
+            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+              <Box>
+                <CommonText variant="h3" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  미리보기
+                  <Chip label="미리보기 모드" size="small" color="primary" variant="outlined" />
+                </CommonText>
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
                   ESC 키를 눌러 닫을 수 있습니다
                 </Typography>
-              )}
-            </Box>
-            {!isDemo && (
+              </Box>
               <Stack direction="row" spacing={1}>
                 <IconButton onClick={toggleFullscreen} title={isFullscreen ? '전체화면 해제' : '전체화면'}>
                   {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
@@ -78,8 +76,8 @@ const Preview: React.FC<PreviewProps> = ({ survey, handleClose, isDemo = false }
                   <CloseIcon />
                 </IconButton>
               </Stack>
-            )}
-          </Stack>
+            </Stack>
+          )}
 
           <Box sx={{ mb: 2 }}>
             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
@@ -105,10 +103,10 @@ const Preview: React.FC<PreviewProps> = ({ survey, handleClose, isDemo = false }
           backgroundColor: isFullscreen ? 'background.default' : 'transparent',
         }}
       >
-        <ResponseSurvey survey={survey} />
+        <ResponseSurvey survey={survey} isDemo={isDemo} />
       </Box>
 
-      {isFullscreen && (
+      {!isDemo && isFullscreen && (
         <Box
           sx={{
             position: 'fixed',

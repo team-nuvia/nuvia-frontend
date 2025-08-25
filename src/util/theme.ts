@@ -110,6 +110,31 @@ const MuiTypography: Components<Omit<Theme, 'components'>>['MuiTypography'] = {
   ],
 };
 
+const MuiChip: Components<Omit<Theme, 'components'>>['MuiChip'] = {
+  styleOverrides: {
+    root: {
+      fontWeight: 600,
+      borderRadius: '16px',
+    },
+  },
+  variants: [
+    {
+      props: { color: 'white' },
+      style: {
+        backgroundColor: '#1C1C1C',
+        color: '#FFFFFF',
+      },
+    },
+    {
+      props: { color: 'black' },
+      style: {
+        backgroundColor: '#FFFFFF',
+        color: '#1C1C1C',
+      },
+    },
+  ],
+};
+
 const components: Components<Omit<Theme, 'components'>> = {
   MuiButton: {
     variants: [
@@ -117,7 +142,7 @@ const components: Components<Omit<Theme, 'components'>> = {
         props: {
           shape: 'default',
         },
-        style: {},
+        // style: {},
         // style: {
         //   borderRadius: '999px',
         //   paddingLeft: '24px',
@@ -126,6 +151,24 @@ const components: Components<Omit<Theme, 'components'>> = {
         //   fontWeight: 600,
         // },
       },
+      // {
+      //   props: {
+      //     color: 'black',
+      //   },
+      //   style: {
+      //     backgroundColor: '#1C1C1C',
+      //     color: '#FFFFFF',
+      //   },
+      // },
+      // {
+      //   props: {
+      //     color: 'white',
+      //   },
+      //   style: {
+      //     backgroundColor: '#FFFFFF',
+      //     color: '#1C1C1C',
+      //   },
+      // },
       {
         props: {
           shape: 'rounded',
@@ -151,6 +194,7 @@ const components: Components<Omit<Theme, 'components'>> = {
     ],
   },
   MuiTypography,
+  MuiChip,
 };
 
 const lightTheme = createTheme({
@@ -172,10 +216,14 @@ const lightTheme = createTheme({
     },
     black: {
       main: '#1C1C1C',
+      light: '#4D4D4D',
+      dark: '#000000',
       contrastText: '#FFFFFF',
     },
     white: {
       main: '#FFFFFF',
+      light: '#F1F1F1',
+      dark: '#E0E0E0',
       contrastText: '#1C1C1C',
     },
   },
@@ -200,10 +248,14 @@ const darkTheme = createTheme({
     },
     black: {
       main: '#FFFFFF',
+      light: '#F1F1F1',
+      dark: '#E0E0E0',
       contrastText: '#1C1C1C',
     },
     white: {
       main: '#1C1C1C',
+      light: '#4D4D4D',
+      dark: '#000000',
       contrastText: '#FFFFFF',
     },
   },

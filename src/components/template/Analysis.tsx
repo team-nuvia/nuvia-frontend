@@ -1,6 +1,6 @@
 'use client';
 
-import { mockAnalysis } from '@/app/survey/[id]/analysis/analysis.mock';
+import { mockAnalysis } from '@/app/(site)/(dashboard)/survey/[id]/analysis/analysis.mock';
 import { AnalysisOverviewCards } from '@components/molecular/AnalysisOverviewCards';
 import { AnalysisQuestionCard } from '@components/molecular/AnalysisQuestionCard';
 import LoadingContext from '@context/LodingContext';

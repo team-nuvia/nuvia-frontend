@@ -165,3 +165,10 @@ declare module '@mui/material/Typography' {
     thickness?: 'thin' | 'regular' | 'medium' | 'bold';
   }
 }
+
+declare module '@mui/material/Chip' {
+  declare interface ChipPropsColorOverrides {
+    black: true;
+    white: true;
+  }
+}

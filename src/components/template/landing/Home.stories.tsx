@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
-import Home from './Home';
+import Home from './HomeBack';
 import { parameters } from '.storybook/variables';
 
 const meta = {

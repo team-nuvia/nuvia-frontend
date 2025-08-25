@@ -1,20 +1,20 @@
 'use client';
 
+import Loading from '@components/atom/Loading';
 import { AuthenticationContext } from '@context/AuthenticationContext';
-import { isNil } from '@util/isNil';
 import { useContext } from 'react';
-import Dashboard from './Dashboard';
+import Dashboard from '../Dashboard';
 import Home from './Home';
 
 interface LandingProps {}
 const Landing: React.FC<LandingProps> = () => {
-  const { user } = useContext(AuthenticationContext);
+  const { isLoading, isVerified } = useContext(AuthenticationContext);
 
-  if (isNil(user)) {
-    return <Home />;
+  if (isLoading) {
+    return <Loading />;
   }
 
-  return <Dashboard />;
+  return isVerified ? <Dashboard /> : <Home />;
 };
 
 export default Landing;
