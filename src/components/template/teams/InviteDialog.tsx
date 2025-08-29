@@ -5,22 +5,40 @@ import { Add } from '@mui/icons-material';
 import { Chip, Stack, TextField, Typography } from '@mui/material';
 import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
-import { useContext, useState } from 'react';
+import { useCallback, useContext, useState } from 'react';
 
 export default function InviteDialog({ subscriptionId }: { subscriptionId: number }) {
   const [emails, setEmails] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState('');
   const { addNotice } = useContext(GlobalSnackbarContext);
+  const [errorEmails, setErrorEmails] = useState<string[]>([]);
   const { mutate: inviteUsersMutate } = useMutation({
     mutationFn: () => inviteUsers(subscriptionId, emails),
     onSuccess: (data) => {
       addNotice(data?.message ?? '초대 이메일이 발송되었습니다.', 'success');
       setEmails([]);
       setInputValue('');
+      setErrorEmails([]);
     },
     onError: (error: AxiosError<ServerResponse<null>>) => {
       console.log('error!:', error);
-      addNotice(error?.response?.data?.message ?? '초대 이메일 발송에 실패했습니다.', 'error');
+      const data = error?.response?.data;
+      if (data) {
+        if (data.httpStatus === 400) {
+          if (data.name === 'NoSignedUserExceptionDto') {
+            // 비회원인 유저 이메일이 있을 때
+            if (data.reason) setErrorEmails(data.reason as string[]);
+          } else if (data.name === 'AlreadyJoinedUserExceptionDto') {
+            // 이미 조직에 참여한 유저 이메일이 있을 때
+            if (data.reason) setErrorEmails(data.reason as string[]);
+          }
+          addNotice(data.message, 'error');
+        } else {
+          addNotice(data.message ?? '초대 이메일 발송에 실패했습니다. 관리자에게 문의해주세요.', 'error');
+        }
+      } else {
+        addNotice('초대 이메일 발송에 실패했습니다. 관리자에게 문의해주세요.', 'error');
+      }
     },
   });
 
@@ -40,10 +58,17 @@ export default function InviteDialog({ subscriptionId }: { subscriptionId: numbe
         setEmails([...emails, inputValue]);
       }
       setInputValue('');
-    } else if (e.key === 'Backspace') {
+    } else if (e.key === 'Backspace' && inputValue.length === 0) {
       removeEmail(emails.length - 1);
     }
   }
+
+  const isErrorEmail = useCallback(
+    (email: string) => {
+      return errorEmails.includes(email) ? true : false;
+    },
+    [errorEmails],
+  );
 
   return (
     <Stack spacing={3} sx={{ p: 1 }}>
@@ -84,14 +109,16 @@ export default function InviteDialog({ subscriptionId }: { subscriptionId: numbe
                   key={index}
                   label={email}
                   size="small"
+                  title={isErrorEmail(email) ? '초대 이메일 발송에 실패했습니다.' : undefined}
+                  color={isErrorEmail(email) ? 'error' : 'default'}
                   onDelete={() => removeEmail(index)}
                   sx={{
                     backgroundColor: 'primary.50',
-                    color: 'primary.main',
+                    color: isErrorEmail(email) ? 'white.main' : 'primary.main',
                     '& .MuiChip-deleteIcon': {
-                      color: 'primary.main',
+                      color: isErrorEmail(email) ? 'white.main' : 'primary.main',
                       '&:hover': {
-                        color: 'primary.dark',
+                        color: isErrorEmail(email) ? 'white.main' : 'primary.dark',
                       },
                     },
                   }}
@@ -123,7 +150,7 @@ export default function InviteDialog({ subscriptionId }: { subscriptionId: numbe
             />
           </Stack>
           <Typography variant="caption" color="text.secondary">
-            이메일을 입력 후 Enter, 스페이스바 또는 콤마를 눌러 추가하세요
+            이메일을 입력 후 Enter, 스페이스바, Tab 또는 콤마를 눌러 추가하세요
           </Typography>
         </Stack>
 

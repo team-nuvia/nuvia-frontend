@@ -1,17 +1,18 @@
 import { getSurveyBinList } from '@api/get-survey-bin-list';
 import { restoreSurvey } from '@api/restore-survey';
-import { SURVEY_STATUS_LABELS } from '@common/variables';
 import ActionButton from '@components/atom/ActionButton';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import { Delete, Restore } from '@mui/icons-material';
 import { IconButton, List, ListItem, ListItemText, Stack, Tooltip, Typography } from '@mui/material';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { DateFormat } from '@util/dateFormat';
+import { LocalizationManager } from '@util/LocalizationManager';
 import { useContext } from 'react';
 
-export default function SurveyBinDialog({ refetchSurveyList }: { refetchSurveyList: () => void }) {
+export default function SurveyBinDialog() {
+  const queryClient = useQueryClient();
   const { addNotice } = useContext(GlobalSnackbarContext);
-  const { data: binList, refetch: refetchBinList } = useQuery({
+  const { data: binList } = useQuery({
     queryKey: ['surveyBinList'],
     queryFn: () => getSurveyBinList({ page: 1, limit: 10, search: '' }),
   });
@@ -19,8 +20,8 @@ export default function SurveyBinDialog({ refetchSurveyList }: { refetchSurveyLi
     mutationFn: ({ surveyId }: { surveyId: string }) => restoreSurvey(surveyId),
     onSuccess: () => {
       addNotice('설문이 복원되었습니다', 'success');
-      refetchSurveyList();
-      refetchBinList();
+      queryClient.invalidateQueries({ queryKey: ['surveyList'] });
+      queryClient.invalidateQueries({ queryKey: ['surveyBinList'] });
     },
     onError: () => {
       addNotice('설문 복원에 실패했습니다', 'error');
@@ -32,7 +33,6 @@ export default function SurveyBinDialog({ refetchSurveyList }: { refetchSurveyLi
   };
 
   const handleRestore = (id: number) => {
-    console.log('복원', id);
     restoreSurveyMutate({ surveyId: id.toString() });
   };
 
@@ -58,7 +58,7 @@ export default function SurveyBinDialog({ refetchSurveyList }: { refetchSurveyLi
             }
           >
             <ListItemText
-              primary={`${item.title} (${SURVEY_STATUS_LABELS[item.status]})`}
+              primary={`${item.title} (${LocalizationManager.translate(item.status)})`}
               secondary={`삭제일: ${DateFormat.toKST('YYYY-MM-dd', item.deletedAt)}`}
             />
           </ListItem>

@@ -7,8 +7,6 @@ import { createSurvey } from '@api/create-survey';
 import { getCategories } from '@api/get-categories';
 import { getSurveyDetail } from '@api/get-survey-detail';
 import { updateSurvey } from '@api/update-survey';
-import { QUESTION_DATA_TYPE_MAP, QUESTION_TYPE_ICONS, QUESTION_TYPE_MAP } from '@common/global';
-import { SURVEY_STATUS_LABELS } from '@common/variables';
 import Loading from '@components/atom/Loading';
 import { AddQuestionSheet } from '@components/molecular/AddQuestionSheet';
 import Preview from '@components/organism/Preview';
@@ -26,11 +24,6 @@ import {
   FormControlLabel,
   FormHelperText,
   Grid,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
   MenuItem,
   Paper,
   Radio,
@@ -47,9 +40,11 @@ import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { DataType } from '@share/enums/data-type';
 import { QuestionType } from '@share/enums/question-type';
 import { SurveyStatus } from '@share/enums/survey-status';
+import { UserRole } from '@share/enums/user-role';
 import { ICategory } from '@share/interface/icategory';
 import { AllQuestion } from '@share/interface/iquestion';
 import { useQuery } from '@tanstack/react-query';
+import { LocalizationManager } from '@util/LocalizationManager';
 import { AxiosError } from 'axios';
 import dayjs from 'dayjs';
 import { useFormik } from 'formik';
@@ -105,7 +100,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
   const { addNotice } = useContext(GlobalSnackbarContext);
   const router = useRouter();
   const theme = useTheme();
-  const { isLoading, isVerified } = useContext(AuthenticationContext);
+  const { isLoading: isUserLoading, isVerified, user } = useContext(AuthenticationContext);
 
   /* state */
   const SUBMIT_BUTTON_TEXT = id ? '설문 수정' : '설문 저장';
@@ -136,11 +131,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
   });
 
   useLayoutEffect(() => {
-    if (!isVerified) {
-      router.back();
-    }
-
-    if (surveyData?.payload) {
+    if (isVerified && surveyData?.payload) {
       const payload = surveyData.payload;
       formik.setValues({
         title: payload.title,
@@ -175,8 +166,22 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
     }
   }, [surveyData]);
 
+  useEffect(() => {
+    if (!isUserLoading) {
+      if (isVerified && user && user.role === UserRole.Viewer) {
+        router.push('/survey');
+      }
+    }
+  }, [isUserLoading, isVerified, user]);
+
+  useEffect(() => {
+    if (formik.isSubmitting && Object.keys(formik.errors).length > 0) {
+      console.log(formik.errors);
+      addNotice('설문에 필요한 내용을 작성해주세요.', 'warning');
+    }
+  }, [formik.errors, formik.touched]);
+
   function validateAndReturnSurveyData(values: QuestionInitialValues) {
-    console.log('🚀 ~ Survey ~ values:', values);
     for (let i = 0; i < values.questions.length; i++) {
       const question = values.questions[i];
       if (
@@ -259,17 +264,18 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
       const response = await createSurvey(surveyData as CreateSurveyPayload);
 
       if (response.ok) {
-        addNotice(response.reason || response.message, 'success');
+        addNotice((response.reason as string) || response.message, 'success');
         // Reset form
-        router.push('/');
+        router.push('/survey');
       } else {
-        addNotice(response.reason || response.message, 'error');
+        addNotice((response.reason as string) || response.message, 'error');
       }
     } catch (err: any) {
       const axiosError = err as AxiosError<ServerResponse<any>>;
       console.error(axiosError);
       addNotice(
-        (axiosError?.response?.data?.reason || axiosError?.response?.data?.message) ?? '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+        ((axiosError?.response?.data?.reason as string) || axiosError?.response?.data?.message) ??
+          '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
         'error',
       );
     } finally {
@@ -296,20 +302,14 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
       const axiosError = err as AxiosError<ServerResponse<any>>;
       console.error(axiosError);
       addNotice(
-        (axiosError?.response?.data?.reason || axiosError?.response?.data?.message) ?? '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+        ((axiosError?.response?.data?.reason as string) || axiosError?.response?.data?.message) ??
+          '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
         'error',
       );
     } finally {
       setIsSubmitting(false);
     }
   }
-
-  useEffect(() => {
-    if (formik.isSubmitting && Object.keys(formik.errors).length > 0) {
-      console.log(formik.errors);
-      addNotice('설문에 필요한 내용을 작성해주세요.', 'warning');
-    }
-  }, [formik.errors, formik.touched]);
 
   // --- HANDLERS ---
   const handleAddQuestion = (questionType: QuestionType, dataType?: DataType) => {
@@ -334,7 +334,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
     setIsPreview(true);
   };
 
-  if (isLoading || !isVerified) {
+  if (isUserLoading || !user || user.role === UserRole.Viewer) {
     return <Loading />;
   }
 
@@ -343,7 +343,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
     <Container maxWidth="lg">
       <Box component="form" noValidate autoComplete="off" onSubmit={formik.handleSubmit}>
         <Grid container spacing={2}>
-          <Grid size={{ xs: 12, md: isMobile ? 12 : 8 }}>
+          <Grid size={{ xs: 12, md: 12 }}>
             <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
               <Typography variant="h4" gutterBottom>
                 설문 제작
@@ -397,9 +397,9 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
                   value={formik.values.status}
                   onChange={formik.handleChange}
                 >
-                  <FormControlLabel value={SurveyStatus.Draft} control={<Radio />} label={SURVEY_STATUS_LABELS[SurveyStatus.Draft]} />
-                  <FormControlLabel value={SurveyStatus.Active} control={<Radio />} label="발행" />
-                  <FormControlLabel value={SurveyStatus.Closed} control={<Radio />} label={SURVEY_STATUS_LABELS[SurveyStatus.Closed]} />
+                  <FormControlLabel value={SurveyStatus.Draft} control={<Radio />} label={LocalizationManager.translate(SurveyStatus.Draft)} />
+                  <FormControlLabel value={SurveyStatus.Active} control={<Radio />} label={LocalizationManager.translate(SurveyStatus.Active)} />
+                  <FormControlLabel value={SurveyStatus.Closed} control={<Radio />} label={LocalizationManager.translate(SurveyStatus.Closed)} />
                 </RadioGroup>
 
                 <Select
@@ -456,62 +456,13 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
             </Box>
           </Grid>
 
-          {!isMobile && (
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Paper elevation={3} sx={{ p: 2, mt: 4, position: 'sticky', top: 20 }}>
-                <Typography variant="h6" gutterBottom>
-                  질문 유형
-                </Typography>
-                <List sx={{ maxHeight: '500px', overflow: 'auto' }}>
-                  {Object.entries(QUESTION_TYPE_MAP).map(([key, value]) => (
-                    <ListItem
-                      key={key}
-                      disablePadding
-                      onClick={() =>
-                        handleAddQuestion(
-                          QUESTION_DATA_TYPE_MAP[key as QuestionType | DataType].key,
-                          QUESTION_DATA_TYPE_MAP[key as QuestionType | DataType].type,
-                        )
-                      }
-                    >
-                      <ListItemButton>
-                        <ListItemIcon>{QUESTION_TYPE_ICONS[key as QuestionType]}</ListItemIcon>
-                        <ListItemText primary={value} />
-                      </ListItemButton>
-                    </ListItem>
-                  ))}
-                </List>
-              </Paper>
-            </Grid>
-          )}
+          <AddQuestionSheet onPick={(qType, dType) => handleAddQuestion(qType, dType)} isMobile={isMobile} />
         </Grid>
-
-        {isMobile && (
-          <AddQuestionSheet onPick={(qType, dType) => handleAddQuestion(qType, dType)} />
-          // <SpeedDial ariaLabel="Add Question Speed Dial" sx={{ position: 'fixed', bottom: 16, right: 16 }} icon={<SpeedDialIcon />}>
-          //   {Object.entries(QUESTION_TYPE_ICONS)
-          //     .toReversed()
-          //     .map(([key, icon]) => (
-          //       <SpeedDialAction
-          //         key={key}
-          //         icon={icon}
-          //         slotProps={{
-          //           tooltip: { title: QUESTION_TYPE_MAP[key as QuestionType] },
-          //         }}
-          //         onClick={() =>
-          //           handleAddQuestion(
-          //             QUESTION_DATA_TYPE_MAP[key as QuestionType | DataType].key,
-          //             QUESTION_DATA_TYPE_MAP[key as QuestionType | DataType].type,
-          //           )
-          //         }
-          //       />
-          //     ))}
-          // </SpeedDial>
-        )}
       </Box>
 
       {isPreview && (
         <Preview
+          isDemo
           survey={{
             id: id ? Number(id) : null,
             hashedUniqueKey: '',

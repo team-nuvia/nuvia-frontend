@@ -3,7 +3,6 @@
 import { getLast7DaysResponseCount } from '@api/get-daily-response-count';
 import { getDashboardRecentSurveysServer } from '@api/get-dashboard-recent-surveys-server';
 import { getSurveyMetadata } from '@api/get-survey-metadata';
-import { SURVEY_STATUS_LABELS } from '@common/variables';
 import CommonText from '@components/atom/CommonText';
 import Loading from '@components/atom/Loading';
 import WelcomeDashboard from '@components/organism/WelcomeDashboard';
@@ -16,6 +15,7 @@ import { DataGrid, GridColDef, GridRowsProp } from '@mui/x-data-grid';
 import { MetadataStatusType } from '@share/enums/metadata-status-type';
 import { SurveyStatus } from '@share/enums/survey-status';
 import { useQuery } from '@tanstack/react-query';
+import { LocalizationManager } from '@util/LocalizationManager';
 import { useContext, useLayoutEffect, useMemo } from 'react';
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
@@ -26,20 +26,14 @@ const Dashboard = () => {
   const { data: metadataData, isLoading: isMetadataLoading } = useQuery({
     queryKey: ['dashboard-metadata'],
     queryFn: () => getSurveyMetadata(MetadataStatusType.Dashboard),
-    refetchOnReconnect: 'always',
-    refetchOnWindowFocus: 'always',
   });
   const { data: recentSurveysData, isLoading: isRecentSurveysLoading } = useQuery({
     queryKey: ['dashboard-recent-surveys'],
     queryFn: getDashboardRecentSurveysServer,
-    refetchOnReconnect: 'always',
-    refetchOnWindowFocus: 'always',
   });
   const { data: last7Days, isLoading: isDailyResponseLoading } = useQuery({
     queryKey: ['daily-response-count'],
     queryFn: getLast7DaysResponseCount,
-    refetchOnReconnect: 'always',
-    refetchOnWindowFocus: 'always',
   });
 
   useLayoutEffect(() => {
@@ -149,7 +143,7 @@ const Dashboard = () => {
         </CommonText>
       ),
     },
-    { field: 'status', headerName: '상태', width: 100, valueFormatter: (value) => SURVEY_STATUS_LABELS[value as SurveyStatus] },
+    { field: 'status', headerName: '상태', width: 100, valueFormatter: (value) => LocalizationManager.translate(value as SurveyStatus) },
     { field: 'expiresAt', headerName: '마감기한', width: 100 },
     { field: 'responses', headerName: '응답 수', width: 100 },
   ];
@@ -159,7 +153,7 @@ const Dashboard = () => {
   }
 
   return (
-    <Box sx={{ flexGrow: 1, bgcolor: 'grey.50', p: 4 }}>
+    <Box sx={{ flexGrow: 1, p: 4 }}>
       <Container maxWidth="lg">
         {/* Header */}
         <Stack direction="row" justifyContent="space-between" alignItems="center" mb={4}>

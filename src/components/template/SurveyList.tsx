@@ -3,10 +3,10 @@
 import LoadingContext from '@/context/LodingContext';
 import { getSurveyList } from '@api/get-survey-list';
 import { getSurveyMetadata } from '@api/get-survey-metadata';
-import { SURVEY_STATUS_LABELS } from '@common/variables';
 import ActionButton from '@components/atom/ActionButton';
 import SurveyListItemCard from '@components/molecular/SurveyListItemCard';
 import SurveyBinDialog from '@components/organism/SurveyBinDialog';
+import { AuthenticationContext } from '@context/AuthenticationContext';
 import { GlobalDialogContext } from '@context/GlobalDialogContext';
 import { Add, Delete, Search } from '@mui/icons-material';
 import {
@@ -30,21 +30,26 @@ import {
 } from '@mui/material';
 import { MetadataStatusType } from '@share/enums/metadata-status-type';
 import { SurveyStatus } from '@share/enums/survey-status';
+import { UserRole } from '@share/enums/user-role';
 import { SearchSurvey } from '@share/interface/search-survey';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { LocalizationManager } from '@util/LocalizationManager';
+import { roleAtLeast } from '@util/roleAtLeast';
 import { AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useLayoutEffect, useState } from 'react';
 
 export default function SurveyList() {
+  const queryClient = useQueryClient();
   const router = useRouter();
+  const { user } = useContext(AuthenticationContext);
   const [surveys, setSurveys] = useState<SearchSurvey[]>([]);
   const { endLoading } = useContext(LoadingContext);
-  const { handleOpenDialog, handleCloseDialog } = useContext(GlobalDialogContext);
+  const { handleOpenDialog } = useContext(GlobalDialogContext);
   const [selectedTab, setSelectedTab] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
-  const { data, refetch, isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['surveyList'],
     queryFn: () =>
       getSurveyList({
@@ -54,7 +59,7 @@ export default function SurveyList() {
         status: ['all', SurveyStatus.Draft, SurveyStatus.Active, SurveyStatus.Closed][selectedTab],
       }),
   });
-  const { data: surveyMetadata, refetch: refetchSurveyMetadata } = useQuery({
+  const { data: surveyMetadata } = useQuery({
     queryKey: ['surveyMetadata'],
     queryFn: () => getSurveyMetadata(MetadataStatusType.SurveyList),
   });
@@ -67,7 +72,7 @@ export default function SurveyList() {
   }, [data, isLoading]);
 
   useEffect(() => {
-    refetch();
+    queryClient.invalidateQueries({ queryKey: ['surveyList'] });
   }, [selectedTab]);
 
   const handleRedirectCreate = () => {
@@ -77,7 +82,7 @@ export default function SurveyList() {
   const handlePopTrash = () => {
     handleOpenDialog({
       title: '휴지통',
-      content: <SurveyBinDialog refetchSurveyList={refetch} />,
+      content: <SurveyBinDialog />,
       useConfirm: false,
     });
   };
@@ -176,7 +181,7 @@ export default function SurveyList() {
                 <MenuItem value={'all'}>전체</MenuItem>
                 {Object.values(SurveyStatus).map((status) => (
                   <MenuItem key={status} value={status}>
-                    {SURVEY_STATUS_LABELS[status]}
+                    {LocalizationManager.translate(status)}
                   </MenuItem>
                 ))}
               </Select>
@@ -190,14 +195,16 @@ export default function SurveyList() {
         <Tabs value={selectedTab} onChange={(_, newValue) => setSelectedTab(newValue)}>
           <Tab label="전체" />
           {Object.values(SurveyStatus).map((status) => (
-            <Tab key={status} label={SURVEY_STATUS_LABELS[status]} />
+            <Tab key={status} label={LocalizationManager.translate(status)} />
           ))}
         </Tabs>
-        <Tooltip title="휴지통">
-          <ActionButton startIcon={<Delete />} onClick={handlePopTrash} color="error" variant="outlined" shape="rounded">
-            휴지통
-          </ActionButton>
-        </Tooltip>
+        {roleAtLeast(UserRole.Admin, user?.role) && (
+          <Tooltip title="휴지통">
+            <ActionButton startIcon={<Delete />} onClick={handlePopTrash} color="error" variant="outlined" shape="rounded">
+              휴지통
+            </ActionButton>
+          </Tooltip>
+        )}
       </Stack>
 
       {/* 설문 목록 */}
@@ -207,13 +214,17 @@ export default function SurveyList() {
             <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
               {searchQuery || filterStatus !== 'all' ? '검색 결과가 없습니다' : '아직 생성된 설문이 없습니다'}
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
-              {searchQuery || filterStatus !== 'all' ? '다른 검색어나 필터를 시도해보세요' : '첫 번째 설문을 만들어보세요'}
-            </Typography>
-            {!searchQuery && filterStatus === 'all' && (
-              <Button variant="contained" startIcon={<Add />} onClick={handleRedirectCreate}>
-                설문 만들기
-              </Button>
+            {roleAtLeast(UserRole.Editor, user?.role) && (
+              <>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
+                  {searchQuery || filterStatus !== 'all' ? '다른 검색어나 필터를 시도해보세요' : '첫 번째 설문을 만들어보세요'}
+                </Typography>
+                {!searchQuery && filterStatus === 'all' && (
+                  <Button variant="contained" startIcon={<Add />} onClick={handleRedirectCreate}>
+                    설문 만들기
+                  </Button>
+                )}
+              </>
             )}
           </CardContent>
         </Card>
@@ -221,18 +232,20 @@ export default function SurveyList() {
         <Grid container spacing={3}>
           <AnimatePresence>
             {surveys?.map((survey) => (
-              <SurveyListItemCard key={survey.id} survey={survey} refetchSurveyList={refetch} refetchSurveyMetadata={refetchSurveyMetadata} />
+              <SurveyListItemCard key={survey.id} survey={survey} />
             ))}
           </AnimatePresence>
         </Grid>
       )}
 
       {/* FAB */}
-      <Tooltip title="설문 만들기">
-        <Fab color="primary" sx={{ position: 'fixed', bottom: 24, right: 24 }} onClick={handleRedirectCreate}>
-          <Add />
-        </Fab>
-      </Tooltip>
+      {roleAtLeast(UserRole.Editor, user?.role) && (
+        <Tooltip title="설문 만들기">
+          <Fab color="primary" sx={{ position: 'fixed', bottom: 24, right: 24 }} onClick={handleRedirectCreate}>
+            <Add />
+          </Fab>
+        </Tooltip>
+      )}
     </Container>
   );
 }

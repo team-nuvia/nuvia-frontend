@@ -1,7 +1,7 @@
 'use client';
 import { Components, createTheme, Theme } from '@mui/material/styles';
 
-const commonColor = {
+const lightMainColor = {
   primary: {
     main: '#3D5AFE',
     light: '#768FFF',
@@ -28,6 +28,39 @@ const commonColor = {
     main: '#D50000',
     light: '#FF5252',
     dark: '#9B0000',
+  },
+};
+
+const darkMainColor = {
+  primary: {
+    main: '#4D7FFF', // 다크모드에서 눈에 편안한 소프트 블루
+    light: '#7FA3FF', // 더 밝고 부드러운 톤
+    dark: '#2E5BFF', // 깊고 세련된 블루
+    contrastText: '#FFFFFF',
+  },
+  secondary: {
+    main: '#9C7FFF', // 눈의 피로를 줄이는 라벤더 퍼플
+    light: '#B8A3FF', // 소프트한 라이트 퍼플
+    dark: '#7A5FFF', // 깊이감 있는 다크 퍼플
+    contrastText: '#FFFFFF',
+  },
+  success: {
+    main: '#4CAF50', // 다크모드에 최적화된 그린
+    light: '#81C784', // 부드럽고 시각적으로 편안한 라이트 그린
+    dark: '#388E3C', // 차분하고 안정감 있는 다크 그린
+    contrastText: '#FFFFFF',
+  },
+  warning: {
+    main: '#FF9800', // 다크모드에서 경고를 잘 표현하는 오렌지
+    light: '#FFB74D', // 따뜻하고 부드러운 라이트 오렌지
+    dark: '#F57C00', // 강조감 있는 다크 오렌지
+    contrastText: '#000000', // 다크 배경에서 가독성을 위한 검은 텍스트
+  },
+  error: {
+    main: '#F44336', // 다크모드에 적합한 에러 레드
+    light: '#E57373', // 부드럽고 시각적 충격을 줄인 라이트 레드
+    dark: '#D32F2F', // 강한 경고감을 주는 다크 레드
+    contrastText: '#FFFFFF',
   },
 };
 
@@ -135,6 +168,14 @@ const MuiChip: Components<Omit<Theme, 'components'>>['MuiChip'] = {
   ],
 };
 
+const MuiCircularProgress: Components<Omit<Theme, 'components'>>['MuiCircularProgress'] = {
+  styleOverrides: {
+    root: {
+      color: 'inherit',
+    },
+  },
+};
+
 const components: Components<Omit<Theme, 'components'>> = {
   MuiButton: {
     variants: [
@@ -142,7 +183,7 @@ const components: Components<Omit<Theme, 'components'>> = {
         props: {
           shape: 'default',
         },
-        // style: {},
+        style: {},
         // style: {
         //   borderRadius: '999px',
         //   paddingLeft: '24px',
@@ -195,6 +236,7 @@ const components: Components<Omit<Theme, 'components'>> = {
   },
   MuiTypography,
   MuiChip,
+  MuiCircularProgress,
 };
 
 const lightTheme = createTheme({
@@ -204,7 +246,8 @@ const lightTheme = createTheme({
   },
   components,
   palette: {
-    ...commonColor,
+    mode: 'light',
+    ...lightMainColor,
     background: {
       default: '#F1F1F1',
       paper: '#FEFEFE',
@@ -236,7 +279,8 @@ const darkTheme = createTheme({
   },
   components,
   palette: {
-    ...commonColor,
+    mode: 'dark',
+    ...darkMainColor,
     background: {
       default: '#121212',
       paper: '#1E1E1E',

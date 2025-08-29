@@ -23,7 +23,6 @@ const CTAButton: React.FC<CTAButtonProps> = ({ invert, label, path = '/auth/logi
       variant="contained"
       size="large"
       sx={{
-        color: invert ? theme.palette.primary.main : theme.palette.white.main,
         px: 4,
         py: 1.5,
         fontSize: '1.1rem',

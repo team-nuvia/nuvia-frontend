@@ -10,7 +10,9 @@ const WrapChildren: React.FC<WrapChildrenProps> = ({ children }) => {
   return (
     <Stack direction="row" flex={1}>
       <Sidebar />
-      <Stack flex={1}>{children}</Stack>
+      <Stack flex={1} sx={{ overflowX: 'hidden' }}>
+        {children}
+      </Stack>
     </Stack>
   );
 };

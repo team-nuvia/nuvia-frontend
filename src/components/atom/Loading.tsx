@@ -1,20 +1,15 @@
 'use client';
 
-import LoadingContext from '@/context/LodingContext';
-import { Backdrop, CircularProgress } from '@mui/material';
-import { useContext } from 'react';
+import { CircularProgress, Stack, useTheme } from '@mui/material';
 
 interface LoadingProps {}
 const Loading: React.FC<LoadingProps> = () => {
-  const { loading } = useContext(LoadingContext);
+  const theme = useTheme();
 
   return (
-    <Backdrop
-      sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
-      open={loading}
-    >
-      <CircularProgress color="inherit" />
-    </Backdrop>
+    <Stack height="100%" justifyContent="center" alignItems="center" sx={{ color: 'text.primary', zIndex: theme.zIndex.drawer + 1 }}>
+      <CircularProgress size={50} color="inherit" />
+    </Stack>
   );
 };
 

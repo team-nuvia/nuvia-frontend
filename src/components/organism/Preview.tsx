@@ -11,9 +11,10 @@ interface PreviewProps {
   survey: PreviewPayload;
   handleClose: () => void;
   isDemo?: boolean;
+  isBind?: boolean;
 }
 
-const Preview: React.FC<PreviewProps> = ({ survey, handleClose, isDemo = false }) => {
+const Preview: React.FC<PreviewProps> = ({ survey, handleClose, isDemo = false, isBind = false }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const theme = useTheme();
 
@@ -27,58 +28,76 @@ const Preview: React.FC<PreviewProps> = ({ survey, handleClose, isDemo = false }
     }
   };
 
+  const ScreenController = () => {
+    return (
+      <Box
+        sx={{
+          transition: 'all 0.3s ease',
+          position: 'absolute',
+          top: isFullscreen ? 8 : 16,
+          right: isFullscreen ? 8 : 16,
+          zIndex: 1001,
+          backgroundColor: isFullscreen ? 'background.paper' : 'transparent',
+          borderRadius: isFullscreen ? 1 : 0,
+          boxShadow: isFullscreen ? theme.shadows[8] : 'none',
+          p: isFullscreen ? 1 : 0,
+        }}
+      >
+        <Stack direction="row" spacing={1}>
+          <IconButton onClick={toggleFullscreen} title={isFullscreen ? '전체화면 해제' : '전체화면'}>
+            {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
+          </IconButton>
+          <IconButton onClick={handleClose} title="닫기">
+            <CloseIcon />
+          </IconButton>
+        </Stack>
+      </Box>
+    );
+  };
+
   return (
     <Paper
-      sx={
-        isDemo
-          ? {
-              p: isFullscreen ? 0 : 2,
-              overflow: 'auto',
-              backgroundColor: 'background.paper',
-              boxShadow: isFullscreen ? 'none' : theme.shadows[24],
-              borderRadius: isFullscreen ? 0 : theme.shape.borderRadius,
-            }
-          : {
-              p: isFullscreen ? 0 : 2,
-              position: 'fixed',
-              top: isFullscreen ? 0 : 15,
-              left: isFullscreen ? 0 : 15,
-              right: isFullscreen ? 0 : 15,
-              bottom: isFullscreen ? 0 : 15,
-              zIndex: 1000,
-              overflow: 'auto',
-              backgroundColor: 'background.paper',
-              boxShadow: isFullscreen ? 'none' : theme.shadows[24],
-              borderRadius: isFullscreen ? 0 : theme.shape.borderRadius,
-            }
-      }
+      component={Stack}
+      sx={{
+        overflow: 'hidden',
+        transition: 'all 0.3s ease',
+        height: 'calc(100% - 2rem)',
+        p: isFullscreen ? 0 : 2,
+        backgroundColor: 'background.paper',
+        boxShadow: isFullscreen ? 'none' : theme.shadows[24],
+        borderRadius: isFullscreen ? 0 : theme.shape.borderRadius,
+
+        ...(!isBind && {
+          position: 'fixed',
+          top: isFullscreen ? 0 : 15,
+          left: isFullscreen ? 0 : 15,
+          right: isFullscreen ? 0 : 15,
+          bottom: isFullscreen ? 0 : 15,
+          zIndex: 1000,
+        }),
+      }}
       onKeyDown={handleKeyDown}
       tabIndex={0}
     >
+      <Container>
+        <Stack direction="row" justifyContent="space-between" alignItems="center">
+          {!isBind && !isFullscreen && (
+            <Box mb={2}>
+              <CommonText variant="h3" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                미리보기
+                <Chip label="미리보기 모드" size="small" color="primary" variant="outlined" />
+              </CommonText>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                ESC 키를 눌러 닫을 수 있습니다
+              </Typography>
+            </Box>
+          )}
+          <ScreenController />
+        </Stack>
+      </Container>
+
       {!isFullscreen && (
         <Container>
-          {!isDemo && (
-            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-              <Box>
-                <CommonText variant="h3" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  미리보기
-                  <Chip label="미리보기 모드" size="small" color="primary" variant="outlined" />
-                </CommonText>
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                  ESC 키를 눌러 닫을 수 있습니다
-                </Typography>
-              </Box>
-              <Stack direction="row" spacing={1}>
-                <IconButton onClick={toggleFullscreen} title={isFullscreen ? '전체화면 해제' : '전체화면'}>
-                  {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
-                </IconButton>
-                <IconButton onClick={handleClose} title="닫기">
-                  <CloseIcon />
-                </IconButton>
-              </Stack>
-            </Stack>
-          )}
-
           <Box sx={{ mb: 2 }}>
             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
               <Chip label={`질문 ${survey.questions.length}개`} size="small" variant="outlined" />
@@ -98,37 +117,13 @@ const Preview: React.FC<PreviewProps> = ({ survey, handleClose, isDemo = false }
 
       <Box
         sx={{
-          height: isFullscreen ? '100vh' : 'auto',
-          overflow: 'auto',
-          backgroundColor: isFullscreen ? 'background.default' : 'transparent',
+          height: '100%',
+          overflowY: 'auto',
+          backgroundColor: isFullscreen ? 'background.default' : 'background.paper',
         }}
       >
         <ResponseSurvey survey={survey} isDemo={isDemo} />
       </Box>
-
-      {!isDemo && isFullscreen && (
-        <Box
-          sx={{
-            position: 'fixed',
-            top: 16,
-            right: 16,
-            zIndex: 1001,
-            backgroundColor: 'background.paper',
-            borderRadius: 1,
-            boxShadow: theme.shadows[8],
-            p: 1,
-          }}
-        >
-          <Stack direction="row" spacing={1}>
-            <IconButton onClick={toggleFullscreen} size="small" title="전체화면 해제">
-              <FullscreenExitIcon />
-            </IconButton>
-            <IconButton onClick={handleClose} size="small" title="닫기">
-              <CloseIcon />
-            </IconButton>
-          </Stack>
-        </Box>
-      )}
     </Paper>
   );
 };

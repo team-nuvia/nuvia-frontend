@@ -8,6 +8,7 @@ import Notification from '@components/molecular/Notification';
 import UserOrganizationSelect from '@components/molecular/UserOrganizationSelect';
 import { AuthenticationContext } from '@context/AuthenticationContext';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
+import LoadingContext from '@context/LodingContext';
 import { useScroll } from '@hooks/useScroll';
 import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded';
 import { Avatar, Menu, MenuItem, Stack, Toolbar, Tooltip, Typography, useTheme } from '@mui/material';
@@ -22,7 +23,8 @@ const Header: React.FC<HeaderProps> = () => {
   const [shadow, setShadow] = useState(false);
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
   const { addNotice } = useContext(GlobalSnackbarContext);
-  const { user, clearUser, fetchUser } = useContext(AuthenticationContext);
+  const { startLoading } = useContext(LoadingContext);
+  const { user, clearUser } = useContext(AuthenticationContext);
 
   const commonMenus: MenuOption[] = useMemo(
     () =>
@@ -58,6 +60,7 @@ const Header: React.FC<HeaderProps> = () => {
               label: 'Logout',
               to: '/',
               request: async () => {
+                startLoading();
                 await clearUser();
                 addNotice('로그아웃 되었습니다.', 'success');
               },
@@ -158,7 +161,7 @@ const Header: React.FC<HeaderProps> = () => {
             {user && (
               <Stack direction="row" alignItems="center" gap={2}>
                 {/* 조직 선택 */}
-                <UserOrganizationSelect refetchCallback={fetchUser} />
+                <UserOrganizationSelect />
 
                 {/* 알림 아이콘 */}
                 <Notification />
@@ -169,7 +172,7 @@ const Header: React.FC<HeaderProps> = () => {
                     size="small"
                     color="primary"
                     startIcon={
-                      user && user.profileImageUrl ? (
+                      user.profileImageUrl ? (
                         <Avatar src={user.profileImageUrl} alt={BRAND_NAME} sx={{ width: 35, height: 35 }} />
                       ) : (
                         <AccountCircleRoundedIcon sx={{ width: 35, height: 35 }} />
