@@ -1,0 +1,21 @@
+# Storybook 관련 파일들
+.storybook/
+**/*.stories.tsx
+**/*.stories.ts
+**/*.stories.jsx
+**/*.stories.js
+**/*.story.tsx
+**/*.story.ts
+**/*.story.jsx
+**/*.story.js
+
+# Storybook 설정 파일들
+.storybook/main.js
+.storybook/main.ts
+.storybook/preview.js
+.storybook/preview.ts
+.storybook/manager.js
+.storybook/manager.ts
+
+# Storybook 빌드 결과물
+storybook-static/
