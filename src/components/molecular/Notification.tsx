@@ -1,36 +1,63 @@
 import { getNotifications } from '@api/get-notifications';
 import { toggleReadNotification } from '@api/toggle-read-notification';
+import { updateInvitationResult } from '@api/update-invitation-result';
 import ActionButton from '@components/atom/ActionButton';
+import { AuthenticationContext } from '@context/AuthenticationContext';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
 import NotificationsActiveOutlinedIcon from '@mui/icons-material/NotificationsActiveOutlined';
 import NotificationsOffOutlinedIcon from '@mui/icons-material/NotificationsOffOutlined';
 import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { Badge, Box, Divider, IconButton, Menu, Paper, Stack, Tooltip, Typography } from '@mui/material';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { NotificationActionStatus } from '@share/enums/notification-action-status';
+import { NotificationType } from '@share/enums/notification-type';
+import { OrganizationRoleStatusType } from '@share/enums/organization-role-status-type';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { DateFormat } from '@util/dateFormat';
+import { isNil } from '@util/isNil';
+import { LocalizationManager } from '@util/LocalizationManager';
 import { useRouter } from 'next/navigation';
 import React, { useContext, useMemo, useState } from 'react';
 
 const Notification = () => {
+  const queryClient = useQueryClient();
   const router = useRouter();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState('');
   const { addNotice } = useContext(GlobalSnackbarContext);
+  const { user, isLoading: isLoadingUser } = useContext(AuthenticationContext);
   const [anchorElNotification, setAnchorElNotification] = useState<null | HTMLElement>(null);
-  const { data: notifications, refetch: refetchNotifications } = useQuery({
+  const { data: notifications } = useQuery({
     queryKey: ['notifications'],
     queryFn: () => getNotifications({ page, limit, search }),
-    refetchOnWindowFocus: true,
-    refetchOnMount: true,
-    refetchOnReconnect: true,
+  });
+  const { mutate: acceptInvitationMutate } = useMutation({
+    mutationFn: ({ subscriptionId, notificationId }: { subscriptionId: number; notificationId: number }) =>
+      updateInvitationResult(subscriptionId, notificationId, OrganizationRoleStatusType.Joined),
+    onSuccess: (data) => {
+      addNotice(data.message ?? '초대 수락 완료', 'success');
+      queryClient.invalidateQueries({ queryKey: ['user-organizations'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    },
+  });
+  const { mutate: rejectInvitationMutate } = useMutation({
+    mutationFn: ({ subscriptionId, notificationId }: { subscriptionId: number; notificationId: number }) =>
+      updateInvitationResult(subscriptionId, notificationId, OrganizationRoleStatusType.Rejected),
+    onSuccess: (data) => {
+      addNotice(data.message ?? '초대 거절 완료', 'success');
+      queryClient.invalidateQueries({ queryKey: ['user-organizations'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    },
   });
   const { mutate: toggleReadNotificationMutate } = useMutation({
     mutationFn: ({ notificationId, isRead }: { notificationId: number; isRead: boolean }) => toggleReadNotification(notificationId, isRead),
     onSuccess: (data) => {
       addNotice(data.message ?? '알림 읽음 처리 완료', 'success');
-      refetchNotifications();
+      queryClient.invalidateQueries({ queryKey: ['user-organizations'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
     },
   });
   const notificationList = notifications?.payload?.data ?? [];
@@ -49,11 +76,27 @@ const Notification = () => {
     toggleReadNotificationMutate({ notificationId, isRead: !isRead });
   };
 
+  const handleAcceptInvitation = (subscriptionId: number, notificationId: number) => {
+    acceptInvitationMutate({ subscriptionId, notificationId });
+  };
+
+  const handleRejectInvitation = (subscriptionId: number, notificationId: number) => {
+    rejectInvitationMutate({ subscriptionId, notificationId });
+  };
+
+  if (isLoadingUser) {
+    return null;
+  }
+
+  if (!user) {
+    return null;
+  }
+
   return (
     <Stack>
       <Tooltip title="알림" placement="right" arrow>
         <Badge badgeContent={notificationCount} color="error">
-          <IconButton onClick={handleOpenNotificationMenu} sx={{ p: 0.5 }}>
+          <IconButton onClick={handleOpenNotificationMenu} sx={{ p: 0.5, color: 'text.secondary' }}>
             {notificationCount > 0 ? <NotificationsActiveOutlinedIcon /> : <NotificationsOutlinedIcon />}
           </IconButton>
         </Badge>
@@ -85,12 +128,18 @@ const Notification = () => {
           },
         }}
       >
-        <Stack sx={{ p: 2 }}>
+        <Stack maxHeight="80vh" sx={{ p: 2 }}>
           <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
             <Typography variant="h6" fontWeight="bold">
               알림
             </Typography>
-            <IconButton size="small" onClick={() => refetchNotifications()}>
+            <IconButton
+              size="small"
+              onClick={() => {
+                queryClient.invalidateQueries({ queryKey: ['user-organizations'] });
+                queryClient.invalidateQueries({ queryKey: ['notifications'] });
+              }}
+            >
               <RefreshIcon fontSize="small" />
             </IconButton>
           </Stack>
@@ -164,9 +213,63 @@ const Notification = () => {
                       {notification.content}
                     </Typography>
 
-                    <Typography variant="caption" color="text.disabled" title={DateFormat.toKSTOnly(notification.createdAt)}>
-                      {DateFormat.getTimeAgo(notification.createdAt)}
-                    </Typography>
+                    {notification.type === NotificationType.Invitation &&
+                      (isNil(notification.actionStatus) ? (
+                        <Stack direction="row" justifyContent="flex-end" alignItems="center" gap={1}>
+                          <ActionButton
+                            variant="text"
+                            size="small"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (notification.referenceId && notification.id) {
+                                handleAcceptInvitation(notification.referenceId, notification.id);
+                              }
+                            }}
+                            startIcon={<CheckIcon fontSize="small" />}
+                          >
+                            수락
+                          </ActionButton>
+                          <ActionButton
+                            variant="text"
+                            size="small"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (notification.referenceId && notification.id) {
+                                handleRejectInvitation(notification.referenceId, notification.id);
+                              }
+                            }}
+                            startIcon={<CloseIcon fontSize="small" />}
+                          >
+                            거절
+                          </ActionButton>
+                        </Stack>
+                      ) : (
+                        <Stack
+                          direction="row"
+                          alignItems="center"
+                          gap={1}
+                          justifyContent="flex-end"
+                          color={LocalizationManager.color(notification.actionStatus)}
+                        >
+                          {notification.actionStatus === NotificationActionStatus.Joined ? (
+                            <CheckIcon fontSize="small" color="inherit" />
+                          ) : (
+                            <CloseIcon fontSize="small" color="inherit" />
+                          )}
+                          <Typography variant="body2" color="inherit">
+                            {LocalizationManager.translate(notification.actionStatus)}
+                          </Typography>
+                        </Stack>
+                      ))}
+
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                      <Typography variant="caption" color="text.disabled" title={DateFormat.toKSTOnly(notification.createdAt)}>
+                        {DateFormat.getTimeAgo(notification.createdAt)}
+                      </Typography>
+                      <Typography variant="caption" color="text.disabled">
+                        {notification.isRead ? '읽음' : '읽지 않음'}
+                      </Typography>
+                    </Stack>
                   </Stack>
                 </Paper>
               ))}

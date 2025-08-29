@@ -103,7 +103,6 @@ const GlobalDialogProvider: React.FC<GlobalDialogContextProps> = ({ children }) 
           aria-labelledby="dialog-title"
           aria-describedby="dialog-content"
           disableRestoreFocus
-          keepMounted={false}
         >
           <DialogTitle id="dialog-title">
             <Typography variant="h6">{title}</Typography>

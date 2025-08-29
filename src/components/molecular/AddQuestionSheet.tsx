@@ -12,6 +12,8 @@ import {
   Grid,
   IconButton,
   InputAdornment,
+  Stack,
+  SvgIcon,
   SwipeableDrawer,
   Tab,
   Tabs,
@@ -22,6 +24,7 @@ import {
 } from '@mui/material';
 import * as React from 'react';
 
+import { RemovePin } from '@assets/RemovePin';
 import { QUESTION_DATA_TYPE_MAP, QUESTION_TYPE_ICONS, QUESTION_TYPE_MAP } from '@common/global';
 import ActionButton from '@components/atom/ActionButton';
 import { DataType } from '@share/enums/data-type';
@@ -34,7 +37,7 @@ const ALL = '전체';
 const getMeta = (key: QKey) => (QUESTION_DATA_TYPE_MAP as any)?.[key] as { key: QuestionType; type?: DataType } | undefined;
 
 const getCategory = (key: QKey) => (getMeta(key) as any)?.category ?? '기본';
-const getIcon = (key: QKey) => (QUESTION_TYPE_ICONS as any)?.[key] ?? <AddCircleOutlineIcon />;
+const getIcon = (key: QKey) => ((QUESTION_TYPE_ICONS as any)?.[key] ? QUESTION_TYPE_ICONS[key] : <AddCircleOutlineIcon />);
 
 export const AddQuestionSheet: React.FC<{
   onPick: (questionType: QuestionType, dataType?: DataType) => void;
@@ -111,7 +114,11 @@ export const AddQuestionSheet: React.FC<{
     localStorage.setItem('nuvia:pinnedQuestions', JSON.stringify(next));
   };
 
-  if (!mobile) return null;
+  // if (!mobile) return null;
+
+  const getCurrentPinned = (k: QKey) => {
+    return pinned.includes(k);
+  };
 
   return (
     <>
@@ -120,17 +127,29 @@ export const AddQuestionSheet: React.FC<{
       </Fab>
 
       <SwipeableDrawer
-        anchor="bottom"
+        anchor={isMobile ? 'bottom' : 'right'}
         open={open}
         onOpen={() => setOpen(true)}
         onClose={() => setOpen(false)}
         slotProps={{
           swipeArea: {
-            sx: { borderTopLeftRadius: 16, borderTopRightRadius: 16, maxHeight: '85vh' },
+            sx: { borderTopLeftRadius: 16, borderTopRightRadius: 16 },
+          },
+          paper: {
+            sx: {
+              width: '100%',
+              maxWidth: isMobile ? '100%' : '30%',
+              minWidth: 350,
+              maxHeight: isMobile ? '85vh' : 'auto',
+              borderTopLeftRadius: 15,
+              borderTopRightRadius: 15,
+              overflow: 'hidden',
+              height: '100%',
+            },
           },
         }}
       >
-        <Box sx={{ p: 2, pt: 1 }}>
+        <Stack sx={{ p: 2, pt: 1, height: '100%' }}>
           {/* 헤더 */}
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
             <Typography variant="subtitle1" sx={{ fontWeight: 700, flex: 1 }}>
@@ -205,49 +224,58 @@ export const AddQuestionSheet: React.FC<{
             </Box>
           )}
 
-          {/* 그리드 */}
-          <Grid container spacing={1.25} sx={{ pb: 2 }}>
-            {sorted.map((k) => {
-              const iconNode = getIcon(k);
-              const label = QUESTION_TYPE_MAP[k];
-              const cat = getCategory(k);
-              return (
-                <Grid size={{ xs: 4 }} key={String(k)} component="div">
-                  <ActionButton
-                    onClick={() => handlePick(k)}
-                    sx={{
-                      width: '100%',
-                      borderRadius: 2,
-                      p: 1.25,
-                      display: 'block',
-                      bgcolor: 'action.hover',
-                      textAlign: 'center',
-                      position: 'relative',
-                      '&:active': { opacity: 0.9 },
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', justifyContent: 'center', mb: 0.5 }}>{iconNode}</Box>
-                    <Typography variant="caption" sx={{ display: 'block', lineHeight: 1.1 }}>
-                      {label}
-                    </Typography>
-                    <Typography variant="caption" sx={{ display: 'block', color: 'text.disabled' }}>
-                      {cat}
-                    </Typography>
-                    <IconButton
-                      component="div"
-                      aria-label="핀 고정"
-                      size="small"
-                      onClick={(e) => togglePin(k, e)}
-                      sx={{ position: 'absolute', right: 6, top: 6 }}
+          <Stack sx={{ p: 2, backgroundColor: 'background.paper', overflowY: 'auto' }}>
+            {/* 그리드 */}
+            <Grid container spacing={1.25}>
+              {sorted.map((k) => {
+                const iconNode = getIcon(k);
+                const label = QUESTION_TYPE_MAP[k];
+                const cat = getCategory(k);
+                return (
+                  <Grid size={{ xs: 4 }} key={String(k)} component="div">
+                    <ActionButton
+                      color="black"
+                      onClick={() => handlePick(k)}
+                      sx={{
+                        width: '100%',
+                        borderRadius: 2,
+                        p: 1.25,
+                        display: 'block',
+                        bgcolor: 'action.hover',
+                        textAlign: 'center',
+                        position: 'relative',
+                        '&:active': { opacity: 0.9 },
+                      }}
                     >
-                      <PushPinIcon fontSize="small" />
-                    </IconButton>
-                  </ActionButton>
-                </Grid>
-              );
-            })}
-          </Grid>
-        </Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 0.5 }}>{iconNode}</Box>
+                      <Typography variant="caption" sx={{ display: 'block', lineHeight: 1.1 }}>
+                        {label}
+                      </Typography>
+                      <Typography variant="caption" sx={{ display: 'block', color: 'text.disabled' }}>
+                        {cat}
+                      </Typography>
+                      <IconButton
+                        component="div"
+                        aria-label="핀 고정"
+                        size="small"
+                        onClick={(e) => togglePin(k, e)}
+                        sx={{ position: 'absolute', right: 6, top: 6 }}
+                      >
+                        {getCurrentPinned(k) ? (
+                          <SvgIcon fontSize='small'>
+                            <RemovePin />
+                          </SvgIcon>
+                        ) : (
+                          <PushPinIcon fontSize="small" />
+                        )}
+                      </IconButton>
+                    </ActionButton>
+                  </Grid>
+                );
+              })}
+            </Grid>
+          </Stack>
+        </Stack>
       </SwipeableDrawer>
     </>
   );

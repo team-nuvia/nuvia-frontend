@@ -1,9 +1,8 @@
 'use client';
 
-import { Stack } from '@mui/material';
-import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import SidebarButton from '../atom/SidebarButton';
+import { Collapse, List, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
+import { useRouter } from 'next/navigation';
+import { Fragment, useState } from 'react';
 
 interface SidebarMenuListProps {
   menus: MenuModel[];
@@ -11,30 +10,45 @@ interface SidebarMenuListProps {
 }
 
 const SidebarMenuList: React.FC<SidebarMenuListProps> = ({ menus, isCollapsed = false }) => {
-  const [selected, setSelected] = useState<MenuModel | null>(null);
-  const pathname = usePathname();
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
 
-  useEffect(() => {
-    const selectedMenu = menus.filter((menu) => pathname.startsWith(menu.to));
-    setSelected(selectedMenu[selectedMenu.length - 1] ?? null);
-  }, [pathname, menus]);
-
-  const onClick = (menu: MenuModel) => {
-    setSelected(menu);
+  const handleClick = (to?: string) => {
+    if (to) router.push(to);
   };
+
   return (
-    <Stack px={2} gap={1}>
+    <List
+      sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}
+      component="nav"
+      aria-labelledby="nested-list-subheader"
+      // subheader={
+      //   <ListSubheader component="div" id="nested-list-subheader">
+      //     Nuvia Menu List
+      //   </ListSubheader>
+      // }
+    >
       {menus.map((menu) => (
-        <SidebarButton
-          key={menu.label}
-          menu={menu}
-          selected={selected}
-          onClick={onClick}
-          color={selected?.name === menu.name ? 'primary' : 'black'}
-          isCollapsed={isCollapsed}
-        />
+        <Fragment key={menu.label}>
+          <ListItemButton onClick={() => (menu.children?.length ? setOpen(!open) : handleClick(menu.to))} sx={{ p: isCollapsed ? 1 : undefined }}>
+            <ListItemIcon sx={isCollapsed ? { flex: 1, justifyContent: 'center' } : {}}>{menu.startIcon}</ListItemIcon>
+            {!isCollapsed && <ListItemText primary={menu.label} />}
+          </ListItemButton>
+          <Collapse in={open} timeout="auto" unmountOnExit>
+            {!isCollapsed &&
+              menu.children &&
+              menu.children.map((child) => (
+                <Fragment key={child.label}>
+                  <ListItemButton sx={{ pl: 4 }} onClick={() => (child.request ? child.request() : handleClick(child.to))}>
+                    <ListItemIcon>{child.startIcon}</ListItemIcon>
+                    <ListItemText primary={child.label} />
+                  </ListItemButton>
+                </Fragment>
+              ))}
+          </Collapse>
+        </Fragment>
       ))}
-    </Stack>
+    </List>
   );
 };
 

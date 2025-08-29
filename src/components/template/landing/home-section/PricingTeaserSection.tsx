@@ -7,7 +7,7 @@ import { Box, Stack, useTheme } from '@mui/material';
 export const PricingTeaserSection = () => {
   const theme = useTheme();
   return (
-    <Box sx={{ backgroundColor: theme.palette.grey[50], py: { xs: 12, md: 16 }, position: 'relative' }}>
+    <Box sx={{ backgroundColor: theme.palette.background.default, py: { xs: 12, md: 16 }, position: 'relative' }}>
       <BaseSection>
         <Stack spacing={4} alignItems="center" textAlign="center">
           <Showbox>

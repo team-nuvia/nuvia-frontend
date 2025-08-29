@@ -4,14 +4,14 @@ import { signup } from '@api/signup';
 import { BRAND_NAME } from '@common/variables';
 import CommonText from '@components/atom/CommonText';
 import ActionForm from '@components/molecular/ActionForm';
+import BrandHead from '@components/molecular/BrandHead';
 import { AuthenticationContext } from '@context/AuthenticationContext';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import LoadingContext from '@context/LodingContext';
-import { Box, Container, Stack, TextField } from '@mui/material';
+import { Container, Stack, TextField, useTheme } from '@mui/material';
 import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { useFormik } from 'formik';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useLayoutEffect } from 'react';
 import * as Yup from 'yup';
@@ -19,16 +19,20 @@ import * as Yup from 'yup';
 interface SignupProps {}
 
 const Signup: React.FC<SignupProps> = () => {
+  const theme = useTheme();
+  const router = useRouter();
   const { user } = useContext(AuthenticationContext);
   const { endLoading } = useContext(LoadingContext);
   const { addNotice } = useContext(GlobalSnackbarContext);
   const { mutate: signupMutation } = useMutation({
     mutationFn: signup,
     onSuccess: () => {
+      formik.setSubmitting(false);
       addNotice('회원가입에 성공했습니다.', 'success');
       router.push('/auth/login');
     },
     onError: (error) => {
+      formik.setSubmitting(false);
       const axiosError = error as AxiosError;
       const response = axiosError.response;
       const errorData = response?.data as ServerResponse<any>;
@@ -46,8 +50,6 @@ const Signup: React.FC<SignupProps> = () => {
       }
     },
   });
-
-  const router = useRouter();
 
   // 유효성 검사 스키마
   const validationSchema = Yup.object({
@@ -80,6 +82,7 @@ const Signup: React.FC<SignupProps> = () => {
         return;
       }
       const { passwordConfirm, ...data } = values;
+      formik.setSubmitting(true);
       signupMutation(data);
     },
   });
@@ -107,25 +110,21 @@ const Signup: React.FC<SignupProps> = () => {
   ];
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        backgroundColor: (theme) => theme.palette.grey[100],
-      }}
-    >
+    <Stack flex={1} py={5} direction="row" alignItems="center" justifyContent="center">
       <Container component="main" maxWidth="xs">
         <ActionForm
+          isLoading={formik.isSubmitting}
           title={
             <Stack gap={2} alignItems="center" justifyContent="center" textAlign="center">
               <Stack direction="row" alignItems="center" gap={1}>
-                <Image src="/nuvia_logo_only.png" alt="logo" width={60} height={60} />
-                <CommonText variant="h4" component="h1" thickness="bold">
-                  {BRAND_NAME}
-                </CommonText>
+                <BrandHead
+                  title={BRAND_NAME}
+                  width={50}
+                  height={50}
+                  primaryColor={theme.palette.primary.main}
+                  secondaryColor={theme.palette.secondary.main}
+                  noRoute
+                />
               </Stack>
               <CommonText variant="body2" color="textSecondary">
                 회원가입을 위해 아래 정보를 입력해주세요.
@@ -162,7 +161,7 @@ const Signup: React.FC<SignupProps> = () => {
           signupText="이미 계정이 있으신가요?"
         />
       </Container>
-    </Box>
+    </Stack>
   );
 };
 

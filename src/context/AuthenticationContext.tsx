@@ -36,6 +36,7 @@ const AuthenticationProvider = ({ children }: { children: React.ReactNode }) => 
   const [isVerified, setIsVerified] = useState(false);
   const pathname = usePathname();
   const { mutate: verifyToken } = useMutation({
+    mutationKey: ['verifyToken'],
     mutationFn: () => getVerify(),
     onSuccess: async (data) => {
       if (data.ok && data.payload?.verified) {
@@ -58,7 +59,6 @@ const AuthenticationProvider = ({ children }: { children: React.ReactNode }) => 
     mutationKey: ['logout'],
     onSuccess: () => {
       setUser(null);
-      localStorage.removeItem('access_token');
       verifyToken();
     },
     onError: (error) => {

@@ -1,9 +1,9 @@
 import AuthenticationProvider from '@context/AuthenticationContext';
 import { LoadingProvider } from '@context/LodingContext';
+import ReactQueryProvider from '@context/ReactQueryProvider';
 import { CssBaseline, Stack, ThemeProvider } from '@mui/material';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v13-appRouter';
 import type { Parameters } from '@storybook/nextjs-vite';
-import ReactQueryProvider from '@util/react-query-provider';
 import { lightTheme } from '@util/theme';
 import { PartialStoryFn } from 'storybook/internal/csf';
 

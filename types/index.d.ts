@@ -17,12 +17,12 @@ export declare global {
     questions: Omit<AllQuestion, 'answers' | 'isAnswered'>[];
   }
 
-  interface ServerResponse<T extends any> extends Payload<T> {
+  interface ServerResponse<T> extends Payload<T> {
     ok: true;
     httpStatus: number;
     name: string;
     message: string;
-    reason: string | null;
+    reason: string | string[] | null;
   }
 
   interface MenuOption {
@@ -31,14 +31,16 @@ export declare global {
     request?: () => Promise<void>;
   }
 
-  type PromiseServerResponse<T extends any> = Promise<ServerResponse<T> | void>;
+  type PromiseServerResponse<T> = Promise<ServerResponse<T> | void>;
 
   declare interface MenuModel {
     label: string;
     name: string;
-    to: string;
+    to?: string;
+    request?: () => void;
     startIcon?: React.ReactNode;
     endIcon?: React.ReactNode;
+    children?: MenuModel[];
   }
 
   declare module '*.svg' {
@@ -153,6 +155,13 @@ declare module '@mui/material/Button' {
 
   declare interface ButtonPropsSizeOverrides {
     xlarge: true;
+  }
+}
+
+declare module '@mui/material/CircularProgress' {
+  declare interface CircularProgressPropsColorOverrides {
+    black: true;
+    white: true;
   }
 }
 

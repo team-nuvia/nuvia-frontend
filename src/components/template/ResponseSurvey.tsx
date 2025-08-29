@@ -6,6 +6,7 @@ import CommonText from '@components/atom/CommonText';
 import SurveyProgress from '@components/molecular/SurveyProgress';
 import UserDescription from '@components/molecular/UserDescription';
 import ResponseCard from '@components/organism/ResponseCard';
+import { AuthenticationContext } from '@context/AuthenticationContext';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import { ArrowBack, ArrowForward, Category, CheckCircle, Person, ThumbUp } from '@mui/icons-material';
 import SaveIcon from '@mui/icons-material/Save';
@@ -24,7 +25,6 @@ import {
   Paper,
   Stack,
   Typography,
-  useMediaQuery,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { TimeIcon } from '@mui/x-date-pickers/icons';
@@ -80,7 +80,8 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { addNotice } = useContext(GlobalSnackbarContext);
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  // const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { user } = useContext(AuthenticationContext);
   const [direction, setDirection] = useState<'next' | 'previous'>('next');
   const getQuestionProcess = () => {
     const totalQuestions = questions.length;
@@ -309,7 +310,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
   const handleNext = () => {
     const currentValidate = validateCurrentQuestion();
     if (currentValidate) {
-      questions[currentStep].isAnswered = true;
+      if (questions[currentStep]) questions[currentStep].isAnswered = true;
       setQuestions(questions);
       setDirection('next');
       setTimeout(() => {
@@ -322,7 +323,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
     setDirection('previous');
     setTimeout(() => {
       setCurrentStep((prev) => Math.max(0, prev - 1));
-      if (!questions[currentStep - 1].isRequired) {
+      if (!questions[currentStep - 1]?.isRequired) {
         if (
           questions[currentStep - 1].questionAnswers?.values().some((item) => isEmpty(item)) ||
           questions[currentStep - 1].questionAnswers?.size === 0
@@ -462,11 +463,11 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
             }}
           >
             <UserDescription
-              name={survey.author.name ?? 'John Doe'}
+              name={(isDemo ? user?.name : survey.author.name) ?? 'John Doe'}
               content={
                 <Stack direction="row" alignItems="center" gap={1}>
                   <Stack direction="row" alignItems="center" gap={1}>
-                    <Chip size="small" icon={<Category />} label={survey.category.name} />
+                    <Chip size="small" icon={<Category />} label={survey.category.name || '카테고리'} />
                     {survey.expiresAt ? (
                       <Chip size="small" icon={<TimeIcon />} label={`${DateFormat.toKST('YYYY-MM-dd HH:mm', survey.expiresAt)} 까지`} />
                     ) : (
@@ -476,7 +477,8 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
                   </Stack>
                 </Stack>
               }
-              profileImage={survey.author.profileUrl}
+              profileImage={(isDemo ? user?.profileImageUrl : survey.author.profileUrl) ?? null}
+              isVisible
             />
             <CommonText variant="h4" thickness="bold" mb={2}>
               {survey.title}

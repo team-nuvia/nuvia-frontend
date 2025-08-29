@@ -31,14 +31,16 @@ interface LoginProps {
 const Login: React.FC<LoginProps> = ({ action, token, redirect }) => {
   const theme = useTheme();
   const { startLoading, endLoading } = useContext(LoadingContext);
-  const { fetchUser, user } = useContext(AuthenticationContext);
+  const { fetchUser, user, isLoading } = useContext(AuthenticationContext);
   const { addNotice } = useContext(GlobalSnackbarContext);
   const router = useRouter();
   const { mutate: loginMutation } = useMutation({
     mutationFn: (values: { email: string; password: string }) => login(values.email, values.password),
     mutationKey: ['login'],
     onSuccess: (response) => {
+      formik.setSubmitting(false);
       addNotice(response.message, 'success');
+      startLoading();
       fetchUser();
       if (action === 'invitation' && redirect && token) {
         router.push(`${redirect}?q=${token}`);
@@ -47,6 +49,7 @@ const Login: React.FC<LoginProps> = ({ action, token, redirect }) => {
       }
     },
     onError: (error) => {
+      formik.setSubmitting(false);
       const axiosError = error as AxiosError;
       const response = axiosError.response;
       const errorData = response?.data as ServerResponse<any>;
@@ -64,23 +67,27 @@ const Login: React.FC<LoginProps> = ({ action, token, redirect }) => {
     },
     validationSchema,
     onSubmit: (values) => {
+      formik.setSubmitting(true);
       loginMutation(values);
     },
   });
 
   useEffect(() => {
-    if (!isNil(user)) {
-      addNotice('이미 로그인한 상태입니다.', 'warning');
-      router.push('/');
-    } else {
-      endLoading();
+    if (!isLoading) {
+      if (!isNil(user)) {
+        // addNotice('이미 로그인한 상태입니다.', 'warning');
+        router.push('/');
+      } else {
+        endLoading();
+      }
     }
   }, []);
 
   return (
-    <Stack flex={1} direction="row" alignItems="center" justifyContent="center">
+    <Stack flex={1} py={5} direction="row" alignItems="center" justifyContent="center">
       <Container component="main" maxWidth="xs">
         <ActionForm
+          isLoading={formik.isSubmitting}
           title={
             <Stack gap={2} alignItems="center" justifyContent="center" textAlign="center">
               <Stack direction="row" alignItems="center" gap={1}>

@@ -136,7 +136,6 @@ export function useScroll(options: UseScrollOptions = {}): ScrollState {
       window.cancelAnimationFrame(requestNumber);
     };
     // targetRef.current가 바뀌면 다시 바인딩
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [targetRef, axis, percent]);
 
   return state;

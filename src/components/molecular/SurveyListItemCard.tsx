@@ -1,7 +1,6 @@
 import { deleteSurvey } from '@api/delete-survey';
 import { toggleSurveyVisibility } from '@api/toggle-survey-visibility';
 import { updateSurveyStatus } from '@api/update-survey-status';
-import { SURVEY_STATUS_LABELS } from '@common/variables';
 import { GlobalDialogContext } from '@context/GlobalDialogContext';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import {
@@ -21,19 +20,19 @@ import {
 import { Box, Button, Card, CardContent, Chip, Grid, IconButton, Menu, MenuItem, TextField, Typography, useTheme } from '@mui/material';
 import { SurveyStatus } from '@share/enums/survey-status';
 import { SearchSurvey } from '@share/interface/search-survey';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { DateFormat } from '@util/dateFormat';
 import { getSurveyStatusColor } from '@util/getSurveyStatusColor';
+import { LocalizationManager } from '@util/LocalizationManager';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useContext, useState } from 'react';
 
 interface SurveyListItemCardProps {
   survey: SearchSurvey;
-  refetchSurveyList: () => void;
-  refetchSurveyMetadata: () => void;
 }
-const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey, refetchSurveyList, refetchSurveyMetadata }) => {
+const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey }) => {
+  const queryClient = useQueryClient();
   const router = useRouter();
   const theme = useTheme();
   const { handleOpenDialog } = useContext(GlobalDialogContext);
@@ -45,7 +44,7 @@ const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey, refetch
     mutationFn: toggleSurveyVisibility,
     onSuccess: () => {
       addNotice(`설문이 ${survey.isPublic ? '비활성화' : '활성화'}되었습니다`, 'success');
-      refetchSurveyList();
+      queryClient.invalidateQueries({ queryKey: ['surveyList'] });
     },
     onError: () => {
       addNotice('설문 활성화에 실패했습니다', 'error');
@@ -56,8 +55,8 @@ const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey, refetch
     mutationFn: deleteSurvey,
     onSuccess: () => {
       addNotice('설문이 삭제되었습니다', 'success');
-      refetchSurveyList();
-      refetchSurveyMetadata();
+      queryClient.invalidateQueries({ queryKey: ['surveyList'] });
+      queryClient.invalidateQueries({ queryKey: ['surveyMetadata'] });
     },
     onError: () => {
       addNotice('설문 삭제에 실패했습니다', 'error');
@@ -68,8 +67,8 @@ const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey, refetch
     mutationFn: ({ status }: { status: SurveyStatus }) => updateSurveyStatus(survey.id, status),
     onSuccess: () => {
       addNotice('설문 상태가 변경되었습니다', 'success');
-      refetchSurveyList();
-      refetchSurveyMetadata();
+      queryClient.invalidateQueries({ queryKey: ['surveyList'] });
+      queryClient.invalidateQueries({ queryKey: ['surveyMetadata'] });
     },
     onError: () => {
       addNotice('설문 상태 변경에 실패했습니다', 'error');
@@ -77,16 +76,7 @@ const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey, refetch
   });
 
   const getStatusText = (status: SearchSurvey['status']) => {
-    switch (status) {
-      case SurveyStatus.Active:
-        return SURVEY_STATUS_LABELS[SurveyStatus.Active];
-      case SurveyStatus.Draft:
-        return SURVEY_STATUS_LABELS[SurveyStatus.Draft];
-      case SurveyStatus.Closed:
-        return SURVEY_STATUS_LABELS[SurveyStatus.Closed];
-      default:
-        return status;
-    }
+    return LocalizationManager.translate(status);
   };
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -376,15 +366,15 @@ const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey, refetch
         >
           <MenuItem selected={survey.status === SurveyStatus.Draft} onClick={() => mutateUpdateStatus({ status: SurveyStatus.Draft })}>
             <Edit sx={{ mr: 2 }} />
-            {SURVEY_STATUS_LABELS[SurveyStatus.Draft]}
+            {LocalizationManager.translate(SurveyStatus.Draft)}
           </MenuItem>
           <MenuItem selected={survey.status === SurveyStatus.Active} onClick={() => mutateUpdateStatus({ status: SurveyStatus.Active })}>
             <TrendingUp sx={{ mr: 2 }} />
-            {SURVEY_STATUS_LABELS[SurveyStatus.Active]}
+            {LocalizationManager.translate(SurveyStatus.Active)}
           </MenuItem>
           <MenuItem selected={survey.status === SurveyStatus.Closed} onClick={() => mutateUpdateStatus({ status: SurveyStatus.Closed })}>
             <Schedule sx={{ mr: 2 }} />
-            {SURVEY_STATUS_LABELS[SurveyStatus.Closed]}
+            {LocalizationManager.translate(SurveyStatus.Closed)}
           </MenuItem>
         </Menu>
         <MenuItem onClick={handleToggleVisibility}>

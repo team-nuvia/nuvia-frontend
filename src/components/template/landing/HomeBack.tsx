@@ -157,6 +157,7 @@ const GallerySection = () => (
       </Stack>
       {/* Placeholder using existing Preview organism */}
       <Preview
+        isBind
         isDemo
         handleClose={() => {}}
         survey={{

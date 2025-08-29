@@ -37,7 +37,7 @@ const SidebarButton: React.FC<SidebarButtonProps & ButtonOwnProps> = ({ selected
         // endIcon={menu.endIcon}
         onClick={() => {
           onClick(menu);
-          router.push(menu.to);
+          if (menu.to) router.push(menu.to);
         }}
         {...props}
       >

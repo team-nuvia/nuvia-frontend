@@ -7,7 +7,7 @@ import { Box, Card, Grid, Stack, Typography, useTheme } from '@mui/material';
 export const AnalyticsPreviewSection = () => {
   const theme = useTheme();
   return (
-    <Box sx={{ backgroundColor: theme.palette.grey[50], py: { xs: 12, md: 16 }, position: 'relative' }}>
+    <Box sx={{ backgroundColor: theme.palette.background.paper, py: { xs: 12, md: 16 }, position: 'relative' }}>
       <BaseSection>
         <Stack spacing={4} alignItems="center" textAlign="center" mb={6}>
           <Showbox>

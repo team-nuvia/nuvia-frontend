@@ -9,8 +9,9 @@ interface ActionFormProps {
   slots: React.ReactNode;
   signupPath?: string;
   signupText?: string;
+  isLoading?: boolean;
 }
-const ActionForm: React.FC<ActionFormProps> = ({ title, onSubmit, submitText, slots, signupPath, signupText }) => {
+const ActionForm: React.FC<ActionFormProps> = ({ title, onSubmit, submitText, slots, signupPath, signupText, isLoading }) => {
   const router = useRouter();
   return (
     <Stack
@@ -23,13 +24,14 @@ const ActionForm: React.FC<ActionFormProps> = ({ title, onSubmit, submitText, sl
         borderColor: 'divider',
         borderStyle: 'solid',
         borderRadius: 4,
+        backgroundColor: 'background.paper',
       }}
       onSubmit={onSubmit}
     >
       {title}
       <Stack gap={2}>
         {slots}
-        <ActionButton size="xlarge" variant="contained" fullWidth type="submit">
+        <ActionButton size="xlarge" variant="contained" fullWidth type="submit" isLoading={isLoading}>
           {submitText}
         </ActionButton>
         {signupPath && (
