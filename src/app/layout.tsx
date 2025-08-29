@@ -1,5 +1,5 @@
 import AuthenticationProvider from '@/context/AuthenticationContext';
-import { LoadingProvider } from '@/context/LodingContext';
+import { LoadingProvider } from '@/context/LoadingContext';
 import '@/styles/global.css';
 import { BRAND_NAME } from '@common/variables';
 import Footer from '@components/organism/Footer';

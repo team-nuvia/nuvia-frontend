@@ -1,6 +1,5 @@
 'use client';
 
-import LoadingContext from '@/context/LodingContext';
 import { getSurveyList } from '@api/get-survey-list';
 import { getSurveyMetadata } from '@api/get-survey-metadata';
 import ActionButton from '@components/atom/ActionButton';
@@ -8,6 +7,7 @@ import SurveyListItemCard from '@components/molecular/SurveyListItemCard';
 import SurveyBinDialog from '@components/organism/SurveyBinDialog';
 import { AuthenticationContext } from '@context/AuthenticationContext';
 import { GlobalDialogContext } from '@context/GlobalDialogContext';
+import { useLoading } from '@hooks/useLoading';
 import { Add, Delete, Search } from '@mui/icons-material';
 import {
   Box,
@@ -37,14 +37,14 @@ import { LocalizationManager } from '@util/LocalizationManager';
 import { roleAtLeast } from '@util/roleAtLeast';
 import { AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { useContext, useEffect, useLayoutEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 
 export default function SurveyList() {
+  useLoading({ forUser: true, unverifiedRoute: '/auth/login' });
   const queryClient = useQueryClient();
   const router = useRouter();
   const { user } = useContext(AuthenticationContext);
   const [surveys, setSurveys] = useState<SearchSurvey[]>([]);
-  const { endLoading } = useContext(LoadingContext);
   const { handleOpenDialog } = useContext(GlobalDialogContext);
   const [selectedTab, setSelectedTab] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
@@ -64,10 +64,9 @@ export default function SurveyList() {
     queryFn: () => getSurveyMetadata(MetadataStatusType.SurveyList),
   });
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (data?.payload && !isLoading) {
       setSurveys(data.payload.data);
-      endLoading();
     }
   }, [data, isLoading]);
 

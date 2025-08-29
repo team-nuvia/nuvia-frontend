@@ -7,7 +7,7 @@ import { startAnswer } from '@api/start-answer';
 import { validateFirstSurveyAnswer } from '@api/validate-first-answer';
 import ActionButton from '@components/atom/ActionButton';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
-import LoadingContext from '@context/LodingContext';
+import LoadingContext from '@context/LoadingContext';
 import { PlayArrow, QuestionMark, Timer } from '@mui/icons-material';
 import { Box, Card, Chip, Container, Typography, useTheme } from '@mui/material';
 import { QuestionType } from '@share/enums/question-type';
@@ -95,7 +95,6 @@ export default function SurveyDetail({ survey }: { survey: GetSurveyDetailRespon
   });
 
   useLayoutEffect(() => {
-    console.log('🚀 ~ SurveyDetail ~ survey:', survey);
     validateFirstAnswerMutation();
   }, []);
 

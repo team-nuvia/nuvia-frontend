@@ -13,7 +13,7 @@ import Preview from '@components/organism/Preview';
 import QuestionCard from '@components/organism/QuestionCard';
 import { AuthenticationContext } from '@context/AuthenticationContext';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
-import LoadingContext from '@context/LodingContext';
+import { useLoading } from '@hooks/useLoading';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import SaveIcon from '@mui/icons-material/Save';
 import {
@@ -49,7 +49,7 @@ import { AxiosError } from 'axios';
 import dayjs from 'dayjs';
 import { useFormik } from 'formik';
 import { useRouter } from 'next/navigation';
-import { useContext, useEffect, useLayoutEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import * as Yup from 'yup';
 
 // --- VALIDATION SCHEMA ---
@@ -96,11 +96,11 @@ const initialValues: QuestionInitialValues = {
 // --- COMPONENT ---
 const Survey: React.FC<{ id?: string }> = ({ id }) => {
   /* hooks */
-  const { endLoading } = useContext(LoadingContext);
+  useLoading({ forUser: true, verifiedRoute: '/survey', unverifiedRoute: '/auth/login', ifRole: [UserRole.Viewer, '/survey'] });
   const { addNotice } = useContext(GlobalSnackbarContext);
   const router = useRouter();
   const theme = useTheme();
-  const { isLoading: isUserLoading, isVerified, user } = useContext(AuthenticationContext);
+  const { isLoading: isUserLoading, user } = useContext(AuthenticationContext);
 
   /* state */
   const SUBMIT_BUTTON_TEXT = id ? '설문 수정' : '설문 저장';
@@ -130,8 +130,8 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
     },
   });
 
-  useLayoutEffect(() => {
-    if (isVerified && surveyData?.payload) {
+  useEffect(() => {
+    if (surveyData?.payload) {
       const payload = surveyData.payload;
       formik.setValues({
         title: payload.title,
@@ -160,19 +160,8 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
           isAnswered: false,
         })),
       });
-      endLoading();
-    } else {
-      endLoading();
     }
   }, [surveyData]);
-
-  useEffect(() => {
-    if (!isUserLoading) {
-      if (isVerified && user && user.role === UserRole.Viewer) {
-        router.push('/survey');
-      }
-    }
-  }, [isUserLoading, isVerified, user]);
 
   useEffect(() => {
     if (formik.isSubmitting && Object.keys(formik.errors).length > 0) {

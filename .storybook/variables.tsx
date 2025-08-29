@@ -1,5 +1,5 @@
 import AuthenticationProvider from '@context/AuthenticationContext';
-import { LoadingProvider } from '@context/LodingContext';
+import { LoadingProvider } from '@context/LoadingContext';
 import ReactQueryProvider from '@context/ReactQueryProvider';
 import { CssBaseline, Stack, ThemeProvider } from '@mui/material';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v13-appRouter';

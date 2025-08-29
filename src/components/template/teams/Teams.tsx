@@ -9,7 +9,7 @@ import InviteDialog from '@components/template/teams/InviteDialog';
 import { AuthenticationContext } from '@context/AuthenticationContext';
 import { GlobalDialogContext } from '@context/GlobalDialogContext';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
-import LoadingContext from '@context/LodingContext';
+import { useLoading } from '@hooks/useLoading';
 import { Add, Group, Settings } from '@mui/icons-material';
 import CancelIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
@@ -67,12 +67,12 @@ const validationSchema = Yup.object().shape({
 });
 
 const Teams = () => {
+  useLoading({ forUser: true, unverifiedRoute: '/auth/login' });
   const { user, isLoading: isUserLoading } = useContext(AuthenticationContext);
   const router = useRouter();
   const { addNotice } = useContext(GlobalSnackbarContext);
   const { handleOpenDialog } = useContext(GlobalDialogContext);
   const [tabValue, setTabValue] = useState(0);
-  const { endLoading } = useContext(LoadingContext);
   const { data: organizationData, isLoading: isOrganizationLoading } = useQuery({
     queryKey: ['user-organizations'],
     queryFn: getUserOrganizations,
@@ -170,16 +170,8 @@ const Teams = () => {
   const isViewer = user?.role === UserRole.Viewer;
 
   useEffect(() => {
-    if (!isUserLoading) {
-      if (user) {
-        if (!isOrganization) {
-          router.push('/');
-        }
-        endLoading();
-      } else {
-        // addNotice('로그인 후 이용해주세요.', 'error');
-        router.push('/auth/login');
-      }
+    if (!isOrganization) {
+      router.push('/');
     }
   }, [currentOrganization]);
 

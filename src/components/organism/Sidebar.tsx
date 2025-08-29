@@ -91,10 +91,6 @@ const Sidebar: React.FC<SidebarProps> = () => {
     setIsCollapsed(!isCollapsed);
   };
 
-  if (!isVerified) {
-    return <></>;
-  }
-
   return (
     <Stack
       width="100%"

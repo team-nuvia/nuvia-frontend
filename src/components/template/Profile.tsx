@@ -2,7 +2,7 @@
 
 import ActionButton from '@components/atom/ActionButton';
 import { AuthenticationContext } from '@context/AuthenticationContext';
-import LoadingContext from '@context/LodingContext';
+import { useLoading } from '@hooks/useLoading';
 import { AccountCircle, CalendarToday, Edit, Email, Person, Settings, VerifiedUser } from '@mui/icons-material';
 import {
   Avatar,
@@ -24,9 +24,8 @@ import {
 } from '@mui/material';
 import { UserRole } from '@share/enums/user-role';
 import { DateFormat } from '@util/dateFormat';
-import { isNil } from '@util/isNil';
 import { useRouter } from 'next/navigation';
-import { useContext, useLayoutEffect, useState } from 'react';
+import { useContext, useState } from 'react';
 
 interface ProfileProps {}
 
@@ -54,18 +53,11 @@ function a11yProps(index: number) {
 }
 
 const Profile: React.FC<ProfileProps> = () => {
-  const { user } = useContext(AuthenticationContext);
-  const { endLoading } = useContext(LoadingContext);
-  const theme = useTheme();
-  const [tabValue, setTabValue] = useState(0);
+  useLoading({ forUser: true, unverifiedRoute: '/auth/login' });
   const router = useRouter();
-
-  useLayoutEffect(() => {
-    if (isNil(user)) {
-      router.push('/auth/login');
-    }
-    endLoading();
-  }, [user, router]);
+  const theme = useTheme();
+  const { user } = useContext(AuthenticationContext);
+  const [tabValue, setTabValue] = useState(0);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);

@@ -1,8 +1,7 @@
 'use client';
 
-import LoadingContext from '@context/LodingContext';
-import { Container, ContainerProps, Stack } from '@mui/material';
-import { useContext, useLayoutEffect } from 'react';
+import { useLoading } from '@hooks/useLoading';
+import { Stack } from '@mui/material';
 import { AnalyticsPreviewSection } from './home-section/AnalyticsPreviewSection';
 import { FAQSection } from './home-section/FAQSection';
 import FeaturesSection from './home-section/FeaturesSection';
@@ -17,24 +16,8 @@ import { TestimonialsSection } from './home-section/TestimonialsSection';
 import { TrustSection } from './home-section/TrustSection';
 
 interface HomeProps {}
-
-const SectionContainer: React.FC<
-  {
-    children: React.ReactNode;
-  } & ContainerProps
-> = ({ children, ...props }) => (
-  <Container component="section" {...props}>
-    {children}
-  </Container>
-);
-
-// ------------------ Page ------------------
 const Home: React.FC<HomeProps> = () => {
-  const { endLoading } = useContext(LoadingContext);
-  useLayoutEffect(() => {
-    endLoading();
-  }, [endLoading]);
-
+  useLoading();
   return (
     <Stack flex={1} spacing={0} sx={{ backgroundColor: 'background.default' }}>
       <HeroSection />

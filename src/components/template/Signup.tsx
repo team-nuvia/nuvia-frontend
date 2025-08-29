@@ -7,22 +7,22 @@ import ActionForm from '@components/molecular/ActionForm';
 import BrandHead from '@components/molecular/BrandHead';
 import { AuthenticationContext } from '@context/AuthenticationContext';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
-import LoadingContext from '@context/LodingContext';
+import { useLoading } from '@hooks/useLoading';
 import { Container, Stack, TextField, useTheme } from '@mui/material';
 import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { useFormik } from 'formik';
 import { useRouter } from 'next/navigation';
-import { useContext, useEffect, useLayoutEffect } from 'react';
+import { useContext, useLayoutEffect } from 'react';
 import * as Yup from 'yup';
 
 interface SignupProps {}
 
 const Signup: React.FC<SignupProps> = () => {
+  useLoading({ forUser: true, verifiedRoute: '/auth/login' });
   const theme = useTheme();
   const router = useRouter();
   const { user } = useContext(AuthenticationContext);
-  const { endLoading } = useContext(LoadingContext);
   const { addNotice } = useContext(GlobalSnackbarContext);
   const { mutate: signupMutation } = useMutation({
     mutationFn: signup,
@@ -91,14 +91,13 @@ const Signup: React.FC<SignupProps> = () => {
     if (formik.touched.password && formik.touched.passwordConfirm && formik.values.password !== formik.values.passwordConfirm) {
       formik.setFieldError('passwordConfirm', '비밀번호가 일치하지 않습니다.');
     }
-    endLoading();
-  }, [formik.touched.password, formik.touched.passwordConfirm, formik.values.password, formik.values.passwordConfirm, endLoading]);
+  }, [formik.touched.password, formik.touched.passwordConfirm, formik.values.password, formik.values.passwordConfirm]);
 
-  useEffect(() => {
-    if (user) {
-      router.push('/');
-    }
-  }, [user]);
+  // useEffect(() => {
+  //   if (user) {
+  //     router.push('/');
+  //   }
+  // }, [user]);
 
   // 필드 라벨과 타입 매핑
   const fieldConfig = [

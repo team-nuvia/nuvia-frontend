@@ -3,7 +3,7 @@
 import { GetMeResponse } from '@/models/GetMeResponse';
 import { Box, LinearProgress, Stack, Typography } from '@mui/material';
 import { usePathname } from 'next/navigation';
-import { createContext, useCallback, useContext, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { AuthenticationContext } from './AuthenticationContext';
 
 export const LoadingContext = createContext({
@@ -33,6 +33,17 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({ children }) =>
   const pathname = usePathname();
   const [loading, setLoading] = useState(true);
   const [loadingText, setLoadingText] = useState(routerMap(pathname, user));
+
+  useEffect(() => {
+    const wrap = document.getElementById('wrap');
+    if (wrap) {
+      if (loading) {
+        wrap.style.overflow = 'hidden';
+      } else {
+        wrap.style.overflow = 'auto';
+      }
+    }
+  }, [loading]);
 
   const startLoading = useCallback(
     (loadingText?: string) => {
