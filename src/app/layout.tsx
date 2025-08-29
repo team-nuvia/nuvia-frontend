@@ -11,19 +11,19 @@ import { GlobalSnackbarSettingProvider } from '@context/GlobalSnackbarSettingPro
 import ReactQueryProvider from '@context/ReactQueryProvider';
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
-import { lightTheme } from '@util/theme';
+import { darkTheme } from '@util/theme';
 import type { Metadata, Viewport } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+// import { Geist, Geist_Mono } from 'next/font/google';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-});
+// const geistSans = Geist({
+//   variable: '--font-geist-sans',
+//   subsets: ['latin'],
+// });
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
-});
+// const geistMono = Geist_Mono({
+//   variable: '--font-geist-mono',
+//   subsets: ['latin'],
+// });
 
 export const metadata: Metadata = {
   title: `${BRAND_NAME} - 빠르고 간편한 설문 플랫폼`,
@@ -56,11 +56,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body /* className={`${geistSans.variable} ${geistMono.variable}`} */>
         <ReactQueryProvider>
           <AuthenticationProvider>
             <AppRouterCacheProvider>
-              <ThemeProvider theme={lightTheme}>
+              <ThemeProvider theme={darkTheme}>
                 <CssBaseline />
                 <GlobalSnackbarSettingProvider>
                   <GlobalSnackbar>
