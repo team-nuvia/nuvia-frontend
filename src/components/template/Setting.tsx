@@ -1,34 +1,14 @@
 'use client';
 
-import { getUserSettings } from '@api/get-user-settings';
 import CommonText from '@components/atom/CommonText';
 import SettingItem from '@components/molecular/SettingItem';
-import { AuthenticationContext } from '@context/AuthenticationContext';
-import LoadingContext from '@context/LodingContext';
+import { useLoading } from '@hooks/useLoading';
 import { Stack } from '@mui/material';
-import { isNil } from '@util/isNil';
-import { useRouter } from 'next/navigation';
-import { useContext, useLayoutEffect } from 'react';
 
 interface SettingProps {}
 const Setting: React.FC<SettingProps> = () => {
-  const { user } = useContext(AuthenticationContext);
-  const { endLoading } = useContext(LoadingContext);
-  const router = useRouter();
-
-  useLayoutEffect(() => {
-    getUserSettings()
-      .then(() => {
-        if (isNil(user)) {
-          router.push('/auth/login');
-        }
-        endLoading();
-      })
-      .catch(() => {
-        endLoading();
-      });
-  }, [user, router]);
-
+  useLoading({ forUser: true, unverifiedRoute: '/auth/login' });
+  // TODO: 설정 데이터 가져오기
   return (
     <Stack flex={1} gap={3} p={5}>
       <CommonText variant="h4">설정</CommonText>

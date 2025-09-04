@@ -7,8 +7,8 @@ import CommonText from '@components/atom/CommonText';
 import Loading from '@components/atom/Loading';
 import WelcomeDashboard from '@components/organism/WelcomeDashboard';
 import { AuthenticationContext } from '@context/AuthenticationContext';
-import LoadingContext from '@context/LodingContext';
 import { useBlackRouter } from '@hooks/useBlackRouter';
+import { useLoading } from '@hooks/useLoading';
 import { BarChart, CheckCircleOutline, DonutLarge, PeopleAlt } from '@mui/icons-material';
 import { Box, Card, Container, Grid, Paper, Stack, Typography } from '@mui/material';
 import { DataGrid, GridColDef, GridRowsProp } from '@mui/x-data-grid';
@@ -16,37 +16,25 @@ import { MetadataStatusType } from '@share/enums/metadata-status-type';
 import { SurveyStatus } from '@share/enums/survey-status';
 import { useQuery } from '@tanstack/react-query';
 import { LocalizationManager } from '@util/LocalizationManager';
-import { useContext, useLayoutEffect, useMemo } from 'react';
+import { useContext, useMemo } from 'react';
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 const Dashboard = () => {
+  useLoading({ forUser: true, unverifiedRoute: '/' });
   const router = useBlackRouter();
-  const { isVerified, isLoading } = useContext(AuthenticationContext);
-  const { endLoading } = useContext(LoadingContext);
-  const { data: metadataData, isLoading: isMetadataLoading } = useQuery({
+  const { isLoading } = useContext(AuthenticationContext);
+  const { data: metadataData } = useQuery({
     queryKey: ['dashboard-metadata'],
     queryFn: () => getSurveyMetadata(MetadataStatusType.Dashboard),
   });
-  const { data: recentSurveysData, isLoading: isRecentSurveysLoading } = useQuery({
+  const { data: recentSurveysData } = useQuery({
     queryKey: ['dashboard-recent-surveys'],
     queryFn: getDashboardRecentSurveysServer,
   });
-  const { data: last7Days, isLoading: isDailyResponseLoading } = useQuery({
+  const { data: last7Days } = useQuery({
     queryKey: ['daily-response-count'],
     queryFn: getLast7DaysResponseCount,
   });
-
-  useLayoutEffect(() => {
-    if (!isLoading && isVerified) {
-      if (!isRecentSurveysLoading && !isMetadataLoading && !isDailyResponseLoading) {
-        if (metadataData?.payload && recentSurveysData?.payload) {
-          endLoading();
-        } else {
-          router.push('/');
-        }
-      }
-    }
-  }, [metadataData, recentSurveysData, isVerified, endLoading, router, isLoading, isRecentSurveysLoading, isMetadataLoading, isDailyResponseLoading]);
 
   // 7일간 응답 추이 데이터 생성
   const responseTrendData = useMemo(() => {

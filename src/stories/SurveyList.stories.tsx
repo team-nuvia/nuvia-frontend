@@ -4,7 +4,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 import { parameters } from '.storybook/variables';
 import AuthenticationProvider from '@/context/AuthenticationContext';
-import { LoadingProvider } from '@/context/LodingContext';
+import { LoadingProvider } from '@/context/LoadingContext';
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v13-appRouter';
 import ReactQueryProvider from '@util/react-query-provider';

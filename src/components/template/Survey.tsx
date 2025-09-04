@@ -13,7 +13,7 @@ import Preview from '@components/organism/Preview';
 import QuestionCard from '@components/organism/QuestionCard';
 import { AuthenticationContext } from '@context/AuthenticationContext';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
-import LoadingContext from '@context/LodingContext';
+import { useLoading } from '@hooks/useLoading';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import SaveIcon from '@mui/icons-material/Save';
 import {
@@ -49,7 +49,7 @@ import { AxiosError } from 'axios';
 import dayjs from 'dayjs';
 import { useFormik } from 'formik';
 import { useRouter } from 'next/navigation';
-import { useContext, useEffect, useLayoutEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import * as Yup from 'yup';
 
 // --- VALIDATION SCHEMA ---
@@ -96,11 +96,11 @@ const initialValues: QuestionInitialValues = {
 // --- COMPONENT ---
 const Survey: React.FC<{ id?: string }> = ({ id }) => {
   /* hooks */
-  const { endLoading } = useContext(LoadingContext);
+  useLoading({ forUser: true, verifiedRoute: '/survey', unverifiedRoute: '/auth/login', ifRole: [UserRole.Viewer, '/survey'] });
   const { addNotice } = useContext(GlobalSnackbarContext);
   const router = useRouter();
   const theme = useTheme();
-  const { isLoading: isUserLoading, isVerified, user } = useContext(AuthenticationContext);
+  const { isLoading: isUserLoading, user } = useContext(AuthenticationContext);
 
   /* state */
   const SUBMIT_BUTTON_TEXT = id ? '설문 수정' : '설문 저장';
@@ -130,8 +130,8 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
     },
   });
 
-  useLayoutEffect(() => {
-    if (isVerified && surveyData?.payload) {
+  useEffect(() => {
+    if (surveyData?.payload) {
       const payload = surveyData.payload;
       formik.setValues({
         title: payload.title,
@@ -160,19 +160,8 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
           isAnswered: false,
         })),
       });
-      endLoading();
-    } else {
-      endLoading();
     }
   }, [surveyData]);
-
-  useEffect(() => {
-    if (!isUserLoading) {
-      if (isVerified && user && user.role === UserRole.Viewer) {
-        router.push('/survey');
-      }
-    }
-  }, [isUserLoading, isVerified, user]);
 
   useEffect(() => {
     if (formik.isSubmitting && Object.keys(formik.errors).length > 0) {
@@ -342,82 +331,290 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
   return (
     <Container maxWidth="lg">
       <Box component="form" noValidate autoComplete="off" onSubmit={formik.handleSubmit}>
-        <Grid container spacing={2}>
+        <Grid container spacing={3}>
           <Grid size={{ xs: 12, md: 12 }}>
-            <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
-              <Typography variant="h4" gutterBottom>
-                설문 제작
-              </Typography>
-              <Box>
-                <TextField
-                  fullWidth
-                  label="설문 제목"
-                  margin="dense"
-                  required
-                  {...formik.getFieldProps('title')}
-                  error={formik.touched.title && Boolean(formik.errors.title)}
-                  helperText={formik.touched.title && formik.errors.title}
-                />
-
-                <TextField
-                  fullWidth
-                  label="설문 설명 (선택)"
-                  margin="dense"
-                  multiline
-                  rows={3}
-                  {...formik.getFieldProps('description')}
-                  error={formik.touched.description && Boolean(formik.errors.description)}
-                  helperText={formik.touched.description && formik.errors.description}
-                />
-
-                <DateTimePicker
-                  label="만료일 (선택)"
-                  value={formik.values.expiresAt ? dayjs(formik.values.expiresAt) : null}
-                  onChange={(value) => formik.setFieldValue('expiresAt', value?.toISOString() || null)}
-                  format="YYYY-MM-DD HH:mm"
-                  slotProps={{
-                    textField: {
-                      fullWidth: true,
-                      margin: 'dense',
-                      error: formik.touched.expiresAt && Boolean(formik.errors.expiresAt),
-                      helperText: formik.touched.expiresAt && formik.errors.expiresAt,
-                    },
+            <Paper
+              elevation={0}
+              sx={{
+                p: 6,
+                mt: 4,
+                borderRadius: 3,
+                border: '1px solid',
+                borderColor: 'divider',
+                background: (theme) => `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.background.paper} 100%)`,
+              }}
+            >
+              <Box sx={{ mb: 5 }}>
+                <Typography
+                  variant="h3"
+                  sx={{
+                    fontWeight: 600,
+                    color: 'text.primary',
+                    mb: 1,
+                    fontSize: { xs: '1.75rem', md: '2.25rem' },
                   }}
-                />
-
-                <FormControlLabel
-                  control={<Switch checked={formik.values.isPublic} onChange={formik.handleChange} name="isPublic" />}
-                  label="응답 공개 여부"
-                />
-
-                <RadioGroup
-                  row
-                  aria-labelledby="status-radio-buttons-group-label"
-                  name="status"
-                  value={formik.values.status}
-                  onChange={formik.handleChange}
                 >
-                  <FormControlLabel value={SurveyStatus.Draft} control={<Radio />} label={LocalizationManager.translate(SurveyStatus.Draft)} />
-                  <FormControlLabel value={SurveyStatus.Active} control={<Radio />} label={LocalizationManager.translate(SurveyStatus.Active)} />
-                  <FormControlLabel value={SurveyStatus.Closed} control={<Radio />} label={LocalizationManager.translate(SurveyStatus.Closed)} />
-                </RadioGroup>
-
-                <Select
-                  fullWidth
-                  label="카테고리 (선택)"
-                  margin="dense"
-                  {...formik.getFieldProps('categoryId')}
-                  defaultValue=""
-                  error={formik.touched.categoryId && Boolean(formik.errors.categoryId)}
+                  설문 제작
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    color: 'text.secondary',
+                    fontWeight: 400,
+                  }}
                 >
-                  <MenuItem value="">선택해주세요</MenuItem>
-                  {categories?.payload?.map((category) => (
-                    <MenuItem key={category.id.toString()} value={category.id.toString()}>
-                      {category.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-                {formik.touched.categoryId && formik.errors.categoryId && <FormHelperText error>{formik.errors.categoryId}</FormHelperText>}
+                  새로운 설문을 만들어보세요
+                </Typography>
+              </Box>
+
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {/* 기본 정보 섹션 */}
+                <Box>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      mb: 3,
+                      fontWeight: 600,
+                      color: 'text.primary',
+                      fontSize: '1.125rem',
+                    }}
+                  >
+                    기본 정보
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    <TextField
+                      fullWidth
+                      label="설문 제목"
+                      required
+                      {...formik.getFieldProps('title')}
+                      error={formik.touched.title && Boolean(formik.errors.title)}
+                      helperText={formik.touched.title && formik.errors.title}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: 2,
+                          backgroundColor: 'background.paper',
+                          '&:hover .MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'primary.main',
+                          },
+                        },
+                        '& .MuiInputLabel-root': {
+                          fontWeight: 500,
+                        },
+                      }}
+                    />
+
+                    <TextField
+                      fullWidth
+                      label="설문 설명 (선택)"
+                      multiline
+                      rows={4}
+                      {...formik.getFieldProps('description')}
+                      error={formik.touched.description && Boolean(formik.errors.description)}
+                      helperText={formik.touched.description && formik.errors.description}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: 2,
+                          backgroundColor: 'background.paper',
+                          '&:hover .MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'primary.main',
+                          },
+                        },
+                        '& .MuiInputLabel-root': {
+                          fontWeight: 500,
+                        },
+                      }}
+                    />
+                  </Box>
+                </Box>
+
+                {/* 설정 섹션 */}
+                <Box>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      mb: 3,
+                      fontWeight: 600,
+                      color: 'text.primary',
+                      fontSize: '1.125rem',
+                    }}
+                  >
+                    설정
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    <DateTimePicker
+                      label="만료일 (선택)"
+                      value={formik.values.expiresAt ? dayjs(formik.values.expiresAt) : null}
+                      onChange={(value) => formik.setFieldValue('expiresAt', value?.toISOString() || null)}
+                      format="YYYY-MM-DD HH:mm"
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          error: formik.touched.expiresAt && Boolean(formik.errors.expiresAt),
+                          helperText: formik.touched.expiresAt && formik.errors.expiresAt,
+                          sx: {
+                            '& .MuiOutlinedInput-root': {
+                              borderRadius: 2,
+                              backgroundColor: 'background.paper',
+                              '&:hover .MuiOutlinedInput-notchedOutline': {
+                                borderColor: 'primary.main',
+                              },
+                            },
+                            '& .MuiInputLabel-root': {
+                              fontWeight: 500,
+                            },
+                          },
+                        },
+                      }}
+                    />
+
+                    <Box
+                      sx={{
+                        p: 3,
+                        borderRadius: 2,
+                        backgroundColor: 'background.paper',
+                        border: '1px solid',
+                        borderColor: 'divider',
+                      }}
+                    >
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={formik.values.isPublic}
+                            onChange={formik.handleChange}
+                            name="isPublic"
+                            sx={{
+                              '& .MuiSwitch-switchBase.Mui-checked': {
+                                color: 'primary.main',
+                              },
+                              '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                backgroundColor: 'primary.main',
+                              },
+                            }}
+                          />
+                        }
+                        label={
+                          <Box>
+                            <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                              응답 공개 여부
+                            </Typography>
+                            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                              다른 사용자들이 응답 결과를 볼 수 있습니다
+                            </Typography>
+                          </Box>
+                        }
+                      />
+                    </Box>
+
+                    <Box>
+                      <Typography variant="body1" sx={{ mb: 2, fontWeight: 500 }}>
+                        설문 상태
+                      </Typography>
+                      <RadioGroup
+                        row
+                        aria-labelledby="status-radio-buttons-group-label"
+                        name="status"
+                        value={formik.values.status}
+                        onChange={formik.handleChange}
+                        sx={{ gap: 2 }}
+                      >
+                        <FormControlLabel
+                          value={SurveyStatus.Draft}
+                          control={
+                            <Radio
+                              sx={{
+                                '&.Mui-checked': {
+                                  color: 'warning.main',
+                                },
+                              }}
+                            />
+                          }
+                          label={
+                            <Box sx={{ ml: 1 }}>
+                              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                {LocalizationManager.translate(SurveyStatus.Draft)}
+                              </Typography>
+                            </Box>
+                          }
+                        />
+                        <FormControlLabel
+                          value={SurveyStatus.Active}
+                          control={
+                            <Radio
+                              sx={{
+                                '&.Mui-checked': {
+                                  color: 'success.main',
+                                },
+                              }}
+                            />
+                          }
+                          label={
+                            <Box sx={{ ml: 1 }}>
+                              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                {LocalizationManager.translate(SurveyStatus.Active)}
+                              </Typography>
+                            </Box>
+                          }
+                        />
+                        <FormControlLabel
+                          value={SurveyStatus.Closed}
+                          control={
+                            <Radio
+                              sx={{
+                                '&.Mui-checked': {
+                                  color: 'error.main',
+                                },
+                              }}
+                            />
+                          }
+                          label={
+                            <Box sx={{ ml: 1 }}>
+                              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                {LocalizationManager.translate(SurveyStatus.Closed)}
+                              </Typography>
+                            </Box>
+                          }
+                        />
+                      </RadioGroup>
+                    </Box>
+
+                    <Box>
+                      <Typography variant="body1" sx={{ mb: 2, fontWeight: 500 }}>
+                        카테고리 (선택)
+                      </Typography>
+                      <Select
+                        fullWidth
+                        {...formik.getFieldProps('categoryId')}
+                        defaultValue=""
+                        error={formik.touched.categoryId && Boolean(formik.errors.categoryId)}
+                        displayEmpty
+                        sx={{
+                          borderRadius: 2,
+                          backgroundColor: 'background.paper',
+                          '&:hover .MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'primary.main',
+                          },
+                          '& .MuiSelect-select': {
+                            fontWeight: 400,
+                          },
+                        }}
+                      >
+                        <MenuItem value="" sx={{ color: 'text.secondary' }}>
+                          카테고리를 선택해주세요
+                        </MenuItem>
+                        {categories?.payload?.map((category) => (
+                          <MenuItem key={category.id.toString()} value={category.id.toString()} sx={{ fontWeight: 400 }}>
+                            {category.name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                      {formik.touched.categoryId && formik.errors.categoryId && (
+                        <FormHelperText error sx={{ ml: 0, mt: 1 }}>
+                          {formik.errors.categoryId}
+                        </FormHelperText>
+                      )}
+                    </Box>
+                  </Box>
+                </Box>
               </Box>
             </Paper>
 
@@ -441,16 +638,102 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
               />
             ))}
 
-            <Box sx={{ my: 4, display: 'flex', justifyContent: 'space-between' }}>
-              <Button variant="outlined" startIcon={<AddCircleOutlineIcon />} onClick={() => handleAddQuestion(QuestionType.ShortText)}>
+            <Box
+              sx={{
+                my: 6,
+                p: 3,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                backgroundColor: 'background.paper',
+                borderRadius: 3,
+                border: '1px solid',
+                borderColor: 'divider',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+              }}
+            >
+              <Button
+                variant="outlined"
+                startIcon={<AddCircleOutlineIcon />}
+                onClick={() => handleAddQuestion(QuestionType.ShortText)}
+                sx={{
+                  borderRadius: 2.5,
+                  borderColor: 'primary.main',
+                  color: 'primary.main',
+                  fontWeight: 500,
+                  textTransform: 'none',
+                  // '&:hover': {
+                  //   backgroundColor: 'primary.main',
+                  //   color: 'white',
+                  //   borderColor: 'primary.main',
+                  // },
+                }}
+              >
                 질문 추가
               </Button>
-              <Stack direction="row" gap={2} alignItems="center">
-                <Button variant="outlined" startIcon={<AddCircleOutlineIcon />} onClick={handlePreview} disabled={isSubmitting}>
+
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Button
+                  variant="text"
+                  onClick={() => console.log('임시 저장 클릭')}
+                  disabled={isSubmitting}
+                  sx={{
+                    borderRadius: 2.5,
+                    color: 'text.secondary',
+                    fontWeight: 500,
+                    textTransform: 'none',
+                    '&:hover': {
+                      backgroundColor: 'action.hover',
+                      color: 'text.primary',
+                    },
+                  }}
+                >
+                  임시 저장
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  startIcon={<AddCircleOutlineIcon />}
+                  onClick={handlePreview}
+                  disabled={isSubmitting}
+                  sx={{
+                    borderRadius: 2.5,
+                    borderColor: 'divider',
+                    color: 'text.primary',
+                    fontWeight: 500,
+                    textTransform: 'none',
+                    '&:hover': {
+                      backgroundColor: 'action.hover',
+                      borderColor: 'text.primary',
+                    },
+                  }}
+                >
                   미리보기
                 </Button>
-                <Button type="submit" variant="contained" startIcon={<SaveIcon />} color="primary" disabled={isSubmitting}>
-                  {isSubmitting ? <CircularProgress size={24} /> : SUBMIT_BUTTON_TEXT}
+
+                <Button
+                  type="submit"
+                  variant="contained"
+                  startIcon={isSubmitting ? null : <SaveIcon />}
+                  disabled={isSubmitting}
+                  sx={{
+                    borderRadius: 2.5,
+                    backgroundColor: 'primary.main',
+                    fontWeight: 600,
+                    textTransform: 'none',
+                    // boxShadow: `0 4px 12px ${theme.palette.primary.dark}`,
+                    // '&:hover': {
+                    //   backgroundColor: 'primary.dark',
+                    //   boxShadow: `0 6px 16px ${theme.palette.primary.dark}`,
+                    // },
+                    // '&:disabled': {
+                    //   backgroundColor: 'action.disabledBackground',
+                    //   color: 'action.disabled',
+                    //   boxShadow: 'none',
+                    // },
+                  }}
+                >
+                  {isSubmitting ? <CircularProgress size={20} color="inherit" /> : SUBMIT_BUTTON_TEXT}
                 </Button>
               </Stack>
             </Box>

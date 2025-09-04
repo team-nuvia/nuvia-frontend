@@ -6,14 +6,13 @@ import LinkText from '@components/atom/LinkText';
 import { AnalysisOverviewCards } from '@components/molecular/AnalysisOverviewCards';
 import BrandHead from '@components/molecular/BrandHead';
 import Preview from '@components/organism/Preview';
-import LoadingContext from '@context/LodingContext';
+import { useLoading } from '@hooks/useLoading';
 import { Analytics, BarChart, Create, Download, Share } from '@mui/icons-material';
 import { Box, Card, CardContent, Container, Divider, Grid, Stack, useTheme } from '@mui/material';
 import { DataType } from '@share/enums/data-type';
 import { QuestionType } from '@share/enums/question-type';
 import { SurveyStatus } from '@share/enums/survey-status';
 import Image from 'next/image';
-import { useContext, useLayoutEffect } from 'react';
 
 /**
  * Landing Page (unauthenticated)
@@ -322,11 +321,7 @@ const CTASection = () => (
 );
 
 const Home: React.FC = () => {
-  const { endLoading } = useContext(LoadingContext);
-
-  useLayoutEffect(() => {
-    endLoading();
-  }, []);
+  useLoading();
 
   return (
     <Stack flex={1} minHeight="100dvh" sx={{ backgroundColor: 'background.default' }}>

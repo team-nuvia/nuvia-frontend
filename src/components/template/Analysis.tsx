@@ -3,7 +3,7 @@
 import { mockAnalysis } from '@/app/(site)/(dashboard)/survey/[id]/analysis/analysis.mock';
 import { AnalysisOverviewCards } from '@components/molecular/AnalysisOverviewCards';
 import { AnalysisQuestionCard } from '@components/molecular/AnalysisQuestionCard';
-import LoadingContext from '@context/LodingContext';
+import LoadingContext from '@context/LoadingContext';
 import { Box, Container, Divider, Stack, Typography } from '@mui/material';
 import { useContext, useEffect, useMemo, useState } from 'react';
 
@@ -13,7 +13,7 @@ export default function Analysis({ params }: { params: { surveyId: string } }) {
   const [loading, setLoading] = useState(true);
   const { endLoading } = useContext(LoadingContext);
 
-  // TODO: 실제 API 연결
+  // TODO: 실제 API 연결 + 로딩 처리 hook으로 대체
   useEffect(() => {
     let mounted = true;
     (async () => {

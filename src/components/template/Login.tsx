@@ -7,15 +7,15 @@ import ActionForm from '@components/molecular/ActionForm';
 import BrandHead from '@components/molecular/BrandHead';
 import { AuthenticationContext } from '@context/AuthenticationContext';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
-import LoadingContext from '@context/LodingContext';
+import LoadingContext from '@context/LoadingContext';
+import { useLoading } from '@hooks/useLoading';
 import { Container, Grid, Link, Stack, TextField, useTheme } from '@mui/material';
 import { useMutation } from '@tanstack/react-query';
-import { isNil } from '@util/isNil';
 import { AxiosError } from 'axios';
 import { useFormik } from 'formik';
 import NextLink from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useContext, useEffect } from 'react';
+import { useContext } from 'react';
 import * as yup from 'yup';
 
 const validationSchema = yup.object().shape({
@@ -29,9 +29,10 @@ interface LoginProps {
   redirect?: string;
 }
 const Login: React.FC<LoginProps> = ({ action, token, redirect }) => {
+  useLoading({ forUser: true, verifiedRoute: '/' });
   const theme = useTheme();
-  const { startLoading, endLoading } = useContext(LoadingContext);
-  const { fetchUser, user, isLoading } = useContext(AuthenticationContext);
+  const { startLoading } = useContext(LoadingContext);
+  const { fetchUser } = useContext(AuthenticationContext);
   const { addNotice } = useContext(GlobalSnackbarContext);
   const router = useRouter();
   const { mutate: loginMutation } = useMutation({
@@ -71,17 +72,6 @@ const Login: React.FC<LoginProps> = ({ action, token, redirect }) => {
       loginMutation(values);
     },
   });
-
-  useEffect(() => {
-    if (!isLoading) {
-      if (!isNil(user)) {
-        // addNotice('이미 로그인한 상태입니다.', 'warning');
-        router.push('/');
-      } else {
-        endLoading();
-      }
-    }
-  }, []);
 
   return (
     <Stack flex={1} py={5} direction="row" alignItems="center" justifyContent="center">
@@ -136,7 +126,7 @@ const Login: React.FC<LoginProps> = ({ action, token, redirect }) => {
         />
         <Grid container sx={{ mt: 2 }}>
           <Grid size={{ xs: 12 }}>
-            <Link component={NextLink} href="/forgot-password" variant="body2" underline="hover">
+            <Link component={NextLink} href="/auth/forgot-password" variant="body2" underline="hover">
               비밀번호를 잊으셨나요?
             </Link>
           </Grid>

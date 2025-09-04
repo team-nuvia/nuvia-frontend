@@ -1,6 +1,6 @@
 'use client';
 
-import LoadingContext from '@context/LodingContext';
+import LoadingContext from '@context/LoadingContext';
 import { useContext, useEffect, useRef } from 'react';
 
 import { getVerify } from '@api/get-verify';

@@ -8,7 +8,7 @@ import Notification from '@components/molecular/Notification';
 import UserOrganizationSelect from '@components/molecular/UserOrganizationSelect';
 import { AuthenticationContext } from '@context/AuthenticationContext';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
-import LoadingContext from '@context/LodingContext';
+import LoadingContext from '@context/LoadingContext';
 import { useScroll } from '@hooks/useScroll';
 import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded';
 import { Avatar, Menu, MenuItem, Stack, Toolbar, Tooltip, Typography, useTheme } from '@mui/material';
@@ -24,11 +24,15 @@ const Header: React.FC<HeaderProps> = () => {
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
   const { addNotice } = useContext(GlobalSnackbarContext);
   const { startLoading } = useContext(LoadingContext);
-  const { user, clearUser } = useContext(AuthenticationContext);
+  const { user, clearUser, isLoading } = useContext(AuthenticationContext);
 
+  // hydration 문제 방지: 서버와 클라이언트의 초기 렌더링이 다를 수 있으므로
+  // 로딩 중일 때는 기본 메뉴만 표시하여 hydration mismatch 방지
   const commonMenus: MenuOption[] = useMemo(
     () =>
-      user
+      isLoading
+        ? []
+        : user
         ? [
             {
               label: 'Nuvia란?',
@@ -49,7 +53,7 @@ const Header: React.FC<HeaderProps> = () => {
               to: '/auth/login',
             },
           ],
-    [user],
+    [user, isLoading],
   );
   const menus: MenuOption[] = useMemo(
     () =>
@@ -117,7 +121,7 @@ const Header: React.FC<HeaderProps> = () => {
             my: shadow ? 1 : 0,
           }}
         >
-          <Stack direction="row" alignItems="center" gap={0.5}>
+          <Stack direction="row" alignItems="center" gap={3.5}>
             <BrandHead
               title={BRAND_NAME}
               width={45}
@@ -125,36 +129,38 @@ const Header: React.FC<HeaderProps> = () => {
               primaryColor={theme.palette.primary.main}
               secondaryColor={theme.palette.secondary.main}
             />
-            {commonMenus.map((menu) => (
-              <MenuItem
-                key={menu.label}
-                onClick={() => {
-                  handleCloseUserMenu();
-                  if (menu.request) {
-                    menu.request().then(() => {
+            <Stack direction="row" gap={0.5} justifyContent="flex-start" alignItems="center">
+              {commonMenus.map((menu) => (
+                <MenuItem
+                  key={menu.label}
+                  onClick={() => {
+                    handleCloseUserMenu();
+                    if (menu.request) {
+                      menu.request().then(() => {
+                        router.push(menu.to);
+                      });
+                    } else {
                       router.push(menu.to);
-                    });
-                  } else {
-                    router.push(menu.to);
-                  }
-                }}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  px: 2,
-                  py: 1,
-                  minHeight: '1rem',
-                  minWidth: '1rem',
-                  borderRadius: '0.5rem',
-                  '&:hover': {
-                    bgcolor: 'transparent',
-                  },
-                }}
-              >
-                <Typography sx={{ textAlign: 'center' }}>{menu.label}</Typography>
-              </MenuItem>
-            ))}
+                    }
+                  }}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    px: 1.5,
+                    py: 1,
+                    minHeight: '1rem',
+                    minWidth: '1rem',
+                    borderRadius: '0.5rem',
+                    '&:hover': {
+                      bgcolor: 'transparent',
+                    },
+                  }}
+                >
+                  <Typography sx={{ textAlign: 'center' }}>{menu.label}</Typography>
+                </MenuItem>
+              ))}
+            </Stack>
           </Stack>
 
           <Stack direction="row" alignItems="center" gap={2}>

@@ -1,18 +1,13 @@
 'use client';
 
 import ActionButton from '@components/atom/ActionButton';
-import LoadingContext from '@context/LodingContext';
+import { useLoading } from '@hooks/useLoading';
 import { Box, Typography } from '@mui/material';
 import { useRouter } from 'next/navigation';
-import { useContext, useLayoutEffect } from 'react';
 
 const Page = () => {
   const router = useRouter();
-  const { endLoading } = useContext(LoadingContext);
-
-  useLayoutEffect(() => {
-    endLoading();
-  }, []);
+  useLoading();
 
   return (
     <Box
