@@ -9,11 +9,11 @@ interface WrapChildrenProps {
   children: React.ReactNode;
 }
 const WrapChildren: React.FC<WrapChildrenProps> = ({ children }) => {
-  const { isVerified } = useContext(AuthenticationContext);
+  const { user } = useContext(AuthenticationContext);
 
   return (
     <Stack direction="row" flex={1}>
-      {isVerified && <Sidebar />}
+      {user && <Sidebar />}
       <Stack flex={1} sx={{ overflowX: 'hidden' }}>
         {children}
       </Stack>

@@ -12,15 +12,20 @@ export const useLoading = ({
   ifRole,
 }: { forUser?: boolean; verifiedRoute?: string; unverifiedRoute?: string; guestRoute?: string; ifRole?: [UserRole, string] } = {}) => {
   const router = useRouter();
-  const { isVerified, isLoading: isUserLoading, user } = useContext(AuthenticationContext);
+  const { user } = useContext(AuthenticationContext);
   const { startLoading, endLoading } = useContext(LoadingContext);
   const [contentLoaded, setContentLoaded] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    if (isUserLoading) return;
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted) return;
 
     if (forUser) {
-      if (!isVerified) {
+      if (!user) {
         if (unverifiedRoute) {
           setContentLoaded(false);
           router.push(unverifiedRoute);
@@ -55,7 +60,7 @@ export const useLoading = ({
         endLoading();
       }
     }
-  }, [isUserLoading, isVerified, forUser]);
+  }, [isMounted, user, forUser]);
 
   return { startLoading, endLoading, contentLoaded };
 };

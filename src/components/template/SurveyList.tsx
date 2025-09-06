@@ -8,7 +8,7 @@ import SurveyBinDialog from '@components/organism/SurveyBinDialog';
 import { AuthenticationContext } from '@context/AuthenticationContext';
 import { GlobalDialogContext } from '@context/GlobalDialogContext';
 import { useLoading } from '@hooks/useLoading';
-import { Add, Delete, Search } from '@mui/icons-material';
+import { Add, Delete } from '@mui/icons-material';
 import {
   Box,
   Button,
@@ -16,20 +16,15 @@ import {
   CardContent,
   Container,
   Fab,
-  FormControl,
   Grid,
-  InputLabel,
-  MenuItem,
-  Select,
   Stack,
   Tab,
   Tabs,
-  TextField,
   Tooltip,
-  Typography,
+  Typography
 } from '@mui/material';
 import { MetadataStatusType } from '@share/enums/metadata-status-type';
-import { SurveyStatus } from '@share/enums/survey-status';
+import { SurveyStatus, SurveyStatusList } from '@share/enums/survey-status';
 import { UserRole } from '@share/enums/user-role';
 import { SearchSurvey } from '@share/interface/search-survey';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -48,7 +43,7 @@ export default function SurveyList() {
   const { handleOpenDialog } = useContext(GlobalDialogContext);
   const [selectedTab, setSelectedTab] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = useState<string>(SurveyStatusList.join(','));
   const { data, isLoading } = useQuery({
     queryKey: ['surveyList'],
     queryFn: () =>
@@ -56,7 +51,7 @@ export default function SurveyList() {
         page: 1,
         limit: 10,
         search: searchQuery,
-        status: ['all', SurveyStatus.Draft, SurveyStatus.Active, SurveyStatus.Closed][selectedTab],
+        status: [SurveyStatusList.join(','), SurveyStatus.Draft, SurveyStatus.Active, SurveyStatus.Closed][selectedTab],
       }),
   });
   const { data: surveyMetadata } = useQuery({
@@ -86,11 +81,14 @@ export default function SurveyList() {
     });
   };
 
+  const isFilterStatus = filterStatus.split(',').some((status) => SurveyStatusList.includes(status as SurveyStatus));
+  const isAllFilterStatus = filterStatus.split(',').every((status) => SurveyStatusList.includes(status as SurveyStatus));
+
   return (
     <Container maxWidth="lg" sx={{ py: 8 }}>
       {/* 헤더 */}
       <Box sx={{ mb: 6 }}>
-        <Typography variant="h3" sx={{ mb: 2, fontWeight: 600 }}>
+        <Typography variant="h4" sx={{ mb: 2, fontWeight: 600 }}>
           내 설문 관리
         </Typography>
         <Typography variant="body1" color="text.secondary">
@@ -151,7 +149,7 @@ export default function SurveyList() {
       </Grid>
 
       {/* 필터 및 검색 */}
-      <Card sx={{ mb: 4 }}>
+      {/* <Card sx={{ mb: 4 }}>
         <CardContent sx={{ p: 3 }}>
           <Box
             sx={{
@@ -177,8 +175,8 @@ export default function SurveyList() {
             <FormControl size="small" sx={{ minWidth: 120 }}>
               <InputLabel>상태</InputLabel>
               <Select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} label="상태">
-                <MenuItem value={'all'}>전체</MenuItem>
-                {Object.values(SurveyStatus).map((status) => (
+                <MenuItem value={SurveyStatusList.join(',')}>전체</MenuItem>
+                {SurveyStatusList.map((status) => (
                   <MenuItem key={status} value={status}>
                     {LocalizationManager.translate(status)}
                   </MenuItem>
@@ -187,7 +185,7 @@ export default function SurveyList() {
             </FormControl>
           </Box>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* 탭 */}
       <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
@@ -211,14 +209,14 @@ export default function SurveyList() {
         <Card>
           <CardContent sx={{ textAlign: 'center', py: 8 }}>
             <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
-              {searchQuery || filterStatus !== 'all' ? '검색 결과가 없습니다' : '아직 생성된 설문이 없습니다'}
+              {searchQuery || isFilterStatus ? '검색 결과가 없습니다' : '아직 생성된 설문이 없습니다'}
             </Typography>
             {roleAtLeast(UserRole.Editor, user?.role) && (
               <>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
-                  {searchQuery || filterStatus !== 'all' ? '다른 검색어나 필터를 시도해보세요' : '첫 번째 설문을 만들어보세요'}
+                  {searchQuery || !isFilterStatus ? '다른 검색어나 필터를 시도해보세요' : '첫 번째 설문을 만들어보세요'}
                 </Typography>
-                {!searchQuery && filterStatus === 'all' && (
+                {!searchQuery && isAllFilterStatus && (
                   <Button variant="contained" startIcon={<Add />} onClick={handleRedirectCreate}>
                     설문 만들기
                   </Button>

@@ -1,6 +1,8 @@
 import { getSurveyBinList } from '@api/get-survey-bin-list';
+import { restoreAllSurvey } from '@api/restore-all-survey';
 import { restoreSurvey } from '@api/restore-survey';
 import ActionButton from '@components/atom/ActionButton';
+import { GlobalDialogContext } from '@context/GlobalDialogContext';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import { Delete, Restore } from '@mui/icons-material';
 import { IconButton, List, ListItem, ListItemText, Stack, Tooltip, Typography } from '@mui/material';
@@ -11,6 +13,7 @@ import { useContext } from 'react';
 
 export default function SurveyBinDialog() {
   const queryClient = useQueryClient();
+  const { handleOpenDialog } = useContext(GlobalDialogContext);
   const { addNotice } = useContext(GlobalSnackbarContext);
   const { data: binList } = useQuery({
     queryKey: ['surveyBinList'],
@@ -20,6 +23,7 @@ export default function SurveyBinDialog() {
     mutationFn: ({ surveyId }: { surveyId: string }) => restoreSurvey(surveyId),
     onSuccess: () => {
       addNotice('설문이 복원되었습니다', 'success');
+      queryClient.invalidateQueries({ queryKey: ['surveyMetadata'] });
       queryClient.invalidateQueries({ queryKey: ['surveyList'] });
       queryClient.invalidateQueries({ queryKey: ['surveyBinList'] });
     },
@@ -27,13 +31,37 @@ export default function SurveyBinDialog() {
       addNotice('설문 복원에 실패했습니다', 'error');
     },
   });
+  const { mutate: restoreAllSurveyMutate } = useMutation({
+    mutationFn: () => restoreAllSurvey(),
+    onSuccess: () => {
+      addNotice('모든 설문이 복원되었습니다', 'success');
+      queryClient.invalidateQueries({ queryKey: ['surveyMetadata'] });
+      queryClient.invalidateQueries({ queryKey: ['surveyList'] });
+      queryClient.invalidateQueries({ queryKey: ['surveyBinList'] });
+    },
+    onError: () => {
+      addNotice('모든 설문 복원에 실패했습니다', 'error');
+    },
+  });
 
   const handleRestoreAll = () => {
-    console.log('전체 복원');
+    handleOpenDialog({
+      title: '전체 복원',
+      content: '전체 설문을 복원하시겠습니까?',
+      actionCallback: () => {
+        restoreAllSurveyMutate();
+      },
+    });
   };
 
   const handleRestore = (id: number) => {
-    restoreSurveyMutate({ surveyId: id.toString() });
+    handleOpenDialog({
+      title: '설문 복원',
+      content: '설문을 복원하시겠습니까?',
+      actionCallback: () => {
+        restoreSurveyMutate({ surveyId: id.toString() });
+      },
+    });
   };
 
   return (

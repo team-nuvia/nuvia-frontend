@@ -7,7 +7,6 @@ import ActionForm from '@components/molecular/ActionForm';
 import BrandHead from '@components/molecular/BrandHead';
 import { AuthenticationContext } from '@context/AuthenticationContext';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
-import LoadingContext from '@context/LoadingContext';
 import { useLoading } from '@hooks/useLoading';
 import { Container, Grid, Link, Stack, TextField, useTheme } from '@mui/material';
 import { useMutation } from '@tanstack/react-query';
@@ -31,23 +30,21 @@ interface LoginProps {
 const Login: React.FC<LoginProps> = ({ action, token, redirect }) => {
   useLoading({ forUser: true, verifiedRoute: '/' });
   const theme = useTheme();
-  const { startLoading } = useContext(LoadingContext);
+  const router = useRouter();
   const { fetchUser } = useContext(AuthenticationContext);
   const { addNotice } = useContext(GlobalSnackbarContext);
-  const router = useRouter();
   const { mutate: loginMutation } = useMutation({
     mutationFn: (values: { email: string; password: string }) => login(values.email, values.password),
     mutationKey: ['login'],
     onSuccess: (response) => {
       formik.setSubmitting(false);
-      addNotice(response.message, 'success');
-      startLoading();
-      fetchUser();
       if (action === 'invitation' && redirect && token) {
         router.push(`${redirect}?q=${token}`);
       } else {
         router.push('/');
       }
+      fetchUser();
+      addNotice(response.message, 'success');
     },
     onError: (error) => {
       formik.setSubmitting(false);

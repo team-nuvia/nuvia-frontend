@@ -1,4 +1,3 @@
-import { AuthenticationContext } from '@context/AuthenticationContext';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import { routerBlackList } from '@util/blackRouter';
 import { useRouter } from 'next/navigation';
@@ -11,18 +10,17 @@ import { useCallback, useContext } from 'react';
  */
 export const useBlackRouter = () => {
   const router = useRouter();
-  const { isVerified } = useContext(AuthenticationContext);
   const { addNotice } = useContext(GlobalSnackbarContext);
 
   const push = useCallback(
     (path: string) => {
-      if (!routerBlackList.some((black) => path.startsWith(black)) || isVerified) {
+      if (!routerBlackList.some((black) => path.startsWith(black))) {
         router.push(path);
       } else {
         addNotice('로그인이 필요한 페이지입니다.', 'warning');
       }
     },
-    [router, isVerified],
+    [router],
   );
 
   return { push, back: router.back, replace: router.replace, refresh: router.refresh, prefetch: router.prefetch };

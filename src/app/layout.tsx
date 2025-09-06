@@ -1,6 +1,7 @@
 import AuthenticationProvider from '@/context/AuthenticationContext';
 import { LoadingProvider } from '@/context/LoadingContext';
 import '@/styles/global.css';
+import { getUserInformation } from '@api/server/get-user-information';
 import { BRAND_NAME } from '@common/variables';
 import Footer from '@components/organism/Footer';
 import Header from '@components/organism/Header';
@@ -49,16 +50,17 @@ export const viewport: Viewport = {
   maximumScale: 1,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const user = await getUserInformation();
   return (
     <html lang="ko">
       <body /* className={`${geistSans.variable} ${geistMono.variable}`} */>
         <ReactQueryProvider>
-          <AuthenticationProvider>
+          <AuthenticationProvider initialize={true} user={user}>
             <AppRouterCacheProvider>
               <ThemeProvider theme={darkTheme}>
                 <CssBaseline />
