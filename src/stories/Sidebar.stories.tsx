@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
-import Sidebar from './Sidebar';
 import { decorators, parameters } from '.storybook/variables';
+import Sidebar from '../components/organism/Sidebar';
 
 const meta = {
   component: Sidebar,

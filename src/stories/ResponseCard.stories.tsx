@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 import { DataType } from '@share/enums/data-type';
 import { QuestionType } from '@share/enums/question-type';
-import ResponseCard from './ResponseCard';
+import ResponseCard from '../components/organism/ResponseCard';
 
 const meta = {
   component: ResponseCard,

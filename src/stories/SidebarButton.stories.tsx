@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 import { decorators, parameters } from '.storybook/variables';
-import SidebarButton from './SidebarButton';
 import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard';
+import SidebarButton from '../components/atom/SidebarButton';
 
 const meta = {
   component: SidebarButton,

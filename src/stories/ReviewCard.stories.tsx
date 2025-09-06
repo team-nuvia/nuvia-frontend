@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
-import ReviewCard from './ReviewCard';
+import ReviewCard from '../components/organism/ReviewCard';
 
 const meta = {
   component: ReviewCard,

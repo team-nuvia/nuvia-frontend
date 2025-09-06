@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 import AddIcon from '@mui/icons-material/Add';
-import SolutionCard from './SolutionCard';
+import SolutionCard from '../components/organism/SolutionCard';
 
 const meta = {
   component: SolutionCard,

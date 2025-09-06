@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
-import Home from './HomeBack';
 import { parameters } from '.storybook/variables';
+import Home from '../components/template/landing/Home';
 
 const meta = {
   component: Home,

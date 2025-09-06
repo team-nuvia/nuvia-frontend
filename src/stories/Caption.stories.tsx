@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
-import Caption from './Caption';
 import { decorators, parameters } from '.storybook/variables';
+import Caption from '../components/atom/Caption';
 
 const meta = {
   component: Caption,

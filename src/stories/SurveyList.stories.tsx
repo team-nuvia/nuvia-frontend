@@ -2,14 +2,8 @@
 
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
-import { parameters } from '.storybook/variables';
-import AuthenticationProvider from '@/context/AuthenticationContext';
-import { LoadingProvider } from '@/context/LoadingContext';
-import { CssBaseline, ThemeProvider } from '@mui/material';
-import { AppRouterCacheProvider } from '@mui/material-nextjs/v13-appRouter';
-import ReactQueryProvider from '@util/react-query-provider';
-import { lightTheme } from '@util/theme';
-import SurveyList from './SurveyList';
+import { decorators, parameters } from '.storybook/variables';
+import SurveyList from '../components/template/SurveyList';
 
 const meta = {
   component: SurveyList,
@@ -26,23 +20,6 @@ export const Default: Story = {
       appDirectory: true,
     },
   },
-  decorators: [
-    (Story) => {
-      return (
-        <ReactQueryProvider>
-          <AuthenticationProvider>
-            <AppRouterCacheProvider>
-              <ThemeProvider theme={lightTheme}>
-                <CssBaseline />
-                <LoadingProvider>
-                  <Story />
-                </LoadingProvider>
-              </ThemeProvider>
-            </AppRouterCacheProvider>
-          </AuthenticationProvider>
-        </ReactQueryProvider>
-      );
-    },
-  ],
+  decorators: [decorators],
   args: {},
 };

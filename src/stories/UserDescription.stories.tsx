@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 import { decorators, parameters } from '.storybook/variables';
 import CommonText from '@components/atom/CommonText';
-import UserDescription from './UserDescription';
+import UserDescription from '../components/molecular/UserDescription';
 
 const meta = {
   component: UserDescription,

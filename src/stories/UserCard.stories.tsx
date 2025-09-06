@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
-import UserCard from './UserCard';
 import { decorators, parameters } from '.storybook/variables';
+import UserCard from '../components/organism/UserCard';
 
 const meta = {
   component: UserCard,
@@ -20,7 +20,11 @@ export const Default: Story = {
   },
   decorators: [decorators],
   args: {
+    caption: 'Free',
     name: 'John Doe',
-    plan: 'Free',
+    content: 'Free',
+    nameSize: 16,
+    profileImage: 'https://via.placeholder.com/150',
+    isVisible: true,
   },
 };
