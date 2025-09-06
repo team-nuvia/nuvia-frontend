@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 import { decorators, parameters } from '.storybook/variables';
-import SidebarMenuList from './SidebarMenuList';
-import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard';
-import PollOutlinedIcon from '@mui/icons-material/PollOutlined';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
+import PollOutlinedIcon from '@mui/icons-material/PollOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
+import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard';
+import SidebarMenuList from '../components/molecular/SidebarMenuList';
 
 const meta = {
   component: SidebarMenuList,

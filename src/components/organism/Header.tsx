@@ -8,7 +8,6 @@ import Notification from '@components/molecular/Notification';
 import UserOrganizationSelect from '@components/molecular/UserOrganizationSelect';
 import { AuthenticationContext } from '@context/AuthenticationContext';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
-import LoadingContext from '@context/LoadingContext';
 import { useScroll } from '@hooks/useScroll';
 import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded';
 import { Avatar, Menu, MenuItem, Stack, Toolbar, Tooltip, Typography, useTheme } from '@mui/material';
@@ -23,16 +22,13 @@ const Header: React.FC<HeaderProps> = () => {
   const [shadow, setShadow] = useState(false);
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
   const { addNotice } = useContext(GlobalSnackbarContext);
-  const { startLoading } = useContext(LoadingContext);
-  const { user, clearUser, isLoading } = useContext(AuthenticationContext);
+  const { user, clearUser } = useContext(AuthenticationContext);
 
   // hydration 문제 방지: 서버와 클라이언트의 초기 렌더링이 다를 수 있으므로
   // 로딩 중일 때는 기본 메뉴만 표시하여 hydration mismatch 방지
   const commonMenus: MenuOption[] = useMemo(
     () =>
-      isLoading
-        ? []
-        : user
+      user
         ? [
             {
               label: 'Nuvia란?',
@@ -53,7 +49,7 @@ const Header: React.FC<HeaderProps> = () => {
               to: '/auth/login',
             },
           ],
-    [user, isLoading],
+    [user],
   );
   const menus: MenuOption[] = useMemo(
     () =>
@@ -62,10 +58,8 @@ const Header: React.FC<HeaderProps> = () => {
             { label: 'Profile', to: '/user' },
             {
               label: 'Logout',
-              to: '/',
-              request: async () => {
-                startLoading();
-                await clearUser();
+              request: () => {
+                clearUser();
                 addNotice('로그아웃 되었습니다.', 'success');
               },
             },
@@ -136,11 +130,10 @@ const Header: React.FC<HeaderProps> = () => {
                   onClick={() => {
                     handleCloseUserMenu();
                     if (menu.request) {
-                      menu.request().then(() => {
-                        router.push(menu.to);
-                      });
+                      if (menu.to) router.push(menu.to);
+                      menu.request();
                     } else {
-                      router.push(menu.to);
+                      if (menu.to) router.push(menu.to);
                     }
                   }}
                   sx={{
@@ -213,11 +206,10 @@ const Header: React.FC<HeaderProps> = () => {
                   onClick={() => {
                     handleCloseUserMenu();
                     if (menu.request) {
-                      menu.request().then(() => {
-                        router.push(menu.to);
-                      });
+                      if (menu.to) router.push(menu.to);
+                      menu.request();
                     } else {
-                      router.push(menu.to);
+                      if (menu.to) router.push(menu.to);
                     }
                   }}
                 >

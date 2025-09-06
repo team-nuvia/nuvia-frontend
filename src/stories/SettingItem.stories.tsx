@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
-import SettingItem from './SettingItem';
 import { decorators, parameters } from '.storybook/variables';
+import SettingItem from '../components/molecular/SettingItem';
 
 const meta = {
   component: SettingItem,

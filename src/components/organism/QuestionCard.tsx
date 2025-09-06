@@ -23,7 +23,7 @@ import {
 import { DataType } from '@share/enums/data-type';
 import { QuestionType } from '@share/enums/question-type';
 import { IQuestion, IQuestionOption } from '@share/interface/iquestion';
-import { useContext, useMemo } from 'react';
+import { memo, useContext, useMemo } from 'react';
 
 const DATA_TYPE_MAP = {
   [DataType.Text]: '텍스트',
@@ -336,4 +336,4 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   );
 };
 
-export default QuestionCard;
+export default memo(QuestionCard);

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
-import RedirectionButton from './RedirectionButton';
 import { decorators, parameters } from '.storybook/variables';
+import RedirectionButton from '../components/atom/RedirectionButton';
 
 const meta = {
   component: RedirectionButton,

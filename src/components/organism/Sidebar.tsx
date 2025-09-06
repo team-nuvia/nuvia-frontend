@@ -21,7 +21,7 @@ import UserCard from './UserCard';
 
 interface SidebarProps {}
 const Sidebar: React.FC<SidebarProps> = () => {
-  const { user, isVerified } = useContext(AuthenticationContext);
+  const { user } = useContext(AuthenticationContext);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { data } = useQuery({
     queryKey: ['user-organizations'],

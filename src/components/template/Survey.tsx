@@ -43,7 +43,7 @@ import { SurveyStatus } from '@share/enums/survey-status';
 import { UserRole } from '@share/enums/user-role';
 import { ICategory } from '@share/interface/icategory';
 import { AllQuestion } from '@share/interface/iquestion';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { LocalizationManager } from '@util/LocalizationManager';
 import { AxiosError } from 'axios';
 import dayjs from 'dayjs';
@@ -96,25 +96,58 @@ const initialValues: QuestionInitialValues = {
 // --- COMPONENT ---
 const Survey: React.FC<{ id?: string }> = ({ id }) => {
   /* hooks */
-  useLoading({ forUser: true, verifiedRoute: '/survey', unverifiedRoute: '/auth/login', ifRole: [UserRole.Viewer, '/survey'] });
+  const { contentLoaded } = useLoading({
+    forUser: true,
+    verifiedRoute: '/survey',
+    unverifiedRoute: '/auth/login',
+    ifRole: [UserRole.Viewer, '/survey'],
+  });
   const { addNotice } = useContext(GlobalSnackbarContext);
   const router = useRouter();
   const theme = useTheme();
-  const { isLoading: isUserLoading, user } = useContext(AuthenticationContext);
+  const { user } = useContext(AuthenticationContext);
 
   /* state */
   const SUBMIT_BUTTON_TEXT = id ? '설문 수정' : '설문 저장';
   const [isPreview, setIsPreview] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { data: categories } = useQuery<ServerResponse<ICategory[]>>({
+  const { data: categories, isLoading: isCategoriesLoading } = useQuery<ServerResponse<ICategory[]>>({
     queryKey: ['categories'],
     queryFn: () => getCategories(),
   });
-  const { data: surveyData } = useQuery<ServerResponse<GetSurveyDetailResponse>>({
+  const { data: surveyData, isLoading: isSurveyLoading } = useQuery<ServerResponse<GetSurveyDetailResponse>>({
     queryKey: ['survey', id],
     queryFn: () => getSurveyDetail(id as string),
     enabled: !!id,
+  });
+  const { mutate: createSurveyMutate } = useMutation({
+    mutationKey: ['createSurvey'],
+    mutationFn: ({ surveyData }: { surveyData: CreateSurveyPayload }) => createSurvey(surveyData),
+    onSuccess: (data) => {
+      if (data.ok) {
+        addNotice((data.reason as string) || data.message, 'success');
+        // Reset form
+        router.push('/survey');
+      } else {
+        addNotice((data.reason as string) || data.message, 'error');
+      }
+      setIsSubmitting(false);
+    },
+    onError: (error) => {
+      const axiosError = error as AxiosError<ServerResponse<any>>;
+      console.error(axiosError);
+      if (axiosError?.response?.data?.reason === 'expiresAt') {
+        addNotice('만료 일시는 최소 다음날부터 가능합니다.', 'error');
+      } else {
+        addNotice(
+          ((axiosError?.response?.data?.reason as string) || axiosError?.response?.data?.message) ??
+            '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+          'error',
+        );
+      }
+      setIsSubmitting(false);
+    },
   });
 
   // --- FORMIK ---
@@ -131,6 +164,8 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
   });
 
   useEffect(() => {
+    if (!contentLoaded || isSurveyLoading || isCategoriesLoading) return;
+
     if (surveyData?.payload) {
       const payload = surveyData.payload;
       formik.setValues({
@@ -248,28 +283,8 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
 
     if (!surveyData) return;
 
-    try {
-      // Using a placeholder API endpoint
-      const response = await createSurvey(surveyData as CreateSurveyPayload);
-
-      if (response.ok) {
-        addNotice((response.reason as string) || response.message, 'success');
-        // Reset form
-        router.push('/survey');
-      } else {
-        addNotice((response.reason as string) || response.message, 'error');
-      }
-    } catch (err: any) {
-      const axiosError = err as AxiosError<ServerResponse<any>>;
-      console.error(axiosError);
-      addNotice(
-        ((axiosError?.response?.data?.reason as string) || axiosError?.response?.data?.message) ??
-          '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
-        'error',
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Using a placeholder API endpoint
+    createSurveyMutate({ surveyData: surveyData as CreateSurveyPayload });
   }
 
   async function handleUpdateSurvey(id: string, values: QuestionInitialValues) {
@@ -323,7 +338,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
     setIsPreview(true);
   };
 
-  if (isUserLoading || !user || user.role === UserRole.Viewer) {
+  if (!user || user.role === UserRole.Viewer) {
     return <Loading />;
   }
 

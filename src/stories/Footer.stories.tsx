@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 import { decorators, parameters } from '.storybook/variables';
-import Footer from './Footer';
+import Footer from '../components/organism/Footer';
 
 const meta = {
   component: Footer,

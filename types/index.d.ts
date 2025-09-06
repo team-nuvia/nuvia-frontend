@@ -27,8 +27,8 @@ export declare global {
 
   interface MenuOption {
     label: string;
-    to: string;
-    request?: () => Promise<void>;
+    to?: string;
+    request?: () => Promise<void> | void;
   }
 
   type PromiseServerResponse<T> = Promise<ServerResponse<T> | void>;

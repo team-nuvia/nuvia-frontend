@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 import { decorators, parameters } from '.storybook/variables';
-import SurveyProgress from './SurveyProgress';
+import SurveyProgress from '../components/molecular/SurveyProgress';
 
 const meta = {
   component: SurveyProgress,

@@ -4,34 +4,36 @@ import { getLast7DaysResponseCount } from '@api/get-daily-response-count';
 import { getDashboardRecentSurveysServer } from '@api/get-dashboard-recent-surveys-server';
 import { getSurveyMetadata } from '@api/get-survey-metadata';
 import CommonText from '@components/atom/CommonText';
-import Loading from '@components/atom/Loading';
 import WelcomeDashboard from '@components/organism/WelcomeDashboard';
 import { AuthenticationContext } from '@context/AuthenticationContext';
 import { useBlackRouter } from '@hooks/useBlackRouter';
 import { useLoading } from '@hooks/useLoading';
 import { BarChart, CheckCircleOutline, DonutLarge, PeopleAlt } from '@mui/icons-material';
-import { Box, Card, Container, Grid, Paper, Stack, Typography } from '@mui/material';
+import { Box, Card, Container, Grid, Paper, Skeleton, Stack, Typography } from '@mui/material';
 import { DataGrid, GridColDef, GridRowsProp } from '@mui/x-data-grid';
 import { MetadataStatusType } from '@share/enums/metadata-status-type';
 import { SurveyStatus } from '@share/enums/survey-status';
 import { useQuery } from '@tanstack/react-query';
 import { LocalizationManager } from '@util/LocalizationManager';
+import { usePathname } from 'next/navigation';
 import { useContext, useMemo } from 'react';
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 const Dashboard = () => {
   useLoading({ forUser: true, unverifiedRoute: '/' });
   const router = useBlackRouter();
-  const { isLoading } = useContext(AuthenticationContext);
-  const { data: metadataData } = useQuery({
+  const { user } = useContext(AuthenticationContext);
+  const pathname = usePathname();
+
+  const { data: metadataData, isLoading: metadataLoading } = useQuery({
     queryKey: ['dashboard-metadata'],
     queryFn: () => getSurveyMetadata(MetadataStatusType.Dashboard),
   });
-  const { data: recentSurveysData } = useQuery({
+  const { data: recentSurveysData, isLoading: recentSurveysLoading } = useQuery({
     queryKey: ['dashboard-recent-surveys'],
     queryFn: getDashboardRecentSurveysServer,
   });
-  const { data: last7Days } = useQuery({
+  const { data: last7Days, isLoading: last7DaysLoading } = useQuery({
     queryKey: ['daily-response-count'],
     queryFn: getLast7DaysResponseCount,
   });
@@ -95,15 +97,18 @@ const Dashboard = () => {
     ];
   }, [metadataData]);
 
-  const rows: GridRowsProp =
-    recentSurveysData?.payload?.map((survey) => ({
-      id: survey.id,
-      title: survey.title,
-      hashedUniqueKey: survey.hashedUniqueKey,
-      status: survey.status,
-      expiresAt: survey.expiresAt,
-      responses: survey.responses,
-    })) ?? [];
+  const rows: GridRowsProp = useMemo<GridRowsProp>(
+    () =>
+      recentSurveysData?.payload?.map((survey) => ({
+        id: survey.id,
+        title: survey.title,
+        hashedUniqueKey: survey.hashedUniqueKey,
+        status: survey.status,
+        expiresAt: survey.expiresAt,
+        responses: survey.responses,
+      })) ?? [],
+    [recentSurveysData],
+  );
 
   const columns: GridColDef[] = [
     {
@@ -122,7 +127,7 @@ const Dashboard = () => {
               textDecoration: 'underline',
             },
           }}
-          title={window.location.href + 'survey/view/' + params.row.hashedUniqueKey}
+          title={pathname + 'survey/view/' + params.row.hashedUniqueKey}
           onClick={() => {
             router.push(`/survey/view/${params.row.hashedUniqueKey}`);
           }}
@@ -136,10 +141,6 @@ const Dashboard = () => {
     { field: 'responses', headerName: '응답 수', width: 100 },
   ];
 
-  if (isLoading) {
-    return <Loading />;
-  }
-
   return (
     <Box sx={{ flexGrow: 1, p: 4 }}>
       <Container maxWidth="lg">
@@ -152,39 +153,56 @@ const Dashboard = () => {
 
         {/* KPI Cards */}
         <Grid container spacing={4}>
-          {kpiData.map((item, index) => (
-            <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index}>
-              <Card elevation={2} sx={{ display: 'flex', alignItems: 'center', p: 2 }}>
-                <Stack sx={{ mr: 2, color: item.color, fontSize: 40, width: 40 }} justifyContent="center" alignItems="center">
-                  {item.icon}
-                </Stack>
-                <Stack direction="column">
-                  {item.type === 'number' ? (
-                    <Typography variant="h6" component="div" fontWeight="bold">
-                      {item.value}
-                    </Typography>
-                  ) : item.type === 'percentage' ? (
-                    <Stack direction="row" alignItems="center" gap={1}>
+          {metadataLoading ? (
+            <>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <Skeleton variant="rectangular" height={77} />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <Skeleton variant="rectangular" height={77} />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <Skeleton variant="rectangular" height={77} />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <Skeleton variant="rectangular" height={77} />
+              </Grid>
+            </>
+          ) : (
+            kpiData.map((item, index) => (
+              <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index}>
+                <Card elevation={2} sx={{ display: 'flex', alignItems: 'center', p: 2 }}>
+                  <Stack sx={{ mr: 2, color: item.color, fontSize: 40, width: 40 }} justifyContent="center" alignItems="center">
+                    {item.icon}
+                  </Stack>
+                  <Stack direction="column">
+                    {item.type === 'number' ? (
                       <Typography variant="h6" component="div" fontWeight="bold">
-                        {`${((item.value / item.total) * 100 || 0).toFixed(1)}%`}
+                        {item.value}
                       </Typography>
-                      <Typography variant="caption" component="div" color="text.secondary">
-                        {item.value}/{item.total}
+                    ) : item.type === 'percentage' ? (
+                      <Stack direction="row" alignItems="center" gap={1}>
+                        <Typography variant="h6" component="div" fontWeight="bold">
+                          {`${((item.value / item.total) * 100 || 0).toFixed(1)}%`}
+                        </Typography>
+                        <Typography variant="caption" component="div" color="text.secondary">
+                          {item.value}/{item.total}
+                        </Typography>
+                      </Stack>
+                    ) : (
+                      <Typography variant="h6" component="div" fontWeight="bold">
+                        {item.value}
                       </Typography>
-                    </Stack>
-                  ) : (
-                    <Typography variant="h6" component="div" fontWeight="bold">
-                      {item.value}
-                    </Typography>
-                  )}
+                    )}
 
-                  <Typography variant="body2" color="text.secondary">
-                    {item.title}
-                  </Typography>
-                </Stack>
-              </Card>
-            </Grid>
-          ))}
+                    <Typography variant="body2" color="text.secondary">
+                      {item.title}
+                    </Typography>
+                  </Stack>
+                </Card>
+              </Grid>
+            ))
+          )}
         </Grid>
         {/* Main Content */}
         <Grid container spacing={4} sx={{ mt: 2 }}>
@@ -208,15 +226,21 @@ const Dashboard = () => {
                       formatter={(value: any) => [`${value}개`, '응답 수']}
                       labelFormatter={(label, payload) => `${label} (${payload?.[0]?.payload?.date})`}
                     />
-                    <Legend />
-                    <Line
-                      type="monotone"
-                      dataKey="responses"
-                      stroke="#8884d8"
-                      strokeWidth={2}
-                      dot={{ fill: '#8884d8', strokeWidth: 2, r: 4 }}
-                      activeDot={{ r: 6, stroke: '#8884d8', strokeWidth: 2, fill: '#fff' }}
-                    />
+                    {last7DaysLoading ? (
+                      <Typography>Loading...</Typography>
+                    ) : (
+                      <>
+                        <Legend />
+                        <Line
+                          type="monotone"
+                          dataKey="responses"
+                          stroke="#8884d8"
+                          strokeWidth={2}
+                          dot={{ fill: '#8884d8', strokeWidth: 2, r: 4 }}
+                          activeDot={{ r: 6, stroke: '#8884d8', strokeWidth: 2, fill: '#fff' }}
+                        />
+                      </>
+                    )}
                   </LineChart>
                 </ResponsiveContainer>
               </Stack>
@@ -231,6 +255,7 @@ const Dashboard = () => {
               </Typography>
               <Stack direction="row" justifyContent="center" alignItems="center" sx={{ color: 'text.secondary', height: '100%', pb: 3 }}>
                 <DataGrid
+                  loading={recentSurveysLoading}
                   rows={rows}
                   columns={columns}
                   density="compact"

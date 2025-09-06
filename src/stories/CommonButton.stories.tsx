@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
-import CommonButton from './CommonButton';
 import { decorators, parameters } from '.storybook/variables';
+import CommonButton from '../components/atom/CommonButton';
 
 const meta = {
   component: CommonButton,

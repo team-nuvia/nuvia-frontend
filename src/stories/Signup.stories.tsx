@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
-import Signup from './Signup';
+import Signup from '../components/template/Signup';
 
 const meta = {
   component: Signup,

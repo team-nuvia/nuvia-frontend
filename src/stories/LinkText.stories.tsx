@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
-import LinkText from './LinkText';
 import { decorators, parameters } from '.storybook/variables';
+import LinkText from '../components/atom/LinkText';
 
 const meta = {
   component: LinkText,

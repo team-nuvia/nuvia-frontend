@@ -2,123 +2,165 @@
 
 import ActionButton from '@components/atom/ActionButton';
 import { Dialog, DialogActions, DialogContent, DialogTitle, Portal, Typography } from '@mui/material';
-import { createContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, createRef, RefObject, useCallback, useEffect, useRef, useState } from 'react';
 
 interface GlobalDialogContextProps {
   children: React.ReactNode;
 }
 
+interface DialogItem {
+  id: string;
+  title: string;
+  content: string | React.ReactNode;
+  actionCallback?: () => void;
+  useConfirm?: boolean;
+  onClose?: () => void;
+}
+
 interface GlobalDialogContextType {
-  open: boolean;
-  handleCloseDialog: () => void;
+  dialogs: DialogItem[];
   handleOpenDialog: ({
     title,
     content,
     actionCallback,
     useConfirm,
+    onClose,
   }: {
     title: string;
     content: string | React.ReactNode;
     actionCallback?: () => void;
     useConfirm?: boolean;
-  }) => void;
+    onClose?: () => void;
+  }) => string;
+  handleCloseDialog: (dialogId?: string) => void;
 }
 
 export const GlobalDialogContext = createContext<GlobalDialogContextType>({
-  open: false,
+  dialogs: [],
+  handleOpenDialog: () => '',
   handleCloseDialog: () => {},
-  handleOpenDialog: () => {},
 });
 
 const GlobalDialogProvider: React.FC<GlobalDialogContextProps> = ({ children }) => {
-  const [useConfirm, setUseConfirm] = useState(true);
-  const [open, setOpen] = useState(false);
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState<string | React.ReactNode>('');
-  const [confirmAction, setConfirmAction] = useState<() => void>(() => {});
-  const confirmButtonRef = useRef<HTMLButtonElement>(null);
+  const [dialogs, setDialogs] = useState<DialogItem[]>([]);
+  const confirmButtonRefs = useRef<{ [key: string]: RefObject<HTMLButtonElement> }>({});
 
-  const handleClose = () => {
-    setOpen(false);
-  };
+  const generateId = () => `dialog-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 
-  const handleOpen = () => {
-    setOpen(true);
-  };
+  const handleOpenDialog = useCallback(
+    ({
+      title,
+      content,
+      actionCallback,
+      useConfirm = true,
+      onClose,
+    }: {
+      title: string;
+      content: string | React.ReactNode;
+      actionCallback?: () => void;
+      useConfirm?: boolean;
+      onClose?: () => void;
+    }) => {
+      const id = generateId();
+      const newDialog: DialogItem = {
+        id,
+        title,
+        content,
+        actionCallback,
+        useConfirm,
+        onClose,
+      };
 
-  const handleAction = () => {
-    confirmAction?.();
-    handleCloseDialog();
-  };
+      const current = confirmButtonRefs.current;
+      if (current) {
+        Object.assign(current, { [id]: createRef<HTMLButtonElement>() });
+      }
 
-  const handleOpenDialog = ({
-    title,
-    content,
-    actionCallback,
-    useConfirm,
-  }: {
-    title: string;
-    content: string | React.ReactNode;
-    actionCallback?: () => void;
-    useConfirm?: boolean;
-  }) => {
-    setTitle(title);
-    setContent(content);
-    setUseConfirm(useConfirm ?? true);
-    setConfirmAction(() => actionCallback || (() => {}));
-    setTimeout(() => {
-      handleOpen();
-    }, 100);
-  };
+      setDialogs((prev) => [...prev, newDialog]);
 
-  const handleCloseDialog = () => {
-    setTimeout(() => {
-      setUseConfirm(true);
-    }, 100);
-    handleClose();
-    setConfirmAction(() => () => {});
-  };
+      return id;
+    },
+    [],
+  );
+
+  const handleCloseDialog = useCallback((dialogId?: string) => {
+    if (dialogId) {
+      // 특정 다이얼로그 닫기
+      setDialogs((prev) => {
+        const dialog = prev.find((d) => d.id === dialogId);
+        if (dialog?.onClose) {
+          dialog.onClose();
+        }
+        delete confirmButtonRefs.current[dialogId];
+        return prev.filter((d) => d.id !== dialogId);
+      });
+    } else {
+      // 가장 최근 다이얼로그 닫기
+      setDialogs((prev) => {
+        if (prev.length === 0) return prev;
+        const lastDialog = prev[prev.length - 1];
+        if (lastDialog.onClose) {
+          lastDialog.onClose();
+        }
+        delete confirmButtonRefs.current[lastDialog.id];
+        return prev.slice(0, -1);
+      });
+    }
+  }, []);
+
+  const handleAction = useCallback(
+    (dialog: DialogItem) => {
+      if (dialog.actionCallback) {
+        dialog.actionCallback();
+      }
+      handleCloseDialog(dialog.id);
+    },
+    [handleCloseDialog],
+  );
 
   // Focus management for accessibility
   useEffect(() => {
-    if (open && confirmButtonRef.current) {
-      // Small delay to ensure dialog is fully rendered
+    const lastDialog = dialogs[dialogs.length - 1];
+    if (lastDialog && confirmButtonRefs.current[lastDialog.id]?.current) {
       const timer = setTimeout(() => {
-        confirmButtonRef.current?.focus();
+        confirmButtonRefs.current[lastDialog.id]?.current?.focus();
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [open]);
+  }, [dialogs]);
 
   return (
-    <GlobalDialogContext.Provider value={{ open, handleOpenDialog, handleCloseDialog }}>
+    <GlobalDialogContext.Provider value={{ dialogs, handleOpenDialog, handleCloseDialog }}>
       {children}
       <Portal>
-        <Dialog
-          open={open}
-          onClose={handleCloseDialog}
-          fullWidth
-          maxWidth="sm"
-          sx={{ zIndex: 10000 }}
-          aria-labelledby="dialog-title"
-          aria-describedby="dialog-content"
-          disableRestoreFocus
-        >
-          <DialogTitle id="dialog-title">
-            <Typography variant="h6">{title}</Typography>
-          </DialogTitle>
-          <DialogContent id="dialog-content" sx={{ whiteSpace: 'pre-wrap' }}>
-            {content}
-          </DialogContent>
-          <DialogActions>
-            <ActionButton onClick={handleCloseDialog}>닫기</ActionButton>
-            {useConfirm && (
-              <ActionButton ref={confirmButtonRef} onClick={handleAction}>
-                확인
-              </ActionButton>
-            )}
-          </DialogActions>
-        </Dialog>
+        {dialogs.map((dialog, index) => (
+          <Dialog
+            key={dialog.id}
+            open={true}
+            onClose={() => handleCloseDialog(dialog.id)}
+            fullWidth
+            maxWidth="sm"
+            sx={{ zIndex: 10000 + index }}
+            aria-labelledby={`dialog-title-${dialog.id}`}
+            aria-describedby={`dialog-content-${dialog.id}`}
+            disableRestoreFocus
+          >
+            <DialogTitle id={`dialog-title-${dialog.id}`}>
+              <Typography variant="h6">{dialog.title}</Typography>
+            </DialogTitle>
+            <DialogContent id={`dialog-content-${dialog.id}`} sx={{ whiteSpace: 'pre-wrap' }}>
+              {dialog.content}
+            </DialogContent>
+            <DialogActions>
+              <ActionButton onClick={() => handleCloseDialog(dialog.id)}>닫기</ActionButton>
+              {dialog.useConfirm && (
+                <ActionButton ref={confirmButtonRefs.current[dialog.id]} onClick={() => handleAction(dialog)}>
+                  확인
+                </ActionButton>
+              )}
+            </DialogActions>
+          </Dialog>
+        ))}
       </Portal>
     </GlobalDialogContext.Provider>
   );

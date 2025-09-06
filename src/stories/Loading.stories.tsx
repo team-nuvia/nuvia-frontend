@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
-import Loading from './Loading';
+import Loading from '../components/atom/Loading';
 
 const meta = {
   component: Loading,

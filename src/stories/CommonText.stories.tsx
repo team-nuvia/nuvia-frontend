@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
-import CommonText from './CommonText';
 import { decorators, parameters } from '.storybook/variables';
+import CommonText from '../components/atom/CommonText';
 
 const meta = {
   component: CommonText,

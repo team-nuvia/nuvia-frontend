@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
-import ActionButton from './ActionButton';
 import { decorators, parameters } from '.storybook/variables';
+import ActionButton from '../components/atom/ActionButton';
 
 const meta = {
   component: ActionButton,

@@ -1,7 +1,6 @@
 'use client';
 
 import { GetMeResponse } from '@/models/GetMeResponse';
-import { LogoutResponse } from '@/models/LogoutResponse';
 import { getUsersMe } from '@api/get-users-me';
 import { getVerify } from '@api/get-verify';
 import { logout } from '@api/logout';
@@ -9,66 +8,88 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
-import { usePathname } from 'next/navigation';
-import { createContext, useCallback, useLayoutEffect, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { createContext, useCallback, useEffect, useState } from 'react';
 
 interface AuthenticationContextType {
   user: GetMeResponse | null;
-  isLoading: boolean;
-  isVerified: boolean;
-  setUser: (user: GetMeResponse | null) => void;
-  clearUser: () => PromiseServerResponse<LogoutResponse>;
-  fetchUser: () => Promise<void>;
+  isUserLoading: boolean;
+  clearUser: () => void;
+  fetchUser: () => void;
 }
 
 export const AuthenticationContext = createContext<AuthenticationContextType>({
   user: null,
-  isLoading: false,
-  isVerified: false,
-  setUser: () => {},
-  clearUser: async () => {},
-  fetchUser: async () => {},
+  isUserLoading: false,
+  clearUser: () => {},
+  fetchUser: () => {},
 });
 
-const AuthenticationProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<GetMeResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isVerified, setIsVerified] = useState(false);
+const AuthenticationProvider = ({ children, user, initialize }: { children: React.ReactNode; user: GetMeResponse | null; initialize: boolean }) => {
+  const [userData, setUserData] = useState<GetMeResponse | null>(user);
+  const [isUserLoading, setIsUserLoading] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+  const { mutate: getUsersMeMutation } = useMutation({
+    mutationFn: () => getUsersMe(),
+    mutationKey: ['getUsersMe'],
+    onSuccess: (data) => {
+      setUserData(data.payload);
+      setIsUserLoading(false);
+    },
+    onError: (error) => {
+      if (error instanceof AxiosError && error.code === 'ERR_NETWORK') {
+        localStorage.removeItem('access_token');
+        router.push('/');
+      }
+      setIsUserLoading(false);
+    },
+  });
   const { mutate: verifyToken } = useMutation({
     mutationKey: ['verifyToken'],
     mutationFn: () => getVerify(),
     onSuccess: async (data) => {
       if (data.ok && data.payload?.verified) {
-        const response = await getUsersMe();
-        setUser(response.payload);
-        setIsLoading(false);
-        setIsVerified(true);
+        getUsersMeMutation();
       }
     },
     onError: async (error) => {
       if (error instanceof AxiosError && error.code === 'ERR_NETWORK') {
-        await clearUser();
+        logoutMutation();
       }
-      setIsLoading(false);
-      setIsVerified(false);
+      setIsUserLoading(false);
     },
   });
   const { mutate: logoutMutation } = useMutation({
     mutationFn: () => logout(),
     mutationKey: ['logout'],
     onSuccess: () => {
-      setUser(null);
-      verifyToken();
+      router.push('/');
+      // verifyToken();
+      setUserData(null);
+      setIsUserLoading(false);
     },
     onError: (error) => {
       if (error instanceof AxiosError && error.code === 'ERR_NETWORK') {
         localStorage.removeItem('access_token');
       }
+      setIsUserLoading(false);
     },
   });
 
-  const fetchUser = useCallback(async () => {
+  useEffect(() => {
+    const accessToken = localStorage.getItem('access_token');
+    if (!accessToken) return;
+
+    if (initialize) {
+      setIsUserLoading(true);
+      verifyToken();
+    }
+  }, [pathname, initialize]);
+
+  const fetchUser = useCallback(() => {
+    setIsUserLoading(true);
+
     const hasAccessToken = localStorage.getItem('access_token');
     const noAccessToken = !hasAccessToken || hasAccessToken === 'undefined';
 
@@ -77,22 +98,19 @@ const AuthenticationProvider = ({ children }: { children: React.ReactNode }) => 
       return;
     }
 
-    setIsLoading(true);
-    setIsVerified(false);
-    verifyToken();
+    verifyToken(undefined, {
+      onSuccess: () => {
+        console.log('verify token success!!!');
+      },
+    });
   }, []);
 
-  const clearUser = useCallback(async () => {
-    setIsLoading(true);
+  const clearUser = useCallback(() => {
     logoutMutation();
-  }, [user]);
-
-  useLayoutEffect(() => {
-    fetchUser();
-  }, [pathname]);
+  }, []);
 
   return (
-    <AuthenticationContext.Provider value={{ user, setUser, clearUser, fetchUser, isLoading, isVerified }}>
+    <AuthenticationContext.Provider value={{ user: userData, clearUser, fetchUser, isUserLoading }}>
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ko">
         {children}
       </LocalizationProvider>

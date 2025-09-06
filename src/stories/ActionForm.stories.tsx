@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
-import ActionForm from './ActionForm';
 import { TextField } from '@mui/material';
 import { Fragment } from 'react';
+import ActionForm from '../components/molecular/ActionForm';
 
 const meta = {
   component: ActionForm,

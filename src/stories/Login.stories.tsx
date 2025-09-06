@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 import { decorators, parameters } from '.storybook/variables';
-import Login from './Login';
+import Login from '../components/template/Login';
 
 const meta = {
   component: Login,

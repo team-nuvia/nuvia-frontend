@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
-import StatisticsCard from './StatisticsCard';
 import { decorators, parameters } from '.storybook/variables';
+import StatisticsCard from '../components/organism/StatisticsCard';
 
 const meta = {
   component: StatisticsCard,

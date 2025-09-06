@@ -1,10 +1,13 @@
 import AuthenticationProvider from '@context/AuthenticationContext';
+import GlobalDialogProvider from '@context/GlobalDialogContext';
+import { GlobalSnackbar } from '@context/GlobalSnackbar';
+import { GlobalSnackbarSettingProvider } from '@context/GlobalSnackbarSettingProvider';
 import { LoadingProvider } from '@context/LoadingContext';
 import ReactQueryProvider from '@context/ReactQueryProvider';
 import { CssBaseline, Stack, ThemeProvider } from '@mui/material';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v13-appRouter';
 import type { Parameters } from '@storybook/nextjs-vite';
-import { lightTheme } from '@util/theme';
+import { darkTheme } from '@util/theme';
 import { PartialStoryFn } from 'storybook/internal/csf';
 
 export const parameters: Parameters = {
@@ -19,15 +22,21 @@ export const parameters: Parameters = {
 export function decorators(Story: PartialStoryFn) {
   return (
     <ReactQueryProvider>
-      <AuthenticationProvider>
+      <AuthenticationProvider user={null}>
         <AppRouterCacheProvider>
-          <ThemeProvider theme={lightTheme}>
+          <ThemeProvider theme={darkTheme}>
             <CssBaseline />
-            <LoadingProvider>
-              <Stack direction="row" justifyContent="center" alignItems="center" sx={{ width: '100%', height: '100vh' }}>
-                <Story />
-              </Stack>
-            </LoadingProvider>
+            <GlobalSnackbarSettingProvider>
+              <GlobalSnackbar>
+                <GlobalDialogProvider>
+                  <LoadingProvider>
+                    <Stack direction="row" justifyContent="center" alignItems="center" sx={{ width: '100%', height: '100vh' }}>
+                      <Story />
+                    </Stack>
+                  </LoadingProvider>
+                </GlobalDialogProvider>
+              </GlobalSnackbar>
+            </GlobalSnackbarSettingProvider>
           </ThemeProvider>
         </AppRouterCacheProvider>
       </AuthenticationProvider>

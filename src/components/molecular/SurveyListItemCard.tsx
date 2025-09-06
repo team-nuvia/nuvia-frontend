@@ -26,7 +26,7 @@ import { getSurveyStatusColor } from '@util/getSurveyStatusColor';
 import { LocalizationManager } from '@util/LocalizationManager';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { useContext, useState } from 'react';
+import { memo, useContext, useState } from 'react';
 
 interface SurveyListItemCardProps {
   survey: SearchSurvey;
@@ -399,4 +399,5 @@ const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey }) => {
   );
 };
 
-export default SurveyListItemCard;
+// export default SurveyListItemCard;
+export default memo(SurveyListItemCard);
