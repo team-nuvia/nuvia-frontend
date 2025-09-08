@@ -31,6 +31,8 @@ export const Default: Story = {
       return (
         <AuthenticationContext.Provider
           value={{
+            isUserLoading: false,
+            mainUrl: '',
             user: {
               id: 1,
               name: 'Devkimson',

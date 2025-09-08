@@ -22,7 +22,7 @@ export const parameters: Parameters = {
 export function decorators(Story: PartialStoryFn) {
   return (
     <ReactQueryProvider>
-      <AuthenticationProvider user={null}>
+      <AuthenticationProvider user={null} initialize={false}>
         <AppRouterCacheProvider>
           <ThemeProvider theme={darkTheme}>
             <CssBaseline />

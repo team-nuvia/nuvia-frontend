@@ -1,7 +1,5 @@
 import { QUESTION_DEFAULT_TYPE_LIST } from '@common/global';
 import ActionButton from '@components/atom/ActionButton';
-import { GlobalDialogContext } from '@context/GlobalDialogContext';
-import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditSquareIcon from '@mui/icons-material/EditSquare';
 import {
@@ -22,9 +20,8 @@ import {
 } from '@mui/material';
 import { DataType } from '@share/enums/data-type';
 import { QuestionType } from '@share/enums/question-type';
-import { IQuestion, IQuestionOption } from '@share/interface/iquestion';
-import { useFormikContext } from 'formik';
-import { memo, useCallback, useContext, useMemo } from 'react';
+import { IQuestionOption } from '@share/interface/iquestion';
+import { memo, useMemo } from 'react';
 
 const DATA_TYPE_MAP = {
   [DataType.Text]: '텍스트',
@@ -48,19 +45,12 @@ interface QuestionCardProps {
   questionType: QuestionType;
   dataType: DataType;
   isRequired: boolean;
-  value?: string;
   questionOptions?: IQuestionOption[];
-  questions: IQuestion[];
-  handleUpdateQuestionTitle: (index: number, newTitle: string) => void;
-  handleUpdateQuestionDescription: (index: number, newDescription: string) => void;
-  handleUpdateQuestionType: (index: number, newType: QuestionType) => void;
-  handleUpdateQuestionDataType: (index: number, newDataType: DataType) => void;
-  handleUpdateIsRequired: (index: number, newIsRequired: boolean) => void;
-  // setFieldValue: (field: string, value: any) => void;
-  setFieldError: (field: string, message: string) => void;
-  setFieldTouched: (field: string, touched?: boolean) => void;
-  touched?: { [key: string]: { [key: string]: boolean } };
-  errors?: { [key: string]: { [key: string]: any } };
+  // handleChangeBy: (name: string, value: any) => void;
+  handleChangeQuestionType: (questionIndex: number, field: string, value: any) => void;
+  handleAddOption: (questionIndex: number) => void;
+  handleRemoveQuestion: (questionIndex: number) => void;
+  handleRemoveOption: (questionIndex: number, optionIdx: number | string) => void;
 }
 
 const QuestionCard: React.FC<QuestionCardProps> = ({
@@ -72,21 +62,12 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   dataType,
   isRequired,
   questionOptions,
-  questions,
-  handleUpdateQuestionTitle,
-  handleUpdateQuestionDescription,
-  handleUpdateQuestionType,
-  handleUpdateQuestionDataType,
-  handleUpdateIsRequired,
-  // setFieldValue,
-  setFieldError,
-  setFieldTouched,
-  touched,
-  errors,
+  // handleChangeBy,
+  handleChangeQuestionType,
+  handleAddOption,
+  handleRemoveQuestion,
+  handleRemoveOption,
 }) => {
-  const { setFieldValue } = useFormikContext();
-  const { handleOpenDialog } = useContext(GlobalDialogContext);
-  const { addNotice } = useContext(GlobalSnackbarContext);
   const inputValueType = useMemo(() => {
     switch (dataType) {
       case DataType.Image:
@@ -115,123 +96,25 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
 
   // 현재 질문의 validation 상태
   const questionIndex = index;
-  const questionTouched = touched?.questions?.[questionIndex] || false;
-  const questionErrors = errors?.questions?.[questionIndex] || {};
-  const titleError = questionErrors.title;
-  const optionsErrors = questionErrors.options || [];
-
-  // Formik과 직접 연동된 핸들러들
-  // const handleQuestionChange = useCallback((field: keyof IQuestion, value: any) => {
-  //   if (questionIndex !== -1) {
-  //     const updatedQuestions = [...questions];
-  //     const updateData: Partial<IQuestion> = {};
-
-  //     if (field === 'questionType') {
-  //       const isSelectable = value === QuestionType.SingleChoice || value === QuestionType.MultipleChoice;
-  //       Object.assign(updateData, {
-  //         dataType: DataType.Text,
-  //         questionOptions: isSelectable ? [{ id: null, label: '' }] : [],
-  //       });
-  //     }
-
-  //     updateData[field] = value;
-
-  //     updatedQuestions[questionIndex] = {
-  //       ...updatedQuestions[questionIndex],
-  //       ...updateData,
-  //     };
-  //     setFieldValue('questions', updatedQuestions);
-  //   }
-  // }, []);
-
-  const handleOptionChange = useCallback((optionIdx: number | string, value: string) => {
-    if (questionIndex !== -1) {
-      const updatedQuestions = [...questions];
-      const question = updatedQuestions[questionIndex];
-      const optionIndex = question.questionOptions?.findIndex((opt) => opt.idx === optionIdx);
-
-      if (optionIndex !== -1 && question.questionOptions) {
-        question.questionOptions[optionIndex] = {
-          ...question.questionOptions[optionIndex],
-          label: value,
-        };
-        setFieldValue('questions', updatedQuestions);
-      }
-    }
-  }, []);
-
-  const handleAddOption = useCallback(() => {
-    if (questionIndex !== -1) {
-      const updatedQuestions = [...questions];
-      const question = updatedQuestions[questionIndex];
-      const newOption = { id: null, label: '', sequence: question.questionOptions?.length || 0, idx: Date.now() };
-
-      updatedQuestions[questionIndex] = {
-        ...question,
-        questionOptions: [...(question.questionOptions || []), newOption],
-      };
-      setFieldValue('questions', updatedQuestions);
-    }
-  }, []);
-
-  const handleRemoveOption = useCallback((optionIdx: number | string) => {
-    if (questions[questionIndex].questionOptions?.length === 1) {
-      // 해당 질문의 options 필드를 touched로 설정
-      setFieldTouched(`questions.${questionIndex}.questionOptions`, true);
-      // 에러 메시지 설정
-      setFieldError(`questions.${questionIndex}.questionOptions`, '최소 1개의 옵션이 필요합니다.');
-
-      addNotice('최소 1개의 옵션이 필요합니다.', 'error');
-      return; // 옵션 제거하지 않고 함수 종료
-    }
-
-    if (questionIndex !== -1) {
-      const updatedQuestions = [...questions];
-      const question = updatedQuestions[questionIndex];
-
-      updatedQuestions[questionIndex] = {
-        ...question,
-        questionOptions: (question.questionOptions || []).filter((opt) => opt.idx !== optionIdx),
-      };
-      setFieldValue('questions', updatedQuestions);
-
-      // 옵션 제거 후 에러가 있었다면 클리어
-      setFieldError(`questions.${questionIndex}.questionOptions`, '');
-    }
-  }, []);
-
-  const handleRemoveQuestion = useCallback(() => {
-    if (questions.length === 1) {
-      addNotice('최소 1개의 질문이 필요합니다.', 'error');
-      return;
-    }
-    handleOpenDialog({
-      title: '질문 삭제',
-      content: '삭제된 질문은 복구 불가합니다. 삭제하시겠습니까?',
-      actionCallback: confirmRemoveQuestion,
-      useConfirm: true,
-    });
-  }, []);
-
-  const confirmRemoveQuestion = useCallback(() => {
-    const filteredQuestions = questions.filter((q) => q.idx !== idx);
-    setFieldValue('questions', filteredQuestions);
-    addNotice('질문이 삭제되었습니다', 'success');
-  }, []);
+  // const questionTouched = touched?.questions?.[questionIndex] || false;
+  // const questionErrors = errors?.questions?.[questionIndex] || {};
+  // const titleError = questionErrors.title;
+  // const optionsErrors = questionErrors.options || [];
 
   return (
     <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
       <Grid container spacing={2} alignItems="center">
         <Grid size={{ xs: 12, md: 8 }} sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
           <TextField
+            name={`questions.${questionIndex}.title`}
             fullWidth
             size="small"
             label={`질문 ${index + 1}`}
             value={title}
-            onChange={(e) => handleUpdateQuestionTitle(index, e.target.value)}
+            onChange={(e) => handleChangeQuestionType(questionIndex, 'title', e.target.value)}
             variant="standard"
-            error={questionTouched && Boolean(titleError)}
-            helperText={questionTouched && titleError}
+            // error={questionTouched && Boolean(titleError)}
+            // helperText={questionTouched && titleError}
             required
           />
           <ActionButton
@@ -239,7 +122,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             startIcon={<EditSquareIcon />}
             color={isRequired ? 'error' : 'info'}
             variant="contained"
-            onClick={() => handleUpdateIsRequired(index, !isRequired)}
+            onClick={() => handleChangeQuestionType(questionIndex, 'isRequired', !isRequired)}
             shape="rounded"
             size="small"
             sx={{ p: 0, fontSize: '0.8rem' }}
@@ -250,8 +133,9 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
           <Select
             fullWidth
             size="small"
+            name={`questions.${questionIndex}.questionType`}
             value={questionType || QuestionType.ShortText}
-            onChange={(e) => handleUpdateQuestionType(index, e.target.value as QuestionType)}
+            onChange={(e) => handleChangeQuestionType(questionIndex, 'questionType', e.target.value as QuestionType)}
           >
             {Object.entries(QUESTION_DEFAULT_TYPE_LIST).map(([key, value]) => (
               <MenuItem key={key} value={key}>
@@ -262,12 +146,13 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
         </Grid>
         <Grid size={{ xs: 12 }}>
           <TextField
+            name={`questions.${questionIndex}.description`}
             fullWidth
             multiline
             rows={3}
             label="설문 설명"
             value={description ?? ''}
-            onChange={(e) => handleUpdateQuestionDescription(index, e.target.value)}
+            onChange={(e) => handleChangeQuestionType(questionIndex, 'description', e.target.value)}
           />
         </Grid>
       </Grid>
@@ -288,28 +173,29 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                     size="small"
                     label={`옵션 ${optIndex + 1}`}
                     value={option.label}
-                    onChange={(e) => handleOptionChange(option.idx, e.target.value)}
+                    name={`questions.${questionIndex}.questionOptions.${optIndex}.label`}
+                    onChange={(e) => handleChangeQuestionType(questionIndex, `questionOptions.${optIndex}.label`, e.target.value)}
                     variant="standard"
                     type={inputValueType}
-                    error={questionTouched && Boolean(optionsErrors[optIndex]?.label)}
-                    helperText={questionTouched && optionsErrors[optIndex]?.label}
+                    // error={questionTouched && Boolean(optionsErrors[optIndex]?.label)}
+                    // helperText={questionTouched && optionsErrors[optIndex]?.label}
                     required
                     autoFocus={questionOptions?.length === optIndex + 1}
                   />
                 </Grid>
                 <Grid size={{ xs: 1 }}>
-                  <IconButton onClick={() => handleRemoveOption(option.idx)} size="small">
+                  <IconButton onClick={() => handleRemoveOption(questionIndex, option.idx)} size="small">
                     <DeleteIcon />
                   </IconButton>
                 </Grid>
               </Grid>
             ))}
-            <Button onClick={handleAddOption} sx={{ mt: 1 }}>
+            <Button onClick={() => handleAddOption(questionIndex)} sx={{ mt: 1 }}>
               옵션 추가
             </Button>
-            {questionOptions?.length === 0 && questionTouched && (
+            {/* {questionOptions?.length === 0 && questionTouched && (
               <Box sx={{ color: 'error.main', fontSize: '0.75rem', mb: 1 }}>최소 1개의 옵션이 필요합니다.</Box>
-            )}
+            )} */}
           </Box>
         )}
       </Box>
@@ -323,7 +209,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       >
         {questionType === QuestionType.ShortText && (
           <FormControl>
-            <RadioGroup row value={dataType} onChange={(e) => handleUpdateQuestionDataType(index, e.target.value as DataType)}>
+            <RadioGroup row value={dataType} onChange={(e) => handleChangeQuestionType(questionIndex, 'dataType', e.target.value as DataType)}>
               {Object.values(DataType).map((value) => (
                 <FormControlLabel
                   key={value}
@@ -340,7 +226,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             </RadioGroup>
           </FormControl>
         )}
-        <IconButton onClick={handleRemoveQuestion}>
+        <IconButton onClick={() => handleRemoveQuestion(questionIndex)}>
           <DeleteIcon />
         </IconButton>
       </Stack>
