@@ -26,6 +26,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
   const { data } = useQuery({
     queryKey: ['user-organizations'],
     queryFn: getUserOrganizations,
+    enabled: !!user,
   });
   const { handleOpenDialog } = useContext(GlobalDialogContext);
 
@@ -45,7 +46,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
     {
       label: '팀 목록',
       name: 'teams',
-      to: '/teams',
+      to: '/dashboard/teams',
     },
   ];
 
@@ -71,7 +72,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
     menus.push({
       label: '설문 관리',
       name: 'survey',
-      to: '/survey',
+      to: '/dashboard/survey',
       startIcon: <DescriptionOutlinedIcon />,
     });
     if (currentOrganization?.target === SubscriptionTargetType.Organization) {
@@ -80,7 +81,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
     menus.push({
       label: '설정',
       name: 'settings',
-      to: '/settings',
+      to: '/dashboard/settings',
       startIcon: <SettingsOutlinedIcon />,
     });
 

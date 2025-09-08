@@ -14,18 +14,21 @@ import { createContext, useCallback, useEffect, useState } from 'react';
 interface AuthenticationContextType {
   user: GetMeResponse | null;
   isUserLoading: boolean;
+  mainUrl: string;
   clearUser: () => void;
-  fetchUser: () => void;
+  fetchUser: () => Promise<void>;
 }
 
 export const AuthenticationContext = createContext<AuthenticationContextType>({
   user: null,
   isUserLoading: false,
+  mainUrl: '/',
   clearUser: () => {},
-  fetchUser: () => {},
+  fetchUser: async () => {},
 });
 
 const AuthenticationProvider = ({ children, user, initialize }: { children: React.ReactNode; user: GetMeResponse | null; initialize: boolean }) => {
+  const [mainUrl, setMainUrl] = useState('/');
   const [userData, setUserData] = useState<GetMeResponse | null>(user);
   const [isUserLoading, setIsUserLoading] = useState(false);
   const pathname = usePathname();
@@ -87,21 +90,39 @@ const AuthenticationProvider = ({ children, user, initialize }: { children: Reac
     }
   }, [pathname, initialize]);
 
-  const fetchUser = useCallback(() => {
-    setIsUserLoading(true);
-
-    const hasAccessToken = localStorage.getItem('access_token');
-    const noAccessToken = !hasAccessToken || hasAccessToken === 'undefined';
-
-    if (noAccessToken) {
-      localStorage.removeItem('access_token');
-      return;
+  useEffect(() => {
+    if (userData) {
+      setMainUrl('/dashboard');
+    } else {
+      setMainUrl('/');
     }
+  }, [userData]);
 
-    verifyToken(undefined, {
-      onSuccess: () => {
-        console.log('verify token success!!!');
-      },
+  const fetchUser = useCallback(() => {
+    return new Promise<void>((resolve, reject) => {
+      setIsUserLoading(true);
+
+      const hasAccessToken = localStorage.getItem('access_token');
+      const noAccessToken = !hasAccessToken || hasAccessToken === 'undefined';
+
+      if (noAccessToken) {
+        localStorage.removeItem('access_token');
+        setIsUserLoading(false);
+        resolve();
+        return;
+      }
+
+      verifyToken(undefined, {
+        onSuccess: () => {
+          console.log('verify token success!!!');
+          setIsUserLoading(false);
+          resolve();
+        },
+        onError: () => {
+          setIsUserLoading(false);
+          reject();
+        },
+      });
     });
   }, []);
 
@@ -110,7 +131,7 @@ const AuthenticationProvider = ({ children, user, initialize }: { children: Reac
   }, []);
 
   return (
-    <AuthenticationContext.Provider value={{ user: userData, clearUser, fetchUser, isUserLoading }}>
+    <AuthenticationContext.Provider value={{ user: userData, clearUser, fetchUser, isUserLoading, mainUrl }}>
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ko">
         {children}
       </LocalizationProvider>

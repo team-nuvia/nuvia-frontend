@@ -68,7 +68,7 @@ const validationSchema = Yup.object().shape({
 
 const Teams = () => {
   useLoading({ forUser: true, unverifiedRoute: '/auth/login' });
-  const { user, isLoading: isUserLoading } = useContext(AuthenticationContext);
+  const { user, mainUrl } = useContext(AuthenticationContext);
   const router = useRouter();
   const { addNotice } = useContext(GlobalSnackbarContext);
   const { handleOpenDialog } = useContext(GlobalDialogContext);
@@ -105,9 +105,6 @@ const Teams = () => {
     queryKey: ['organization-roles', currentOrganization?.id],
     queryFn: () => getOrganizationRoles(currentOrganization!.id),
     enabled: !!currentOrganization?.id,
-    refetchOnWindowFocus: 'always',
-    refetchOnReconnect: 'always',
-    refetchOnMount: 'always',
   });
   const { mutate: updateOrganizationRoleMutate } = useMutation({
     mutationFn: ({
@@ -171,7 +168,7 @@ const Teams = () => {
 
   useEffect(() => {
     if (!isOrganization) {
-      router.push('/');
+      router.push(mainUrl);
     }
   }, [currentOrganization]);
 
@@ -394,7 +391,7 @@ const Teams = () => {
     },
   ];
 
-  if (isOrganizationLoading || isUserLoading) {
+  if (isOrganizationLoading) {
     return <Loading />;
   }
 

@@ -18,6 +18,7 @@ export const login = async (email: string, password: string): Promise<ServerResp
   const accessToken = response.data.payload?.accessToken;
   if (accessToken) {
     localStorage.setItem('access_token', accessToken);
+    console.log('✨ access token 저장');
   }
   return response.data;
 };

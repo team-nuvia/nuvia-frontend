@@ -11,9 +11,19 @@ interface WrapChildrenProps {
 const WrapChildren: React.FC<WrapChildrenProps> = ({ children }) => {
   const { user } = useContext(AuthenticationContext);
 
+  if (user) {
+    return (
+      <Stack direction="row" flex={1}>
+        <Sidebar />
+        <Stack flex={1} sx={{ overflowX: 'hidden' }}>
+          {children}
+        </Stack>
+      </Stack>
+    );
+  }
+
   return (
     <Stack direction="row" flex={1}>
-      {user && <Sidebar />}
       <Stack flex={1} sx={{ overflowX: 'hidden' }}>
         {children}
       </Stack>

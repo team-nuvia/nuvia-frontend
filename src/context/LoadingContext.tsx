@@ -17,10 +17,10 @@ const routerMap: (pathname: string, user: GetMeResponse | null) => string = (pat
   if (/^\/auth\/login$/.test(pathname)) return '로그인 페이지 로드 중...';
   if (/^\/auth\/signup$/.test(pathname)) return '회원가입 페이지 로드 중...';
   if (/^\/auth\/reset-password$/.test(pathname)) return '비밀번호 재설정 페이지 로드 중...';
-  if (/^\/survey\/create$/.test(pathname)) return '설문 페이지 로드 중...';
-  if (/^\/survey\/view\/(\w+)$/.test(pathname)) return '설문 페이지 로드 중...';
-  if (/^\/survey(^\?.+)?$/.test(pathname)) return '설문 목록 로드 중...';
-  if (/^\/survey\/(\d+)$/.test(pathname)) return '설문 상세 페이지 로드 중...';
+  if (/^\/dashboard\/survey\/create$/.test(pathname)) return '설문 페이지 로드 중...';
+  if (/^\/dashboard\/survey\/view\/(\w+)$/.test(pathname)) return '설문 페이지 로드 중...';
+  if (/^\/dashboard\/survey(^\?.+)?$/.test(pathname)) return '설문 목록 로드 중...';
+  if (/^\/dashboard\/survey\/(\d+)$/.test(pathname)) return '설문 상세 페이지 로드 중...';
   if (/^\/teams$/.test(pathname)) return '팀 목록 로드 중...';
   return '서비스 로드 중...';
 };

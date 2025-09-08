@@ -28,7 +28,7 @@ const Notification = () => {
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState('');
   const { addNotice } = useContext(GlobalSnackbarContext);
-  const { user, isLoading: isLoadingUser } = useContext(AuthenticationContext);
+  const { user } = useContext(AuthenticationContext);
   const [anchorElNotification, setAnchorElNotification] = useState<null | HTMLElement>(null);
   const { data: notifications } = useQuery({
     queryKey: ['notifications'],
@@ -84,17 +84,13 @@ const Notification = () => {
     rejectInvitationMutate({ subscriptionId, notificationId });
   };
 
-  if (isLoadingUser) {
-    return null;
-  }
-
   if (!user) {
     return null;
   }
 
   return (
     <Stack>
-      <Tooltip title="알림" placement="right" arrow>
+      <Tooltip title="알림" arrow>
         <Badge badgeContent={notificationCount} color="error">
           <IconButton onClick={handleOpenNotificationMenu} sx={{ p: 0.5, color: 'text.secondary' }}>
             {notificationCount > 0 ? <NotificationsActiveOutlinedIcon /> : <NotificationsOutlinedIcon />}

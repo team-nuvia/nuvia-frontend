@@ -1,15 +1,18 @@
 'use client';
 
 import ActionButton from '@components/atom/ActionButton';
+import { AuthenticationContext } from '@context/AuthenticationContext';
 import { useLoading } from '@hooks/useLoading';
 import { ArrowBack, Home, SearchOff } from '@mui/icons-material';
 import { Box, Paper, Stack, Typography } from '@mui/material';
 import { useRouter } from 'next/navigation';
+import { useContext } from 'react';
 
 interface NotFoundProps {}
 const NotFound: React.FC<NotFoundProps> = () => {
   useLoading();
   const router = useRouter();
+  const { mainUrl } = useContext(AuthenticationContext);
 
   return (
     <Stack
@@ -81,7 +84,7 @@ const NotFound: React.FC<NotFoundProps> = () => {
       {/* 액션 버튼 그룹 */}
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 5, width: '100%', maxWidth: 400 }}>
         <ActionButton
-          onClick={() => router.push('/')}
+          onClick={() => router.push(mainUrl)}
           startIcon={<Home />}
           sx={{
             px: 5,

@@ -70,7 +70,7 @@ export default function SurveyList() {
   }, [selectedTab]);
 
   const handleRedirectCreate = () => {
-    router.push('/survey/create');
+    router.push('/dashboard/survey/create');
   };
 
   const handlePopTrash = () => {

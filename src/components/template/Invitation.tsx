@@ -5,6 +5,7 @@ import { useContext, useEffect, useRef } from 'react';
 
 import { getVerify } from '@api/get-verify';
 import { verifyInvitationToken } from '@api/verify-invitation-token';
+import { AuthenticationContext } from '@context/AuthenticationContext';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import { CheckCircle as CheckCircleIcon, Error as ErrorIcon, Mail as MailIcon } from '@mui/icons-material';
 import { Alert, Box, Button, Card, CardContent, CircularProgress, Container, Fade, Stack, Typography, useTheme } from '@mui/material';
@@ -34,6 +35,7 @@ type InvitationStatus = 'loading' | 'success' | 'error' | 'unauthorized';
 const Invitation: React.FC<InvitationProps> = ({ token }) => {
   const routerURL = `/auth/login?action=invitation&token=${encodeURIComponent(token)}&redirect=${encodeURIComponent(window.location.pathname)}`;
   const router = useRouter();
+  const { mainUrl } = useContext(AuthenticationContext);
   const { addNotice } = useContext(GlobalSnackbarContext);
   const { endLoading } = useContext(LoadingContext);
   const theme = useTheme();
@@ -180,7 +182,7 @@ const Invitation: React.FC<InvitationProps> = ({ token }) => {
                 <br />
                 이제 모든 기능을 사용하실 수 있습니다.
               </Typography>
-              <Button variant="contained" size="large" sx={{ mt: 2, borderRadius: 2, px: 4 }} onClick={() => (window.location.href = '/')}>
+              <Button variant="contained" size="large" sx={{ mt: 2, borderRadius: 2, px: 4 }} onClick={() => (window.location.href = mainUrl)}>
                 대시보드로 이동
               </Button>
             </Stack>

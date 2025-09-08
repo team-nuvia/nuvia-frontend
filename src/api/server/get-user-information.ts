@@ -5,7 +5,6 @@ import { cookies } from 'next/headers';
 
 export async function getUserInformation() {
   const refreshToken = (await cookies()).get('refresh_token')?.value;
-  console.log('🚀 ~ getUserInformation ~ refreshToken:', refreshToken);
   try {
     const verifyResponse = await axios.post(
       `${API_URL}/auth/verify`,

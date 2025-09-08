@@ -106,7 +106,7 @@ const Profile: React.FC<ProfileProps> = () => {
           <Typography variant="h4" component="h1" fontWeight="bold">
             프로필
           </Typography>
-          <ActionButton variant="outlined" startIcon={<Settings />} size="large" onClick={() => router.push('/user/settings')}>
+          <ActionButton variant="outlined" startIcon={<Settings />} size="large" onClick={() => router.push('/dashboard/user/settings')}>
             설정
           </ActionButton>
         </Box>
