@@ -1,38 +1,25 @@
 'use client';
 
 import { getLast7DaysResponseCount } from '@api/get-daily-response-count';
-import { getDashboardRecentSurveysServer } from '@api/get-dashboard-recent-surveys-server';
 import { getSurveyMetadata } from '@api/get-survey-metadata';
-import CommonText from '@components/atom/CommonText';
+import RecentSurveyData from '@components/molecular/RecentSurveyData';
 import WelcomeDashboard from '@components/organism/WelcomeDashboard';
-import { AuthenticationContext } from '@context/AuthenticationContext';
-import { useBlackRouter } from '@hooks/useBlackRouter';
 import { useLoading } from '@hooks/useLoading';
 import { BarChart, CheckCircleOutline, DonutLarge, PeopleAlt } from '@mui/icons-material';
 import { Box, Card, Container, Grid, Paper, Skeleton, Stack, Typography } from '@mui/material';
-import { DataGrid, GridColDef, GridRowsProp } from '@mui/x-data-grid';
 import { MetadataStatusType } from '@share/enums/metadata-status-type';
-import { SurveyStatus } from '@share/enums/survey-status';
 import { useQuery } from '@tanstack/react-query';
-import { LocalizationManager } from '@util/LocalizationManager';
-import { usePathname } from 'next/navigation';
-import { useContext, useMemo } from 'react';
+import { useMemo } from 'react';
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 const Dashboard = () => {
   useLoading({ forUser: true, unverifiedRoute: '/' });
-  const router = useBlackRouter();
-  const { user } = useContext(AuthenticationContext);
-  const pathname = usePathname();
 
   const { data: metadataData, isLoading: metadataLoading } = useQuery({
     queryKey: ['dashboard-metadata'],
     queryFn: () => getSurveyMetadata(MetadataStatusType.Dashboard),
   });
-  const { data: recentSurveysData, isLoading: recentSurveysLoading } = useQuery({
-    queryKey: ['dashboard-recent-surveys'],
-    queryFn: getDashboardRecentSurveysServer,
-  });
+
   const { data: last7Days, isLoading: last7DaysLoading } = useQuery({
     queryKey: ['daily-response-count'],
     queryFn: getLast7DaysResponseCount,
@@ -51,11 +38,7 @@ const Dashboard = () => {
     }
 
     // API 데이터가 로딩 중이거나 없을 때는 더미 데이터로 표시
-    return last7Days?.payload?.map((day, index) => ({
-      date: day.date,
-      label: ['일', '월', '화', '수', '목', '금', '토'][(currentDay + index + 1) % 7],
-      responses: Math.floor(Math.random() * 50) + 10, // 임시 더미 데이터
-    }));
+    return [];
   }, [last7Days]);
 
   const kpiData = useMemo(() => {
@@ -96,50 +79,6 @@ const Dashboard = () => {
       },
     ];
   }, [metadataData]);
-
-  const rows: GridRowsProp = useMemo<GridRowsProp>(
-    () =>
-      recentSurveysData?.payload?.map((survey) => ({
-        id: survey.id,
-        title: survey.title,
-        hashedUniqueKey: survey.hashedUniqueKey,
-        status: survey.status,
-        expiresAt: survey.expiresAt,
-        responses: survey.responses,
-      })) ?? [],
-    [recentSurveysData],
-  );
-
-  const columns: GridColDef[] = [
-    {
-      field: 'title',
-      headerName: '설문 제목',
-      width: 200,
-      renderCell: (params) => (
-        <CommonText
-          component="a"
-          thickness="regular"
-          fontSize={16}
-          color="primary.main"
-          sx={{
-            cursor: 'pointer',
-            '&:hover': {
-              textDecoration: 'underline',
-            },
-          }}
-          title={pathname + 'survey/view/' + params.row.hashedUniqueKey}
-          onClick={() => {
-            router.push(`/survey/view/${params.row.hashedUniqueKey}`);
-          }}
-        >
-          {params.value}
-        </CommonText>
-      ),
-    },
-    { field: 'status', headerName: '상태', width: 100, valueFormatter: (value) => LocalizationManager.translate(value as SurveyStatus) },
-    { field: 'expiresAt', headerName: '마감기한', width: 100 },
-    { field: 'responses', headerName: '응답 수', width: 100 },
-  ];
 
   return (
     <Box sx={{ flexGrow: 1, p: 4 }}>
@@ -253,33 +192,8 @@ const Dashboard = () => {
               <Typography variant="h6" fontWeight="bold" gutterBottom>
                 최근 설문
               </Typography>
-              <Stack direction="row" justifyContent="center" alignItems="center" sx={{ color: 'text.secondary', height: '100%', pb: 3 }}>
-                <DataGrid
-                  loading={recentSurveysLoading}
-                  rows={rows}
-                  columns={columns}
-                  density="compact"
-                  slots={{
-                    footer: () => null, // Render nothing for the footer
-                  }}
-                  sx={{
-                    backgroundColor: (theme) => theme.palette.background.paper,
-                    border: 'none',
-                    '& .MuiDataGrid-root': {
-                      outline: 'none',
-                      border: 'none',
-                    },
-                    '& .MuiDataGrid-cell': {
-                      borderBottom: 'none',
-                    },
-                    '& .MuiDataGrid-columnHeaders': {
-                      borderBottom: 'none',
-                    },
-                    '& .MuiDataGrid-columnSeparator': {
-                      display: 'none',
-                    },
-                  }}
-                />
+              <Stack direction="row" justifyContent="center" alignItems="center" sx={{ color: 'text.secondary' }}>
+                <RecentSurveyData />
               </Stack>
             </Paper>
           </Grid>

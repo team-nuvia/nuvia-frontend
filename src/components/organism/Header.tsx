@@ -55,7 +55,7 @@ const Header: React.FC<HeaderProps> = () => {
     () =>
       user
         ? [
-            { label: 'Profile', to: '/user' },
+            { label: 'Profile', to: '/dashboard/user' },
             {
               label: 'Logout',
               request: () => {
@@ -86,13 +86,13 @@ const Header: React.FC<HeaderProps> = () => {
 
   return (
     <Stack>
-      <Toolbar />
+      {shadow && <Toolbar />}
       <Stack
         direction="row"
         alignItems="center"
         justifyContent="center"
         sx={{
-          position: 'fixed',
+          position: shadow ? 'fixed' : 'static',
           width: '100%',
           top: 0,
           zIndex: 1000,

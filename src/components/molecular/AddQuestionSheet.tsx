@@ -19,7 +19,6 @@ import {
   Tabs,
   TextField,
   Typography,
-  useMediaQuery,
   useTheme,
 } from '@mui/material';
 import * as React from 'react';
@@ -44,7 +43,8 @@ export const AddQuestionSheet: React.FC<{
   isMobile?: boolean;
 }> = ({ onPick, isMobile = true }) => {
   const theme = useTheme();
-  const mobile = useMediaQuery(theme.breakpoints.down('md')) || isMobile;
+  // const mobile = useMediaQuery(theme.breakpoints.down('md')) || isMobile;
+  // const questionField = useField<AllQuestion[]>('questions');
 
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState('');
@@ -262,7 +262,7 @@ export const AddQuestionSheet: React.FC<{
                         sx={{ position: 'absolute', right: 6, top: 6 }}
                       >
                         {getCurrentPinned(k) ? (
-                          <SvgIcon fontSize='small'>
+                          <SvgIcon fontSize="small">
                             <RemovePin />
                           </SvgIcon>
                         ) : (

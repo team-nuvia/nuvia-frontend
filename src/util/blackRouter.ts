@@ -1,1 +1,1 @@
-export const routerBlackList = ['/survey/create'];
+export const routerBlackList = ['/dashboard/survey/create'];

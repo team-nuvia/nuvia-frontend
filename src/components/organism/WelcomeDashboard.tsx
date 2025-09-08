@@ -24,7 +24,7 @@ const WelcomeDashboard = () => {
             size="large"
             startIcon={<Add />}
             onClick={() => {
-              router.push('/survey/create');
+              router.push('/dashboard/survey/create');
             }}
           >
             새 설문 만들기
@@ -36,7 +36,7 @@ const WelcomeDashboard = () => {
             variant="outlined"
             shape="rounded"
             onClick={() => {
-              router.push('/survey');
+              router.push('/dashboard/survey');
             }}
           >
             내 설문 보기

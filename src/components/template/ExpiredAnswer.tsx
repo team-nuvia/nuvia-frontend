@@ -2,17 +2,20 @@
 
 import { GetSurveyDetailResponse } from '@/models/GetSurveyDetailResponse';
 import ActionButton from '@components/atom/ActionButton';
+import { AuthenticationContext } from '@context/AuthenticationContext';
 import { Container, Stack, Typography } from '@mui/material';
 import { useRouter } from 'next/navigation';
+import { useContext } from 'react';
 
 interface ExpiredAnswerProps {
   survey: GetSurveyDetailResponse;
 }
 const ExpiredAnswer: React.FC<ExpiredAnswerProps> = ({ survey }) => {
+  const { mainUrl } = useContext(AuthenticationContext);
   const router = useRouter();
 
   function handleNewAnswer() {
-    window.location.href = `/survey/view/${survey.hashedUniqueKey}`;
+    window.location.href = `/dashboard/survey/view/${survey.hashedUniqueKey}`;
   }
 
   return (
@@ -25,7 +28,7 @@ const ExpiredAnswer: React.FC<ExpiredAnswerProps> = ({ survey }) => {
           다시 참여하기 위해서는 처음부터 시작해야 합니다.
         </Typography>
         <Stack direction="row" gap={2} justifyContent="center">
-          <ActionButton variant="contained" color="primary" onClick={() => router.push('/')}>
+          <ActionButton variant="contained" color="primary" onClick={() => router.push(mainUrl)}>
             홈으로 이동
           </ActionButton>
           <ActionButton variant="contained" color="primary" onClick={handleNewAnswer}>

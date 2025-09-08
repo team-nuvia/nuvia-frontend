@@ -23,7 +23,8 @@ import {
 import { DataType } from '@share/enums/data-type';
 import { QuestionType } from '@share/enums/question-type';
 import { IQuestion, IQuestionOption } from '@share/interface/iquestion';
-import { memo, useContext, useMemo } from 'react';
+import { useFormikContext } from 'formik';
+import { memo, useCallback, useContext, useMemo } from 'react';
 
 const DATA_TYPE_MAP = {
   [DataType.Text]: '텍스트',
@@ -49,8 +50,13 @@ interface QuestionCardProps {
   isRequired: boolean;
   value?: string;
   questionOptions?: IQuestionOption[];
-  questions: Omit<IQuestion, 'answers' | 'isAnswered'>[];
-  setFieldValue: (field: string, value: any) => void;
+  questions: IQuestion[];
+  handleUpdateQuestionTitle: (index: number, newTitle: string) => void;
+  handleUpdateQuestionDescription: (index: number, newDescription: string) => void;
+  handleUpdateQuestionType: (index: number, newType: QuestionType) => void;
+  handleUpdateQuestionDataType: (index: number, newDataType: DataType) => void;
+  handleUpdateIsRequired: (index: number, newIsRequired: boolean) => void;
+  // setFieldValue: (field: string, value: any) => void;
   setFieldError: (field: string, message: string) => void;
   setFieldTouched: (field: string, touched?: boolean) => void;
   touched?: { [key: string]: { [key: string]: boolean } };
@@ -67,12 +73,18 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   isRequired,
   questionOptions,
   questions,
-  setFieldValue,
+  handleUpdateQuestionTitle,
+  handleUpdateQuestionDescription,
+  handleUpdateQuestionType,
+  handleUpdateQuestionDataType,
+  handleUpdateIsRequired,
+  // setFieldValue,
   setFieldError,
   setFieldTouched,
   touched,
   errors,
 }) => {
+  const { setFieldValue } = useFormikContext();
   const { handleOpenDialog } = useContext(GlobalDialogContext);
   const { addNotice } = useContext(GlobalSnackbarContext);
   const inputValueType = useMemo(() => {
@@ -102,37 +114,37 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   }, [dataType]);
 
   // 현재 질문의 validation 상태
-  const questionIndex = questions.findIndex((q) => q.idx === idx);
+  const questionIndex = index;
   const questionTouched = touched?.questions?.[questionIndex] || false;
   const questionErrors = errors?.questions?.[questionIndex] || {};
   const titleError = questionErrors.title;
   const optionsErrors = questionErrors.options || [];
 
   // Formik과 직접 연동된 핸들러들
-  const handleQuestionChange = (field: keyof IQuestion, value: any) => {
-    if (questionIndex !== -1) {
-      const updatedQuestions = [...questions];
-      const updateData: Partial<IQuestion> = {};
+  // const handleQuestionChange = useCallback((field: keyof IQuestion, value: any) => {
+  //   if (questionIndex !== -1) {
+  //     const updatedQuestions = [...questions];
+  //     const updateData: Partial<IQuestion> = {};
 
-      if (field === 'questionType') {
-        const isSelectable = value === QuestionType.SingleChoice || value === QuestionType.MultipleChoice;
-        Object.assign(updateData, {
-          dataType: DataType.Text,
-          questionOptions: isSelectable ? [{ id: null, label: '' }] : [],
-        });
-      }
+  //     if (field === 'questionType') {
+  //       const isSelectable = value === QuestionType.SingleChoice || value === QuestionType.MultipleChoice;
+  //       Object.assign(updateData, {
+  //         dataType: DataType.Text,
+  //         questionOptions: isSelectable ? [{ id: null, label: '' }] : [],
+  //       });
+  //     }
 
-      updateData[field] = value;
+  //     updateData[field] = value;
 
-      updatedQuestions[questionIndex] = {
-        ...updatedQuestions[questionIndex],
-        ...updateData,
-      };
-      setFieldValue('questions', updatedQuestions);
-    }
-  };
+  //     updatedQuestions[questionIndex] = {
+  //       ...updatedQuestions[questionIndex],
+  //       ...updateData,
+  //     };
+  //     setFieldValue('questions', updatedQuestions);
+  //   }
+  // }, []);
 
-  const handleOptionChange = (optionIdx: number | string, value: string) => {
+  const handleOptionChange = useCallback((optionIdx: number | string, value: string) => {
     if (questionIndex !== -1) {
       const updatedQuestions = [...questions];
       const question = updatedQuestions[questionIndex];
@@ -146,9 +158,9 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
         setFieldValue('questions', updatedQuestions);
       }
     }
-  };
+  }, []);
 
-  const handleAddOption = () => {
+  const handleAddOption = useCallback(() => {
     if (questionIndex !== -1) {
       const updatedQuestions = [...questions];
       const question = updatedQuestions[questionIndex];
@@ -160,9 +172,9 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       };
       setFieldValue('questions', updatedQuestions);
     }
-  };
+  }, []);
 
-  const handleRemoveOption = (optionIdx: number | string) => {
+  const handleRemoveOption = useCallback((optionIdx: number | string) => {
     if (questions[questionIndex].questionOptions?.length === 1) {
       // 해당 질문의 options 필드를 touched로 설정
       setFieldTouched(`questions.${questionIndex}.questionOptions`, true);
@@ -186,9 +198,9 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       // 옵션 제거 후 에러가 있었다면 클리어
       setFieldError(`questions.${questionIndex}.questionOptions`, '');
     }
-  };
+  }, []);
 
-  const handleRemoveQuestion = () => {
+  const handleRemoveQuestion = useCallback(() => {
     if (questions.length === 1) {
       addNotice('최소 1개의 질문이 필요합니다.', 'error');
       return;
@@ -199,24 +211,24 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       actionCallback: confirmRemoveQuestion,
       useConfirm: true,
     });
-  };
+  }, []);
 
-  const confirmRemoveQuestion = () => {
+  const confirmRemoveQuestion = useCallback(() => {
     const filteredQuestions = questions.filter((q) => q.idx !== idx);
     setFieldValue('questions', filteredQuestions);
     addNotice('질문이 삭제되었습니다', 'success');
-  };
+  }, []);
 
   return (
-    <Paper key={idx} elevation={3} sx={{ p: 4, mt: 4 }}>
+    <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
       <Grid container spacing={2} alignItems="center">
         <Grid size={{ xs: 12, md: 8 }} sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
           <TextField
             fullWidth
             size="small"
-            label={`질문 ${index}`}
+            label={`질문 ${index + 1}`}
             value={title}
-            onChange={(e) => handleQuestionChange('title', e.target.value)}
+            onChange={(e) => handleUpdateQuestionTitle(index, e.target.value)}
             variant="standard"
             error={questionTouched && Boolean(titleError)}
             helperText={questionTouched && titleError}
@@ -227,7 +239,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             startIcon={<EditSquareIcon />}
             color={isRequired ? 'error' : 'info'}
             variant="contained"
-            onClick={() => handleQuestionChange('isRequired', !isRequired)}
+            onClick={() => handleUpdateIsRequired(index, !isRequired)}
             shape="rounded"
             size="small"
             sx={{ p: 0, fontSize: '0.8rem' }}
@@ -239,7 +251,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             fullWidth
             size="small"
             value={questionType || QuestionType.ShortText}
-            onChange={(e) => handleQuestionChange('questionType', e.target.value as QuestionType)}
+            onChange={(e) => handleUpdateQuestionType(index, e.target.value as QuestionType)}
           >
             {Object.entries(QUESTION_DEFAULT_TYPE_LIST).map(([key, value]) => (
               <MenuItem key={key} value={key}>
@@ -255,7 +267,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             rows={3}
             label="설문 설명"
             value={description ?? ''}
-            onChange={(e) => handleQuestionChange('description', e.target.value)}
+            onChange={(e) => handleUpdateQuestionDescription(index, e.target.value)}
           />
         </Grid>
       </Grid>
@@ -311,7 +323,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       >
         {questionType === QuestionType.ShortText && (
           <FormControl>
-            <RadioGroup row value={dataType} onChange={(e) => handleQuestionChange('dataType', e.target.value as DataType)}>
+            <RadioGroup row value={dataType} onChange={(e) => handleUpdateQuestionDataType(index, e.target.value as DataType)}>
               {Object.values(DataType).map((value) => (
                 <FormControlLabel
                   key={value}

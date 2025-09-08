@@ -28,22 +28,28 @@ interface LoginProps {
   redirect?: string;
 }
 const Login: React.FC<LoginProps> = ({ action, token, redirect }) => {
-  useLoading({ forUser: true, verifiedRoute: '/' });
+  useLoading({ forUser: true, verifiedRoute: '/dashboard' });
   const theme = useTheme();
   const router = useRouter();
-  const { fetchUser } = useContext(AuthenticationContext);
+  const { fetchUser, mainUrl } = useContext(AuthenticationContext);
   const { addNotice } = useContext(GlobalSnackbarContext);
   const { mutate: loginMutation } = useMutation({
     mutationFn: (values: { email: string; password: string }) => login(values.email, values.password),
     mutationKey: ['login'],
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
       formik.setSubmitting(false);
+
+      console.log('✨ fetchUser');
+      await fetchUser();
+      console.log('✨ fetchUser 완료');
+
       if (action === 'invitation' && redirect && token) {
         router.push(`${redirect}?q=${token}`);
       } else {
-        router.push('/');
+        console.log('✨ router.push /');
+        router.push(mainUrl);
       }
-      fetchUser();
+
       addNotice(response.message, 'success');
     },
     onError: (error) => {

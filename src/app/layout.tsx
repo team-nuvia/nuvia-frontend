@@ -3,9 +3,9 @@ import { LoadingProvider } from '@/context/LoadingContext';
 import '@/styles/global.css';
 import { getUserInformation } from '@api/server/get-user-information';
 import { BRAND_NAME } from '@common/variables';
+import ReactScan from '@components/atom/ReactScan';
 import Footer from '@components/organism/Footer';
 import Header from '@components/organism/Header';
-import WrapChildren from '@components/organism/WrapChildren';
 import GlobalDialogProvider from '@context/GlobalDialogContext';
 import { GlobalSnackbar } from '@context/GlobalSnackbar';
 import { GlobalSnackbarSettingProvider } from '@context/GlobalSnackbarSettingProvider';
@@ -14,17 +14,6 @@ import { CssBaseline, ThemeProvider } from '@mui/material';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import { darkTheme } from '@util/theme';
 import type { Metadata, Viewport } from 'next';
-// import { Geist, Geist_Mono } from 'next/font/google';
-
-// const geistSans = Geist({
-//   variable: '--font-geist-sans',
-//   subsets: ['latin'],
-// });
-
-// const geistMono = Geist_Mono({
-//   variable: '--font-geist-mono',
-//   subsets: ['latin'],
-// });
 
 export const metadata: Metadata = {
   title: `${BRAND_NAME} - 빠르고 간편한 설문 플랫폼`,
@@ -56,9 +45,11 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const user = await getUserInformation();
+  // console.log('🚀 ~ RootLayout ~ user:', user);
   return (
     <html lang="ko">
-      <body /* className={`${geistSans.variable} ${geistMono.variable}`} */>
+      <body>
+        <ReactScan />
         <ReactQueryProvider>
           <AuthenticationProvider initialize={true} user={user}>
             <AppRouterCacheProvider>
@@ -69,7 +60,7 @@ export default async function RootLayout({
                     <GlobalDialogProvider>
                       <LoadingProvider>
                         <Header />
-                        <WrapChildren>{children}</WrapChildren>
+                        {children}
                         <Footer />
                       </LoadingProvider>
                     </GlobalDialogProvider>
