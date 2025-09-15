@@ -91,12 +91,14 @@ const AuthenticationProvider = ({ children, user, initialize }: { children: Reac
   }, [pathname, initialize]);
 
   useEffect(() => {
-    if (userData) {
-      setMainUrl('/dashboard');
-    } else {
-      setMainUrl('/');
+    if (!isUserLoading) {
+      if (userData) {
+        setMainUrl('/dashboard');
+      } else {
+        setMainUrl('/');
+      }
     }
-  }, [userData]);
+  }, [userData, isUserLoading]);
 
   const fetchUser = useCallback(() => {
     return new Promise<void>((resolve, reject) => {
