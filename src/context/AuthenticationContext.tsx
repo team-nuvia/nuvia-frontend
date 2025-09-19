@@ -43,7 +43,7 @@ const AuthenticationProvider = ({ children, user, initialize }: { children: Reac
     onError: (error) => {
       if (error instanceof AxiosError && error.code === 'ERR_NETWORK') {
         localStorage.removeItem('access_token');
-        router.push('/');
+        logoutMutation();
       }
       setIsUserLoading(false);
     },
