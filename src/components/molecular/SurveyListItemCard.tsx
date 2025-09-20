@@ -26,7 +26,7 @@ import { getSurveyStatusColor } from '@util/getSurveyStatusColor';
 import { LocalizationManager } from '@util/LocalizationManager';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { memo, useContext, useState } from 'react';
+import { memo, useContext, useEffect, useState } from 'react';
 
 interface SurveyListItemCardProps {
   survey: SearchSurvey;
@@ -35,6 +35,8 @@ const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey }) => {
   const queryClient = useQueryClient();
   const router = useRouter();
   const theme = useTheme();
+  const [prefetchEdit, setPrefetchEdit] = useState(false);
+  const [prefetchResults, setPrefetchResults] = useState(false);
   const { handleOpenDialog } = useContext(GlobalDialogContext);
   const { addNotice } = useContext(GlobalSnackbarContext);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -75,6 +77,18 @@ const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey }) => {
     },
   });
 
+  useEffect(() => {
+    if (prefetchEdit) {
+      router.prefetch(`/dashboard/survey/create?edit=${survey.id}`);
+    }
+  }, [prefetchEdit]);
+
+  useEffect(() => {
+    if (prefetchResults) {
+      router.prefetch(`/dashboard/survey/${survey.id}/analysis`);
+    }
+  }, [prefetchResults]);
+
   const getStatusText = (status: SearchSurvey['status']) => {
     return LocalizationManager.translate(status);
   };
@@ -88,12 +102,12 @@ const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey }) => {
   };
 
   const handleRedirectEdit = () => {
-    router.push(`/survey/create?edit=${survey.id}`);
+    router.push(`/dashboard/survey/create?edit=${survey.id}`);
     handleMenuClose();
   };
 
   const handleRedirectResults = () => {
-    router.push(`/survey/${survey.id}/analysis`);
+    router.push(`/dashboard/survey/${survey.id}/analysis`);
     handleMenuClose();
   };
 
@@ -291,11 +305,25 @@ const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey }) => {
           {/* 액션 버튼 */}
           <Box sx={{ p: 2, pt: 0 }}>
             <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button size="small" variant="outlined" startIcon={<Edit />} onClick={handleRedirectEdit} sx={{ flexGrow: 1 }}>
+              <Button
+                size="small"
+                variant="outlined"
+                startIcon={<Edit />}
+                onMouseEnter={() => setPrefetchEdit(true)}
+                onClick={handleRedirectEdit}
+                sx={{ flexGrow: 1 }}
+              >
                 편집
               </Button>
               {survey.responseAmount > 0 && (
-                <Button size="small" variant="contained" startIcon={<Analytics />} onClick={handleRedirectResults} sx={{ flexGrow: 1 }}>
+                <Button
+                  size="small"
+                  variant="contained"
+                  startIcon={<Analytics />}
+                  onMouseEnter={() => setPrefetchResults(true)}
+                  onClick={handleRedirectResults}
+                  sx={{ flexGrow: 1 }}
+                >
                   결과보기
                 </Button>
               )}

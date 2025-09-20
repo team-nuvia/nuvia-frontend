@@ -2,12 +2,10 @@
 
 import CommonText from '@components/atom/CommonText';
 import SettingItem from '@components/molecular/SettingItem';
-import { useLoading } from '@hooks/useLoading';
 import { Stack } from '@mui/material';
 
 interface SettingProps {}
 const Setting: React.FC<SettingProps> = () => {
-  useLoading({ forUser: true, unverifiedRoute: '/auth/login' });
   // TODO: 설정 데이터 가져오기
   return (
     <Stack flex={1} gap={3} p={5}>

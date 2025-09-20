@@ -9,7 +9,7 @@ import InviteDialog from '@components/template/teams/InviteDialog';
 import { AuthenticationContext } from '@context/AuthenticationContext';
 import { GlobalDialogContext } from '@context/GlobalDialogContext';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
-import { useLoading } from '@hooks/useLoading';
+import { useBlackRouter } from '@hooks/useBlackRouter';
 import { Add, Group, Settings } from '@mui/icons-material';
 import CancelIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
@@ -39,7 +39,6 @@ import { DateFormat } from '@util/dateFormat';
 import { LocalizationManager } from '@util/LocalizationManager';
 import { AxiosError } from 'axios';
 import { useFormik } from 'formik';
-import { useRouter } from 'next/navigation';
 import { SyntheticEvent, useCallback, useContext, useEffect, useState } from 'react';
 import * as Yup from 'yup';
 import PlanUpgradeModal from './PlanUpgradeModal';
@@ -67,22 +66,19 @@ const validationSchema = Yup.object().shape({
 });
 
 const Teams = () => {
-  useLoading({ forUser: true, unverifiedRoute: '/auth/login' });
-  const { user, mainUrl } = useContext(AuthenticationContext);
-  const router = useRouter();
-  const { addNotice } = useContext(GlobalSnackbarContext);
-  const { handleOpenDialog } = useContext(GlobalDialogContext);
+  const router = useBlackRouter();
+  const apiRef = useGridApiRef();
+  // const { submitForm } = useFormikContext();
   const [tabValue, setTabValue] = useState(0);
+  const { addNotice } = useContext(GlobalSnackbarContext);
+  // const [ beforeData, setBeforeData ] = useState<GridRowModesModel | null>(null);
+  const { user, mainUrl } = useContext(AuthenticationContext);
+  const { handleOpenDialog } = useContext(GlobalDialogContext);
   const { data: organizationData, isLoading: isOrganizationLoading } = useQuery({
     queryKey: ['user-organizations'],
     queryFn: getUserOrganizations,
-    refetchOnWindowFocus: 'always',
-    refetchOnReconnect: 'always',
-    refetchOnMount: 'always',
   });
-  const organizationPayload = organizationData?.payload;
-  const currentOrganization = organizationPayload?.currentOrganization;
-  const apiRef = useGridApiRef();
+  const currentOrganization = organizationData?.payload?.currentOrganization;
   const updatedRow = useCallback(
     (id: GridRowId) => {
       if (!apiRef.current) return null;
@@ -141,6 +137,7 @@ const Teams = () => {
     },
     validationSchema,
     onSubmit: (values) => {
+      console.log('🚀 ~ onSubmit ~ values:', user, currentOrganization, values);
       if (user?.currentOrganization && currentOrganization) {
         updateOrganizationRoleMutate({
           subscriptionId: user.currentOrganization.id,
@@ -167,10 +164,10 @@ const Teams = () => {
   const isViewer = user?.role === UserRole.Viewer;
 
   useEffect(() => {
-    if (!isOrganization) {
+    if (!isOrganizationLoading && !isOrganization) {
       router.push(mainUrl);
     }
-  }, [currentOrganization]);
+  }, [isOrganizationLoading, isOrganization]);
 
   const handleTabChange = (event: SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -199,18 +196,20 @@ const Teams = () => {
     }
   };
 
-  const handleEditClick = (id: GridRowId) => () => {
+  const handleEditClick = (id: GridRowId) => {
     setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
   };
 
-  const handleSaveClick = (id: GridRowId) => async () => {
+  const handleSaveClick = async (id: GridRowId) => {
     setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
     if (!apiRef.current) return;
+
     const updatedRowData = updatedRow(id);
     if (updatedRowData) {
       formik.setFieldValue('organizationRoleId', updatedRowData.organizationRoleId);
       formik.setFieldValue('role', updatedRowData.role);
       formik.setFieldValue('status', updatedRowData.status);
+      // formik.handleSubmit({ target: {} } as any);
       await formik.submitForm();
     }
   };
@@ -370,22 +369,29 @@ const Teams = () => {
                   color: 'primary.main',
                 },
               }}
-              onClick={handleSaveClick(id)}
+              onClick={() => handleSaveClick(id)}
             />,
             <GridActionsCellItem
               key={id}
               icon={<CancelIcon />}
               label="Cancel"
               className="textPrimary"
-              onClick={handleCancelClick(id)}
+              onClick={() => handleCancelClick(id)}
               color="inherit"
             />,
           ];
         }
 
         return [
-          <GridActionsCellItem key={id} icon={<EditIcon />} label="Edit" className="textPrimary" onClick={handleEditClick(id)} color="inherit" />,
-          <GridActionsCellItem key={id} icon={<DeleteIcon />} label="Delete" onClick={handleDeleteClick(id)} color="inherit" />,
+          <GridActionsCellItem
+            key={id}
+            icon={<EditIcon />}
+            label="Edit"
+            className="textPrimary"
+            onClick={() => handleEditClick(id)}
+            color="inherit"
+          />,
+          <GridActionsCellItem key={id} icon={<DeleteIcon />} label="Delete" onClick={() => handleDeleteClick(id)} color="inherit" />,
         ];
       },
     },

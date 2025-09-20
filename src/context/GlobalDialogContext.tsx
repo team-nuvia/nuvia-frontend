@@ -12,6 +12,8 @@ interface DialogItem {
   id: string;
   title: string;
   content: string | React.ReactNode;
+  confirmText?: string;
+  cancelText?: string;
   actionCallback?: () => void;
   useConfirm?: boolean;
   onClose?: () => void;
@@ -22,12 +24,16 @@ interface GlobalDialogContextType {
   handleOpenDialog: ({
     title,
     content,
+    confirmText,
+    cancelText,
     actionCallback,
     useConfirm,
     onClose,
   }: {
     title: string;
     content: string | React.ReactNode;
+    confirmText?: string;
+    cancelText?: string;
     actionCallback?: () => void;
     useConfirm?: boolean;
     onClose?: () => void;
@@ -45,27 +51,32 @@ const GlobalDialogProvider: React.FC<GlobalDialogContextProps> = ({ children }) 
   const [dialogs, setDialogs] = useState<DialogItem[]>([]);
   const confirmButtonRefs = useRef<{ [key: string]: RefObject<HTMLButtonElement> }>({});
 
-  const generateId = () => `dialog-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-
   const handleOpenDialog = useCallback(
     ({
       title,
       content,
+      confirmText,
+      cancelText,
       actionCallback,
       useConfirm = true,
       onClose,
     }: {
       title: string;
       content: string | React.ReactNode;
+      confirmText?: string;
+      cancelText?: string;
       actionCallback?: () => void;
       useConfirm?: boolean;
       onClose?: () => void;
     }) => {
+      const generateId = () => `dialog-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
       const id = generateId();
       const newDialog: DialogItem = {
         id,
         title,
         content,
+        confirmText,
+        cancelText,
         actionCallback,
         useConfirm,
         onClose,
@@ -152,10 +163,10 @@ const GlobalDialogProvider: React.FC<GlobalDialogContextProps> = ({ children }) 
               {dialog.content}
             </DialogContent>
             <DialogActions>
-              <ActionButton onClick={() => handleCloseDialog(dialog.id)}>닫기</ActionButton>
+              <ActionButton onClick={() => handleCloseDialog(dialog.id)}>{dialog.cancelText ?? '닫기'}</ActionButton>
               {dialog.useConfirm && (
                 <ActionButton ref={confirmButtonRefs.current[dialog.id]} onClick={() => handleAction(dialog)}>
-                  확인
+                  {dialog.confirmText ?? '확인'}
                 </ActionButton>
               )}
             </DialogActions>

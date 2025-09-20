@@ -37,43 +37,62 @@ snapApi.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    if (error.response && error.response.status === 401) {
-      if (error.response.data && error.response.data.name === 'ExpiredTokenExceptionDto') {
-        if (maxRetryCount < MAX_RETRY_COUNT) {
-          try {
-            maxRetryCount++;
+    if (error.response) {
+      if (error.response.status === 401) {
+        console.log('🔥 401이잖아?', error.response.data);
+        if (!error.response.data) {
+          await snapApi.post('/auth/logout');
+          localStorage.removeItem('access_token');
+          maxRetryCount = 0;
+          return Promise.reject(error);
+        }
 
-            const res = await snapApi.post('/auth/refresh');
-            const accessToken = res.data.payload.accessToken;
+        if (error.response.data.name === 'UnauthorizedException') {
+          await snapApi.post('/auth/logout');
+          localStorage.removeItem('access_token');
+          maxRetryCount = 0;
+          return Promise.reject(error);
+        }
 
-            if (accessToken) {
-              localStorage.setItem('access_token', accessToken);
-            }
-          } catch (error: any) {
-            if (error.response.data.name === 'ExpiredTokenExceptionDto') {
-              await snapApi.post('/auth/logout');
-              localStorage.removeItem('access_token');
+        if (error.response.data.name === 'ExpiredTokenExceptionDto') {
+          if (maxRetryCount < MAX_RETRY_COUNT) {
+            try {
+              maxRetryCount++;
+
+              const res = await snapApi.post('/auth/refresh');
+              const accessToken = res.data.payload.accessToken;
+
+              if (accessToken) {
+                localStorage.setItem('access_token', accessToken);
+              }
+            } catch (error: any) {
+              console.log('🔥 refresh 실패?', error.response.data);
+              if (error.response.data.name === 'ExpiredTokenExceptionDto' || error.response.data.name === 'RefreshTokenRequiredExceptionDto') {
+                await snapApi.post('/auth/logout');
+                localStorage.removeItem('access_token');
+                maxRetryCount = 0;
+                return Promise.reject(error);
+              }
               maxRetryCount = 0;
               return Promise.reject(error);
             }
-            maxRetryCount = 0;
-            return Promise.reject(error);
-          }
 
-          try {
-            error.config.headers.Authorization = `Bearer ${localStorage.getItem('access_token')}`;
-            const result = await snapApi(error.config);
-            maxRetryCount = 0;
-            return Promise.resolve(result);
-          } catch {
+            try {
+              error.config.headers.Authorization = `Bearer ${localStorage.getItem('access_token')}`;
+              const result = await snapApi(error.config);
+              maxRetryCount = 0;
+              return Promise.resolve(result);
+            } catch {
+              maxRetryCount = 0;
+              return Promise.reject(error);
+            }
+          } else {
+            await snapApi.post('/auth/logout');
+            localStorage.removeItem('access_token');
             maxRetryCount = 0;
             return Promise.reject(error);
           }
         }
-      } else {
-        await snapApi.post('/auth/logout');
-        localStorage.removeItem('access_token');
-        return Promise.reject(error);
       }
     }
 

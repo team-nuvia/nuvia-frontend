@@ -46,7 +46,7 @@ interface QuestionCardProps {
   dataType: DataType;
   isRequired: boolean;
   questionOptions?: IQuestionOption[];
-  // handleChangeBy: (name: string, value: any) => void;
+  handleChangeBy: (name: string, value: any) => void;
   handleChangeQuestionType: (questionIndex: number, field: string, value: any) => void;
   handleAddOption: (questionIndex: number) => void;
   handleRemoveQuestion: (questionIndex: number) => void;
@@ -62,7 +62,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   dataType,
   isRequired,
   questionOptions,
-  // handleChangeBy,
+  handleChangeBy,
   handleChangeQuestionType,
   handleAddOption,
   handleRemoveQuestion,
@@ -111,7 +111,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             size="small"
             label={`질문 ${index + 1}`}
             value={title}
-            onChange={(e) => handleChangeQuestionType(questionIndex, 'title', e.target.value)}
+            onChange={(e) => handleChangeBy(`questions.${questionIndex}.title`, e.target.value)}
             variant="standard"
             // error={questionTouched && Boolean(titleError)}
             // helperText={questionTouched && titleError}
@@ -122,7 +122,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             startIcon={<EditSquareIcon />}
             color={isRequired ? 'error' : 'info'}
             variant="contained"
-            onClick={() => handleChangeQuestionType(questionIndex, 'isRequired', !isRequired)}
+            onClick={() => handleChangeBy(`questions.${questionIndex}.isRequired`, !isRequired)}
             shape="rounded"
             size="small"
             sx={{ p: 0, fontSize: '0.8rem' }}
@@ -152,7 +152,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             rows={3}
             label="설문 설명"
             value={description ?? ''}
-            onChange={(e) => handleChangeQuestionType(questionIndex, 'description', e.target.value)}
+            onChange={(e) => handleChangeBy(`questions.${questionIndex}.description`, e.target.value)}
           />
         </Grid>
       </Grid>
@@ -174,7 +174,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                     label={`옵션 ${optIndex + 1}`}
                     value={option.label}
                     name={`questions.${questionIndex}.questionOptions.${optIndex}.label`}
-                    onChange={(e) => handleChangeQuestionType(questionIndex, `questionOptions.${optIndex}.label`, e.target.value)}
+                    onChange={(e) => handleChangeBy(`questions.${questionIndex}.questionOptions.${optIndex}.label`, e.target.value)}
                     variant="standard"
                     type={inputValueType}
                     // error={questionTouched && Boolean(optionsErrors[optIndex]?.label)}
@@ -209,7 +209,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       >
         {questionType === QuestionType.ShortText && (
           <FormControl>
-            <RadioGroup row value={dataType} onChange={(e) => handleChangeQuestionType(questionIndex, 'dataType', e.target.value as DataType)}>
+            <RadioGroup row value={dataType} onChange={(e) => handleChangeBy(`questions.${questionIndex}.dataType`, e.target.value as DataType)}>
               {Object.values(DataType).map((value) => (
                 <FormControlLabel
                   key={value}

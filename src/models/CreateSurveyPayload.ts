@@ -8,5 +8,5 @@ export interface CreateSurveyPayload {
   expiresAt: Date | null;
   isPublic: boolean;
   status: SurveyStatus;
-  questions: Omit<IQuestionWithoutId, 'idx' | 'answers' | 'isAnswered'>[];
+  questions: Omit<IQuestionWithoutId, 'idx' | 'questionAnswers' | 'isAnswered'>[];
 }

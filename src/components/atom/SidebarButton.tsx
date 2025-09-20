@@ -1,7 +1,7 @@
 'use client';
 
+import { useBlackRouter } from '@hooks/useBlackRouter';
 import { ButtonOwnProps, Tooltip } from '@mui/material';
-import { useRouter } from 'next/navigation';
 import CommonButton from './CommonButton';
 import CommonText from './CommonText';
 
@@ -13,7 +13,7 @@ interface SidebarButtonProps {
 }
 
 const SidebarButton: React.FC<SidebarButtonProps & ButtonOwnProps> = ({ selected, menu, onClick, isCollapsed = false, ...props }) => {
-  const router = useRouter();
+  const router = useBlackRouter();
 
   return (
     <Tooltip title={menu.label} placement="right" arrow disableHoverListener={!isCollapsed}>

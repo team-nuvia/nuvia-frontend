@@ -7,14 +7,13 @@ import ActionForm from '@components/molecular/ActionForm';
 import BrandHead from '@components/molecular/BrandHead';
 import { AuthenticationContext } from '@context/AuthenticationContext';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
-import { useLoading } from '@hooks/useLoading';
+import { useBlackRouter } from '@hooks/useBlackRouter';
 import { Container, Grid, Link, Stack, TextField, useTheme } from '@mui/material';
 import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { useFormik } from 'formik';
 import NextLink from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useContext } from 'react';
+import { useContext, useEffect } from 'react';
 import * as yup from 'yup';
 
 const validationSchema = yup.object().shape({
@@ -28,9 +27,8 @@ interface LoginProps {
   redirect?: string;
 }
 const Login: React.FC<LoginProps> = ({ action, token, redirect }) => {
-  useLoading({ forUser: true, verifiedRoute: '/dashboard' });
   const theme = useTheme();
-  const router = useRouter();
+  const router = useBlackRouter();
   const { fetchUser, mainUrl } = useContext(AuthenticationContext);
   const { addNotice } = useContext(GlobalSnackbarContext);
   const { mutate: loginMutation } = useMutation({
@@ -39,14 +37,11 @@ const Login: React.FC<LoginProps> = ({ action, token, redirect }) => {
     onSuccess: async (response) => {
       formik.setSubmitting(false);
 
-      console.log('✨ fetchUser');
       await fetchUser();
-      console.log('✨ fetchUser 완료');
 
       if (action === 'invitation' && redirect && token) {
         router.push(`${redirect}?q=${token}`);
       } else {
-        console.log('✨ router.push /');
         router.push(mainUrl);
       }
 
@@ -75,6 +70,10 @@ const Login: React.FC<LoginProps> = ({ action, token, redirect }) => {
       loginMutation(values);
     },
   });
+
+  useEffect(() => {
+    router.prefetch(mainUrl);
+  }, [router]);
 
   return (
     <Stack flex={1} py={5} direction="row" alignItems="center" justifyContent="center">

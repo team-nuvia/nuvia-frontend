@@ -7,7 +7,6 @@ import ActionForm from '@components/molecular/ActionForm';
 import BrandHead from '@components/molecular/BrandHead';
 import { AuthenticationContext } from '@context/AuthenticationContext';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
-import { useLoading } from '@hooks/useLoading';
 import { Container, Stack, TextField, useTheme } from '@mui/material';
 import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
@@ -19,7 +18,6 @@ import * as Yup from 'yup';
 interface SignupProps {}
 
 const Signup: React.FC<SignupProps> = () => {
-  useLoading({ forUser: true, verifiedRoute: '/auth/login' });
   const theme = useTheme();
   const router = useRouter();
   const { user } = useContext(AuthenticationContext);

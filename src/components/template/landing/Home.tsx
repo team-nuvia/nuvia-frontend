@@ -1,6 +1,5 @@
 'use client';
 
-import { useLoading } from '@hooks/useLoading';
 import { Stack } from '@mui/material';
 import { AnalyticsPreviewSection } from './home-section/AnalyticsPreviewSection';
 import { FAQSection } from './home-section/FAQSection';
@@ -17,7 +16,6 @@ import { TrustSection } from './home-section/TrustSection';
 
 interface HomeProps {}
 const Home: React.FC<HomeProps> = () => {
-  useLoading();
   return (
     <Stack flex={1} spacing={0} sx={{ backgroundColor: 'background.default' }}>
       <HeroSection />

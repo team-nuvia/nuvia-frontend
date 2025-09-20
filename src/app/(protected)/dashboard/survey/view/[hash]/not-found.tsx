@@ -1,13 +1,11 @@
 'use client';
 
 import ActionButton from '@components/atom/ActionButton';
-import { useLoading } from '@hooks/useLoading';
 import { Box, Typography } from '@mui/material';
 import { useRouter } from 'next/navigation';
 
 const Page = () => {
   const router = useRouter();
-  useLoading();
 
   return (
     <Box

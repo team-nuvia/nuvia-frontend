@@ -51,24 +51,24 @@ export default async function RootLayout({
       <body>
         <ReactScan />
         <ReactQueryProvider>
-          <AuthenticationProvider initialize={true} user={user}>
-            <AppRouterCacheProvider>
-              <ThemeProvider theme={darkTheme}>
-                <CssBaseline />
-                <GlobalSnackbarSettingProvider>
-                  <GlobalSnackbar>
-                    <GlobalDialogProvider>
-                      <LoadingProvider>
+          <AppRouterCacheProvider>
+            <ThemeProvider theme={darkTheme}>
+              <CssBaseline />
+              <GlobalSnackbarSettingProvider>
+                <GlobalSnackbar>
+                  <GlobalDialogProvider>
+                    <LoadingProvider>
+                      <AuthenticationProvider initialize={true} user={user}>
                         <Header />
                         {children}
                         <Footer />
-                      </LoadingProvider>
-                    </GlobalDialogProvider>
-                  </GlobalSnackbar>
-                </GlobalSnackbarSettingProvider>
-              </ThemeProvider>
-            </AppRouterCacheProvider>
-          </AuthenticationProvider>
+                      </AuthenticationProvider>
+                    </LoadingProvider>
+                  </GlobalDialogProvider>
+                </GlobalSnackbar>
+              </GlobalSnackbarSettingProvider>
+            </ThemeProvider>
+          </AppRouterCacheProvider>
         </ReactQueryProvider>
       </body>
     </html>

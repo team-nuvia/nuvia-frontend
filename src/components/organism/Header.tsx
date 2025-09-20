@@ -7,21 +7,20 @@ import BrandHead from '@components/molecular/BrandHead';
 import Notification from '@components/molecular/Notification';
 import UserOrganizationSelect from '@components/molecular/UserOrganizationSelect';
 import { AuthenticationContext } from '@context/AuthenticationContext';
-import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
+import { useBlackRouter } from '@hooks/useBlackRouter';
 import { useScroll } from '@hooks/useScroll';
 import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded';
 import { Avatar, Menu, MenuItem, Stack, Toolbar, Tooltip, Typography, useTheme } from '@mui/material';
-import { useRouter } from 'next/navigation';
+import { PrefetchKind } from 'next/dist/client/components/router-reducer/router-reducer-types';
 import { useContext, useEffect, useMemo, useState } from 'react';
 
 interface HeaderProps {}
 const Header: React.FC<HeaderProps> = () => {
   const theme = useTheme();
   const { y } = useScroll();
-  const router = useRouter();
+  const router = useBlackRouter();
   const [shadow, setShadow] = useState(false);
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
-  const { addNotice } = useContext(GlobalSnackbarContext);
   const { user, clearUser } = useContext(AuthenticationContext);
 
   // hydration 문제 방지: 서버와 클라이언트의 초기 렌더링이 다를 수 있으므로
@@ -60,7 +59,6 @@ const Header: React.FC<HeaderProps> = () => {
               label: 'Logout',
               request: () => {
                 clearUser();
-                addNotice('로그아웃 되었습니다.', 'success');
               },
             },
           ]

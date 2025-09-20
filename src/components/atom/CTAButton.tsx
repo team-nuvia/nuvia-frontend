@@ -1,6 +1,6 @@
+import { useBlackRouter } from '@hooks/useBlackRouter';
 import { Ballot } from '@mui/icons-material';
 import { useTheme } from '@mui/material';
-import { useRouter } from 'next/navigation';
 import ActionButton from './ActionButton';
 
 interface CTAButtonProps {
@@ -10,7 +10,7 @@ interface CTAButtonProps {
 }
 const CTAButton: React.FC<CTAButtonProps> = ({ invert, label, path = '/auth/login' }) => {
   const theme = useTheme();
-  const router = useRouter();
+  const router = useBlackRouter();
 
   function handleClick() {
     if (path) {

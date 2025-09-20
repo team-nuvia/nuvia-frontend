@@ -14,7 +14,7 @@ import QuestionCard from '@components/organism/QuestionCard';
 import { AuthenticationContext } from '@context/AuthenticationContext';
 import { GlobalDialogContext } from '@context/GlobalDialogContext';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
-import { useLoading } from '@hooks/useLoading';
+import { useBlackRouter } from '@hooks/useBlackRouter';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import SaveIcon from '@mui/icons-material/Save';
 import { Box, Button, CircularProgress, Container, Grid, Stack, useMediaQuery } from '@mui/material';
@@ -28,7 +28,6 @@ import { AllQuestion, IQuestion, IQuestionOption } from '@share/interface/iquest
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { useFormik } from 'formik';
-import { useRouter } from 'next/navigation';
 import { useCallback, useContext, useEffect, useState } from 'react';
 import * as Yup from 'yup';
 import SurveyInformation from './SurveyInformation';
@@ -77,15 +76,9 @@ const initialValues: QuestionInitialValues = {
 // --- COMPONENT ---
 const Survey: React.FC<{ id?: string }> = ({ id }) => {
   /* hooks */
-  const { contentLoaded } = useLoading({
-    forUser: true,
-    verifiedRoute: '/survey',
-    unverifiedRoute: '/auth/login',
-    ifRole: [UserRole.Viewer, '/survey'],
-  });
   const { handleOpenDialog } = useContext(GlobalDialogContext);
   const { addNotice } = useContext(GlobalSnackbarContext);
-  const router = useRouter();
+  const router = useBlackRouter();
   const theme = useTheme();
   const { user } = useContext(AuthenticationContext);
 
@@ -110,7 +103,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
       if (data.ok) {
         addNotice((data.reason as string) || data.message, 'success');
         // Reset form
-        router.push('/survey');
+        router.push('/dashboard/survey');
       } else {
         addNotice((data.reason as string) || data.message, 'error');
       }
@@ -146,7 +139,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
   });
 
   useEffect(() => {
-    if (!contentLoaded || isSurveyLoading || isCategoriesLoading) return;
+    if (isSurveyLoading || isCategoriesLoading) return;
 
     if (surveyData?.payload) {
       const payload = surveyData.payload;
@@ -173,8 +166,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
             description: option.description,
             sequence: option.sequence,
           })),
-          questionAnswers: new Map(),
-          isAnswered: false,
+          // isAnswered: false,
         })),
       });
     }
@@ -225,8 +217,8 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
             label: option.label,
             sequence: option.sequence,
           })),
-          questionAnswers: new Map(),
-          isAnswered: false,
+          // questionAnswers: new Map(),
+          // isAnswered: false,
         })),
       };
 
@@ -250,8 +242,8 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
             label: optRest.label,
             sequence: optRest.sequence,
           })), // Remove client-side IDs
-          questionAnswers: new Map(),
-          isAnswered: false,
+          // questionAnswers: new Map(),
+          // isAnswered: false,
         })),
         // managementPassword: managementPassword,
       };
@@ -280,7 +272,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
 
       if (response.ok) {
         addNotice(response.reason || response.message, 'success');
-        router.push('/survey');
+        router.push('/dashboard/survey');
       } else {
         addNotice(response.reason || response.message, 'error');
       }
@@ -312,7 +304,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
         isRequired: false,
         // isAnswered: false,
         questionOptions: isSelectable ? [{ id: null, label: '', sequence: 0, idx: Date.now() }] : [],
-        isAnswered: false,
+        // isAnswered: false,
         sequence: formik.values.questions.length ?? 0,
       };
       nextValues.questions = [...nextValues.questions, newQuestion as Omit<AllQuestion, 'answers' | 'isAnswered'>];
@@ -444,7 +436,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
                 dataType={question.dataType}
                 isRequired={question.isRequired}
                 questionOptions={question.questionOptions}
-                // handleChangeBy={handleChangeBy}
+                handleChangeBy={handleChangeBy}
                 handleChangeQuestionType={handleChangeQuestionType}
                 handleAddOption={handleAddOption}
                 handleRemoveQuestion={handleRemoveQuestion}
@@ -567,7 +559,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
             viewCount: 0,
             estimatedTime: 0,
             totalResponses: 0,
-            questionAnswers: [],
+            // questionAnswers: [],
             questionCount: 0,
             respondentCount: 0,
             isOwner: false,
@@ -595,6 +587,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
               isRequired: question.isRequired,
               questionOptions: question.questionOptions,
               sequence: question.sequence,
+              questionAnswers: new Map(),
             })),
           }}
           handleClose={() => setIsPreview(false)}

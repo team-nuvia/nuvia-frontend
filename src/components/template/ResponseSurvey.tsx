@@ -83,14 +83,6 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
   // const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { user } = useContext(AuthenticationContext);
   const [direction, setDirection] = useState<'next' | 'previous'>('next');
-  const getQuestionProcess = () => {
-    const totalQuestions = questions.length;
-    const answeredQuestions = questions.filter((question) => {
-      const values = Array.from(question.questionAnswers?.values?.() ?? []);
-      return question.isAnswered || (values.some((item) => !isEmpty(item)) && question.questionAnswers?.size > 0);
-    }).length;
-    return Math.round((answeredQuestions / totalQuestions) * 100) || 0;
-  };
   const { mutate: autoSaveMutate } = useMutation({
     mutationFn: ({ surveyId, answerData }: { surveyId: number; answerData: AnswerPayload }) => createAnswer(surveyId, answerData),
     onSuccess: (response) => {
@@ -128,6 +120,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
       setIsSubmitting(false);
     },
   });
+
   // const answerFormik = useFormik({
   //   initialValues: answerInitialValues,
   //   validationSchema: AnswerInProgressSchema,
@@ -137,9 +130,22 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
   //   },
   // });
 
+  const getQuestionProcess = () => {
+    const totalQuestions = questions.length;
+    const isLastNoRequired = questions[questions.length - 1].isRequired === false;
+    const isLastQuestion = questions[questions.length - 1] === questions[currentStep];
+    const answeredQuestions = questions.filter((question) => {
+      const values = Array.from(question.questionAnswers?.values?.() ?? []);
+      return (
+        question.isAnswered || (values.some((item) => !isEmpty(item)) && question.questionAnswers?.size > 0) || (isLastNoRequired && isLastQuestion)
+      );
+    }).length;
+    return Math.round((answeredQuestions / totalQuestions) * 100) || 0;
+  };
+
   const isAllAnswered = useMemo(() => {
     return getQuestionProcess() === 100;
-  }, [questions]);
+  }, [questions, currentStep]);
 
   useEffect(() => {
     setProgress(getQuestionProcess());
@@ -232,6 +238,11 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (isDemo) {
+      addNotice('미리보기 모드에서는 제출할 수 없습니다.', 'warning');
+      return;
+    }
 
     if (!isAllAnswered) {
       for (const q of questions) {
@@ -455,7 +466,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
   // --- RENDER ---
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
-      <Grid component="form" noValidate autoComplete="off" onSubmit={isDemo ? () => {} : handleSubmit} container spacing={2} mt={5}>
+      <Grid component="form" noValidate autoComplete="off" onSubmit={handleSubmit} container spacing={2} mt={5}>
         <Grid size={{ xs: 12 }}>
           <Paper
             sx={{
