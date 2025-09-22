@@ -86,7 +86,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
   const { mutate: autoSaveMutate } = useMutation({
     mutationFn: ({ surveyId, answerData }: { surveyId: number; answerData: AnswerPayload }) => createAnswer(surveyId, answerData),
     onSuccess: (response) => {
-      console.log('🚀 ~ ResponseSurvey ~ response:', response);
+      // console.log('🚀 ~ ResponseSurvey ~ response:', response);
       if (response.httpStatus === 201) {
         addNotice(response.message, 'success');
       } else {
@@ -95,7 +95,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
       setIsSubmitting(false);
     },
     onError: (error: AxiosError<ServerResponse<void>>) => {
-      console.log('🚀 ~ ResponseSurvey ~ error:', error);
+      // console.log('🚀 ~ ResponseSurvey ~ error:', error);
       addNotice(error?.response?.data?.message || '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
       setIsSubmitting(false);
     },
@@ -103,7 +103,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
   const { mutate: createAnswerMutate } = useMutation({
     mutationFn: ({ surveyId, answerData }: { surveyId: number; answerData: AnswerPayload }) => createAnswer(surveyId, answerData),
     onSuccess: (response) => {
-      console.log('🚀 ~ ResponseSurvey ~ response:', response);
+      // console.log('🚀 ~ ResponseSurvey ~ response:', response);
       if (response.httpStatus === 201) {
         addNotice(response.message, 'success');
         // Reset form
@@ -115,7 +115,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
       setIsSubmitting(false);
     },
     onError: (error: AxiosError<ServerResponse<void>>) => {
-      console.log('🚀 ~ ResponseSurvey ~ error:', error);
+      // console.log('🚀 ~ ResponseSurvey ~ error:', error);
       addNotice(error?.response?.data?.message || '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
       setIsSubmitting(false);
     },

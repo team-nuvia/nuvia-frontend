@@ -2,6 +2,7 @@ import { getUserOrganizations } from '@api/get-user-organizations';
 import { updateUserOrganization } from '@api/update-user-organization';
 import { AuthenticationContext } from '@context/AuthenticationContext';
 import { GlobalDialogContext } from '@context/GlobalDialogContext';
+import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import { MenuItem, Select, Stack } from '@mui/material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { usePathname } from 'next/navigation';
@@ -12,6 +13,7 @@ const UserOrganizationSelect: React.FC = () => {
   const { handleOpenDialog } = useContext(GlobalDialogContext);
   const queryClient = useQueryClient();
   const { fetchUser } = useContext(AuthenticationContext);
+  const { addNotice } = useContext(GlobalSnackbarContext);
   const { data } = useQuery({
     queryKey: ['user-organizations'],
     queryFn: getUserOrganizations,

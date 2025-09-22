@@ -41,6 +41,8 @@ const Login: React.FC<LoginProps> = ({ action, token, redirect }) => {
 
       if (action === 'invitation' && redirect && token) {
         router.push(`${redirect}?q=${token}`);
+      } else if (action === 'view') {
+        router.push(redirect);
       } else {
         router.push(mainUrl);
       }

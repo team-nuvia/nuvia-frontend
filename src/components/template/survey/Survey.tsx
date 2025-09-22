@@ -111,7 +111,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
     },
     onError: (error) => {
       const axiosError = error as AxiosError<ServerResponse<any>>;
-      console.error(axiosError);
+      // console.error(axiosError);
       if (axiosError?.response?.data?.reason === 'expiresAt') {
         addNotice('만료 일시는 최소 다음날부터 가능합니다.', 'error');
       } else {
@@ -174,7 +174,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
 
   useEffect(() => {
     if (formik.isSubmitting && Object.keys(formik.errors).length > 0) {
-      console.log(formik.errors);
+      // console.log(formik.errors);
       addNotice('설문에 필요한 내용을 작성해주세요.', 'warning');
     }
   }, [formik.errors, formik.touched]);
@@ -278,7 +278,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
       }
     } catch (err: any) {
       const axiosError = err as AxiosError<ServerResponse<any>>;
-      console.error(axiosError);
+      // console.error(axiosError);
       addNotice(
         ((axiosError?.response?.data?.reason as string) || axiosError?.response?.data?.message) ??
           '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',

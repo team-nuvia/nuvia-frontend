@@ -115,11 +115,12 @@ const Notification = () => {
           paper: {
             sx: {
               width: 360,
-              maxHeight: 400,
+              maxHeight: 500,
               borderRadius: 2,
               boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
               border: '1px solid',
               borderColor: 'divider',
+              overflowY: 'hidden',
             },
           },
         }}

@@ -21,6 +21,7 @@ interface AuthenticationContextType {
   mainUrl: string;
   clearUser: () => void;
   fetchUser: () => Promise<void>;
+  updateUser: () => void;
 }
 
 export const AuthenticationContext = createContext<AuthenticationContextType>({
@@ -29,6 +30,7 @@ export const AuthenticationContext = createContext<AuthenticationContextType>({
   mainUrl: '/',
   clearUser: () => {},
   fetchUser: async () => {},
+  updateUser: () => {},
 });
 
 const AuthenticationProvider = ({ children, user, initialize }: { children: React.ReactNode; user: GetMeResponse | null; initialize: boolean }) => {
@@ -93,7 +95,7 @@ const AuthenticationProvider = ({ children, user, initialize }: { children: Reac
       setUserData(null);
       setMainUrl('/');
       setIsUserLoading(false);
-      router.push('/');
+      router.push(`/auth/login?redirect=${encodeURIComponent(pathname)}&action=view`);
       addNotice(data.message, 'success');
     },
     onError: (error: AxiosError<ServerResponse<any>>) => {
@@ -144,8 +146,12 @@ const AuthenticationProvider = ({ children, user, initialize }: { children: Reac
     logoutMutation();
   }, []);
 
+  const updateUser = useCallback(() => {
+    getUsersMeMutation();
+  }, []);
+
   return (
-    <AuthenticationContext.Provider value={{ user: userData, clearUser, fetchUser, isUserLoading, mainUrl }}>
+    <AuthenticationContext.Provider value={{ user: userData, clearUser, fetchUser, isUserLoading, mainUrl, updateUser }}>
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ko">
         {children}
       </LocalizationProvider>

@@ -11,7 +11,6 @@ import { useBlackRouter } from '@hooks/useBlackRouter';
 import { useScroll } from '@hooks/useScroll';
 import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded';
 import { Avatar, Menu, MenuItem, Stack, Toolbar, Tooltip, Typography, useTheme } from '@mui/material';
-import { PrefetchKind } from 'next/dist/client/components/router-reducer/router-reducer-types';
 import { useContext, useEffect, useMemo, useState } from 'react';
 
 interface HeaderProps {}

@@ -65,6 +65,7 @@ export async function middleware(req: NextRequest) {
   // 세션 쿠키(예: 'session' 또는 'access_token') 존재 여부만 빠르게 체크
   const session = req.cookies.get('session')?.value;
   const refreshToken = req.cookies.get('refresh_token')?.value;
+  const redirect = url.pathname;
 
   if (!session) {
     if (!refreshToken && isMemberPath(pathname)) {
@@ -72,7 +73,7 @@ export async function middleware(req: NextRequest) {
       await forceLogout(req);
       // 잘못된 접근
       url.pathname = '/auth/login';
-      url.search = '';
+      url.search = `redirect=${encodeURIComponent(redirect)}&action=view`;
       return NextResponse.redirect(url);
     }
 
@@ -80,7 +81,7 @@ export async function middleware(req: NextRequest) {
     // 비회원
     if (isMemberPath(pathname)) {
       url.pathname = '/auth/login';
-      url.search = '';
+      url.search = `redirect=${encodeURIComponent(redirect)}&action=view`;
       return NextResponse.redirect(url);
     }
 

@@ -6,6 +6,7 @@ import { BRAND_NAME } from '@common/variables';
 import ReactScan from '@components/atom/ReactScan';
 import Footer from '@components/organism/Footer';
 import Header from '@components/organism/Header';
+import { AxiosProvider } from '@context/AxiosContext';
 import GlobalDialogProvider from '@context/GlobalDialogContext';
 import { GlobalSnackbar } from '@context/GlobalSnackbar';
 import { GlobalSnackbarSettingProvider } from '@context/GlobalSnackbarSettingProvider';
@@ -50,26 +51,28 @@ export default async function RootLayout({
     <html lang="ko">
       <body>
         <ReactScan />
-        <ReactQueryProvider>
-          <AppRouterCacheProvider>
-            <ThemeProvider theme={darkTheme}>
-              <CssBaseline />
-              <GlobalSnackbarSettingProvider>
-                <GlobalSnackbar>
-                  <GlobalDialogProvider>
-                    <LoadingProvider>
-                      <AuthenticationProvider initialize={true} user={user}>
-                        <Header />
-                        {children}
-                        <Footer />
-                      </AuthenticationProvider>
-                    </LoadingProvider>
-                  </GlobalDialogProvider>
-                </GlobalSnackbar>
-              </GlobalSnackbarSettingProvider>
-            </ThemeProvider>
-          </AppRouterCacheProvider>
-        </ReactQueryProvider>
+        <AxiosProvider>
+          <ReactQueryProvider>
+            <AppRouterCacheProvider>
+              <ThemeProvider theme={darkTheme}>
+                <CssBaseline />
+                <GlobalSnackbarSettingProvider>
+                  <GlobalSnackbar>
+                    <GlobalDialogProvider>
+                      <LoadingProvider>
+                        <AuthenticationProvider initialize={true} user={user}>
+                          <Header />
+                          {children}
+                          <Footer />
+                        </AuthenticationProvider>
+                      </LoadingProvider>
+                    </GlobalDialogProvider>
+                  </GlobalSnackbar>
+                </GlobalSnackbarSettingProvider>
+              </ThemeProvider>
+            </AppRouterCacheProvider>
+          </ReactQueryProvider>
+        </AxiosProvider>
       </body>
     </html>
   );
