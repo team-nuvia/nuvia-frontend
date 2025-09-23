@@ -27,7 +27,7 @@ import { ICategory } from '@share/interface/icategory';
 import { AllQuestion, IQuestion, IQuestionOption } from '@share/interface/iquestion';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
-import { useFormik } from 'formik';
+import { FormikErrors, useFormik } from 'formik';
 import { useCallback, useContext, useEffect, useState } from 'react';
 import * as Yup from 'yup';
 import SurveyInformation from './SurveyInformation';
@@ -421,8 +421,12 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
               status={formik.values.status}
               categoryId={formik.values.categoryId}
               handleChange={handleChangeBy}
-              touched={formik.touched as any}
-              errors={formik.errors as any}
+              touchedTitle={formik.touched.title}
+              touchedExpiresAt={formik.touched.expiresAt}
+              touchedCategoryId={formik.touched.categoryId}
+              errorsTitle={formik.errors.title}
+              errorsExpiresAt={formik.errors.expiresAt}
+              errorsCategoryId={formik.errors.categoryId}
             />
 
             {formik.values.questions.map((question, index) => (
@@ -436,6 +440,8 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
                 dataType={question.dataType}
                 isRequired={question.isRequired}
                 questionOptions={question.questionOptions}
+                touched={formik.touched.questions?.[index]}
+                errors={formik.errors.questions?.[index] as FormikErrors<Omit<AllQuestion, 'questionAnswers' | 'isAnswered'>> | undefined}
                 handleChangeBy={handleChangeBy}
                 handleChangeQuestionType={handleChangeQuestionType}
                 handleAddOption={handleAddOption}
@@ -559,7 +565,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
             viewCount: 0,
             estimatedTime: 0,
             totalResponses: 0,
-            // questionAnswers: [],
+            questionAnswers: [],
             questionCount: 0,
             respondentCount: 0,
             isOwner: false,

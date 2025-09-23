@@ -19,5 +19,7 @@ export const Default: Story = {
     },
   },
   decorators: [decorators],
-  args: {},
+  args: {
+    searchParams: {},
+  },
 };

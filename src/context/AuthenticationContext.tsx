@@ -110,8 +110,14 @@ const AuthenticationProvider = ({ children, user, initialize }: { children: Reac
   useEffect(() => {
     const accessToken = localStorage.getItem('access_token');
     if (initialize) {
-      if (accessToken) verifyToken();
-      setIsUserLoading(true);
+      if (accessToken) {
+        verifyToken();
+        setIsUserLoading(true);
+      } else if(userData) {
+        setMainUrl('/');
+        setUserData(null);
+        setIsUserLoading(false);
+      }
     }
   }, [pathname, initialize]);
 

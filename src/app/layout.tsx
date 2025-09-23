@@ -3,7 +3,6 @@ import { LoadingProvider } from '@/context/LoadingContext';
 import '@/styles/global.css';
 import { getUserInformation } from '@api/server/get-user-information';
 import { BRAND_NAME } from '@common/variables';
-import ReactScan from '@components/atom/ReactScan';
 import Footer from '@components/organism/Footer';
 import Header from '@components/organism/Header';
 import { AxiosProvider } from '@context/AxiosContext';
@@ -46,11 +45,9 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const user = await getUserInformation();
-  // console.log('🚀 ~ RootLayout ~ user:', user);
   return (
     <html lang="ko">
       <body>
-        <ReactScan />
         <AxiosProvider>
           <ReactQueryProvider>
             <AppRouterCacheProvider>
@@ -61,9 +58,7 @@ export default async function RootLayout({
                     <GlobalDialogProvider>
                       <LoadingProvider>
                         <AuthenticationProvider initialize={true} user={user}>
-                          <Header />
                           {children}
-                          <Footer />
                         </AuthenticationProvider>
                       </LoadingProvider>
                     </GlobalDialogProvider>

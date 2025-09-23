@@ -42,8 +42,23 @@ import { ISurvey } from '@share/interface/isurvey';
 //   updatedAt: Date;
 // }
 
-export interface GetSurveyDetailResponse extends Omit<ISurvey, 'questions' | 'categoryId' | 'expiresAt'> {
+export interface GetSurveyDetailResponse extends Omit<ISurvey, 'id' | 'questions' | 'categoryId' | 'expiresAt'> {
+  id: number | null;
+  isOwner: boolean;
   category: ICategory;
   questions: Omit<AllQuestion, 'questionAnswers' | 'isAnswered'>[];
   expiresAt: Date | null;
+  questionAnswers: {
+    questionId: number;
+    questionOptionId: number | null;
+    value: string | null;
+  }[];
+  viewCount: number;
+  author: {
+    id: number;
+    name: string;
+    profileUrl: string | null;
+  };
+  estimatedTime: number;
+  totalResponses: number;
 }

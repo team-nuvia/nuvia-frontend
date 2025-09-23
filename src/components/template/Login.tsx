@@ -21,12 +21,17 @@ const validationSchema = yup.object().shape({
   password: yup.string().min(8, '비밀번호는 8자 이상이어야 합니다.').max(13, '비밀번호는 13자 이하여야 합니다.').required('비밀번호를 입력해주세요.'),
 });
 
-interface LoginProps {
+interface SearchParams {
   action?: string;
   token?: string;
   redirect?: string;
 }
-const Login: React.FC<LoginProps> = ({ action, token, redirect }) => {
+
+interface LoginProps {
+  searchParams: SearchParams;
+}
+const Login: React.FC<LoginProps> = ({ searchParams }) => {
+  const { action, token, redirect } = searchParams;
   const theme = useTheme();
   const router = useBlackRouter();
   const { fetchUser, mainUrl } = useContext(AuthenticationContext);
@@ -41,7 +46,7 @@ const Login: React.FC<LoginProps> = ({ action, token, redirect }) => {
 
       if (action === 'invitation' && redirect && token) {
         router.push(`${redirect}?q=${token}`);
-      } else if (action === 'view') {
+      } else if (action === 'view' && redirect) {
         router.push(redirect);
       } else {
         router.push(mainUrl);

@@ -17,6 +17,9 @@ export const Default: Story = {
   args: {
     survey: {
       id: 1,
+      userId: 1,
+      startDate: new Date(),
+      endDate: new Date(),
       hashedUniqueKey: '1234567890',
       subscriptionId: 1,
       category: {
@@ -47,8 +50,6 @@ export const Default: Story = {
       ],
       isPublic: true,
       status: SurveyStatus.Active,
-      questionCount: 10,
-      respondentCount: 10,
       viewCount: 10,
       totalResponses: 10,
       isOwner: true,

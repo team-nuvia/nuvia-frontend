@@ -20,7 +20,8 @@ import {
 } from '@mui/material';
 import { DataType } from '@share/enums/data-type';
 import { QuestionType } from '@share/enums/question-type';
-import { IQuestionOption } from '@share/interface/iquestion';
+import { AllQuestion, IQuestionOption } from '@share/interface/iquestion';
+import { FormikErrors, FormikTouched } from 'formik';
 import { memo, useMemo } from 'react';
 
 const DATA_TYPE_MAP = {
@@ -46,6 +47,8 @@ interface QuestionCardProps {
   dataType: DataType;
   isRequired: boolean;
   questionOptions?: IQuestionOption[];
+  touched?: FormikTouched<Omit<AllQuestion, 'questionAnswers' | 'isAnswered'>>;
+  errors?: FormikErrors<Omit<AllQuestion, 'questionAnswers' | 'isAnswered'>>;
   handleChangeBy: (name: string, value: any) => void;
   handleChangeQuestionType: (questionIndex: number, field: string, value: any) => void;
   handleAddOption: (questionIndex: number) => void;
@@ -62,6 +65,8 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   dataType,
   isRequired,
   questionOptions,
+  touched,
+  errors,
   handleChangeBy,
   handleChangeQuestionType,
   handleAddOption,
@@ -94,27 +99,20 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
     }
   }, [dataType]);
 
-  // 현재 질문의 validation 상태
-  const questionIndex = index;
-  // const questionTouched = touched?.questions?.[questionIndex] || false;
-  // const questionErrors = errors?.questions?.[questionIndex] || {};
-  // const titleError = questionErrors.title;
-  // const optionsErrors = questionErrors.options || [];
-
   return (
     <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
       <Grid container spacing={2} alignItems="center">
         <Grid size={{ xs: 12, md: 8 }} sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
           <TextField
-            name={`questions.${questionIndex}.title`}
+            name={`questions.${index}.title`}
             fullWidth
             size="small"
             label={`질문 ${index + 1}`}
             value={title}
-            onChange={(e) => handleChangeBy(`questions.${questionIndex}.title`, e.target.value)}
+            onChange={(e) => handleChangeBy(`questions.${index}.title`, e.target.value)}
             variant="standard"
-            // error={questionTouched && Boolean(titleError)}
-            // helperText={questionTouched && titleError}
+            error={touched?.title && Boolean(errors?.title)}
+            helperText={touched?.title && errors?.title}
             required
           />
           <ActionButton
@@ -122,7 +120,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             startIcon={<EditSquareIcon />}
             color={isRequired ? 'error' : 'info'}
             variant="contained"
-            onClick={() => handleChangeBy(`questions.${questionIndex}.isRequired`, !isRequired)}
+            onClick={() => handleChangeBy(`questions.${index}.isRequired`, !isRequired)}
             shape="rounded"
             size="small"
             sx={{ p: 0, fontSize: '0.8rem' }}
@@ -133,9 +131,9 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
           <Select
             fullWidth
             size="small"
-            name={`questions.${questionIndex}.questionType`}
+            name={`questions.${index}.questionType`}
             value={questionType || QuestionType.ShortText}
-            onChange={(e) => handleChangeQuestionType(questionIndex, 'questionType', e.target.value as QuestionType)}
+            onChange={(e) => handleChangeQuestionType(index, 'questionType', e.target.value as QuestionType)}
           >
             {Object.entries(QUESTION_DEFAULT_TYPE_LIST).map(([key, value]) => (
               <MenuItem key={key} value={key}>
@@ -146,13 +144,13 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
         </Grid>
         <Grid size={{ xs: 12 }}>
           <TextField
-            name={`questions.${questionIndex}.description`}
+            name={`questions.${index}.description`}
             fullWidth
             multiline
             rows={3}
             label="설문 설명"
             value={description ?? ''}
-            onChange={(e) => handleChangeBy(`questions.${questionIndex}.description`, e.target.value)}
+            onChange={(e) => handleChangeBy(`questions.${index}.description`, e.target.value)}
           />
         </Grid>
       </Grid>
@@ -160,37 +158,36 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       <Box sx={{ mt: 3 }}>
         {(questionType === QuestionType.SingleChoice || questionType === QuestionType.MultipleChoice) && (
           <Box>
-            {/* 옵션 에러 메시지 표시 */}
-            {/* {questionTouched && questionErrors?.options && (
-              <Box sx={{ color: 'error.main', fontSize: '0.75rem', mb: 1 }}>{questionErrors?.options}</Box>
-            )} */}
-
-            {(questionOptions || []).map((option, optIndex) => (
-              <Grid container spacing={1} key={idx + '-' + option.idx} alignItems="center">
-                <Grid size={{ xs: 11 }}>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    label={`옵션 ${optIndex + 1}`}
-                    value={option.label}
-                    name={`questions.${questionIndex}.questionOptions.${optIndex}.label`}
-                    onChange={(e) => handleChangeBy(`questions.${questionIndex}.questionOptions.${optIndex}.label`, e.target.value)}
-                    variant="standard"
-                    type={inputValueType}
-                    // error={questionTouched && Boolean(optionsErrors[optIndex]?.label)}
-                    // helperText={questionTouched && optionsErrors[optIndex]?.label}
-                    required
-                    autoFocus={questionOptions?.length === optIndex + 1}
-                  />
+            {(questionOptions || []).map((option, optIndex) => {
+              const touchedOption = touched?.questionOptions?.[optIndex] as FormikTouched<IQuestionOption> | undefined;
+              const errorsOption = errors?.questionOptions?.[optIndex] as FormikErrors<IQuestionOption> | undefined;
+              return (
+                <Grid container spacing={1} key={idx + '-' + option.idx} alignItems="center">
+                  <Grid size={{ xs: 11 }}>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      label={`옵션 ${optIndex + 1}`}
+                      value={option.label}
+                      name={`questions.${index}.questionOptions.${optIndex}.label`}
+                      onChange={(e) => handleChangeBy(`questions.${index}.questionOptions.${optIndex}.label`, e.target.value)}
+                      variant="standard"
+                      type={inputValueType}
+                      error={touchedOption?.label && Boolean(errorsOption?.label)}
+                      helperText={touchedOption?.label && errorsOption?.label}
+                      required
+                      autoFocus={questionOptions?.length === optIndex + 1}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 1 }}>
+                    <IconButton onClick={() => handleRemoveOption(index, option.idx)} size="small">
+                      <DeleteIcon />
+                    </IconButton>
+                  </Grid>
                 </Grid>
-                <Grid size={{ xs: 1 }}>
-                  <IconButton onClick={() => handleRemoveOption(questionIndex, option.idx)} size="small">
-                    <DeleteIcon />
-                  </IconButton>
-                </Grid>
-              </Grid>
-            ))}
-            <Button onClick={() => handleAddOption(questionIndex)} sx={{ mt: 1 }}>
+              );
+            })}
+            <Button onClick={() => handleAddOption(index)} sx={{ mt: 1 }}>
               옵션 추가
             </Button>
             {/* {questionOptions?.length === 0 && questionTouched && (
@@ -209,7 +206,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       >
         {questionType === QuestionType.ShortText && (
           <FormControl>
-            <RadioGroup row value={dataType} onChange={(e) => handleChangeBy(`questions.${questionIndex}.dataType`, e.target.value as DataType)}>
+            <RadioGroup row value={dataType} onChange={(e) => handleChangeBy(`questions.${index}.dataType`, e.target.value as DataType)}>
               {Object.values(DataType).map((value) => (
                 <FormControlLabel
                   key={value}
@@ -226,7 +223,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             </RadioGroup>
           </FormControl>
         )}
-        <IconButton onClick={() => handleRemoveQuestion(questionIndex)}>
+        <IconButton onClick={() => handleRemoveQuestion(index)}>
           <DeleteIcon />
         </IconButton>
       </Stack>

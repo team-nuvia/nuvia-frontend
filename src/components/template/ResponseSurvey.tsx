@@ -108,6 +108,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
         addNotice(response.message, 'success');
         // Reset form
         setIsSubmitted(true);
+        setCurrentStep(0);
         setQuestions([]);
       } else {
         addNotice(`오류: ${response.statusText}`, 'error');
@@ -132,7 +133,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
 
   const getQuestionProcess = () => {
     const totalQuestions = questions.length;
-    const isLastNoRequired = questions[questions.length - 1].isRequired === false;
+    const isLastNoRequired = questions[questions.length - 1]?.isRequired === false;
     const isLastQuestion = questions[questions.length - 1] === questions[currentStep];
     const answeredQuestions = questions.filter((question) => {
       const values = Array.from(question.questionAnswers?.values?.() ?? []);
@@ -351,7 +352,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
   }, [questions, currentStep]);
   const isLastQuestion = currentStep === questions.length - 1;
 
-  if (isSubmitted) {
+  if (isSubmitted && !currentQuestion) {
     return (
       <Container maxWidth="md" sx={{ py: 8 }}>
         <motion.div

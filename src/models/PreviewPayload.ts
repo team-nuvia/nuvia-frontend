@@ -18,11 +18,11 @@ export interface PreviewPayload {
   estimatedTime: number;
   totalResponses: number;
   questions: IQuestion[];
-  // questionAnswers: {
-  //   questionId: number;
-  //   questionOptionId: number | null;
-  //   value: string | null;
-  // }[];
+  questionAnswers: {
+    questionId: number;
+    questionOptionId: number | null;
+    value: string | null;
+  }[];
   isPublic: boolean;
   status: SurveyStatus;
   questionCount: number;

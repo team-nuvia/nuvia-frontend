@@ -30,6 +30,7 @@ export const AxiosProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     async function processLogout(error: any) {
+      // console.log('🚀 ~ processLogout ~ error:', error);
       await snapApi.post('/auth/logout');
       localStorage.removeItem('access_token');
       router.push('/auth/login');
