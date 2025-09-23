@@ -14,7 +14,7 @@ export declare global {
     expiresAt: Date | null;
     isPublic: boolean;
     status: SurveyStatus;
-    questions: Omit<AllQuestion, 'answers' | 'isAnswered'>[];
+    questions: Omit<AllQuestion, 'questionAnswers' | 'isAnswered'>[];
   }
 
   interface ServerResponse<T> extends Payload<T> {

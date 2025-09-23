@@ -1,6 +1,6 @@
 import ActionButton from '@components/atom/ActionButton';
+import { useBlackRouter } from '@hooks/useBlackRouter';
 import { Stack } from '@mui/material';
-import { useRouter } from 'next/navigation';
 
 interface ActionFormProps {
   title: React.ReactNode;
@@ -12,7 +12,7 @@ interface ActionFormProps {
   isLoading?: boolean;
 }
 const ActionForm: React.FC<ActionFormProps> = ({ title, onSubmit, submitText, slots, signupPath, signupText, isLoading }) => {
-  const router = useRouter();
+  const router = useBlackRouter();
   return (
     <Stack
       p={5}

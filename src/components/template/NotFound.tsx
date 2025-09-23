@@ -2,7 +2,6 @@
 
 import ActionButton from '@components/atom/ActionButton';
 import { AuthenticationContext } from '@context/AuthenticationContext';
-import { useLoading } from '@hooks/useLoading';
 import { ArrowBack, Home, SearchOff } from '@mui/icons-material';
 import { Box, Paper, Stack, Typography } from '@mui/material';
 import { useRouter } from 'next/navigation';
@@ -10,7 +9,6 @@ import { useContext } from 'react';
 
 interface NotFoundProps {}
 const NotFound: React.FC<NotFoundProps> = () => {
-  useLoading();
   const router = useRouter();
   const { mainUrl } = useContext(AuthenticationContext);
 

@@ -1,5 +1,6 @@
+import { ICategory } from '@share/interface/icategory';
 import { AllQuestion } from '@share/interface/iquestion';
-import { PreviewPayload } from './PreviewPayload';
+import { ISurvey } from '@share/interface/isurvey';
 
 // export interface QuestionOptionDetailNestedResponseDto {
 //   id: number;
@@ -41,6 +42,23 @@ import { PreviewPayload } from './PreviewPayload';
 //   updatedAt: Date;
 // }
 
-export interface GetSurveyDetailResponse extends Omit<PreviewPayload, 'questions'> {
+export interface GetSurveyDetailResponse extends Omit<ISurvey, 'id' | 'questions' | 'categoryId' | 'expiresAt'> {
+  id: number | null;
+  isOwner: boolean;
+  category: ICategory;
   questions: Omit<AllQuestion, 'questionAnswers' | 'isAnswered'>[];
+  expiresAt: Date | null;
+  questionAnswers: {
+    questionId: number;
+    questionOptionId: number | null;
+    value: string | null;
+  }[];
+  viewCount: number;
+  author: {
+    id: number;
+    name: string;
+    profileUrl: string | null;
+  };
+  estimatedTime: number;
+  totalResponses: number;
 }

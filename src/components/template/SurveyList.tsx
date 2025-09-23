@@ -7,22 +7,9 @@ import SurveyListItemCard from '@components/molecular/SurveyListItemCard';
 import SurveyBinDialog from '@components/organism/SurveyBinDialog';
 import { AuthenticationContext } from '@context/AuthenticationContext';
 import { GlobalDialogContext } from '@context/GlobalDialogContext';
-import { useLoading } from '@hooks/useLoading';
+import { useBlackRouter } from '@hooks/useBlackRouter';
 import { Add, Delete } from '@mui/icons-material';
-import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Container,
-  Fab,
-  Grid,
-  Stack,
-  Tab,
-  Tabs,
-  Tooltip,
-  Typography
-} from '@mui/material';
+import { Box, Button, Card, CardContent, Container, Fab, Grid, Stack, Tab, Tabs, Tooltip, Typography } from '@mui/material';
 import { MetadataStatusType } from '@share/enums/metadata-status-type';
 import { SurveyStatus, SurveyStatusList } from '@share/enums/survey-status';
 import { UserRole } from '@share/enums/user-role';
@@ -31,13 +18,11 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { LocalizationManager } from '@util/LocalizationManager';
 import { roleAtLeast } from '@util/roleAtLeast';
 import { AnimatePresence } from 'framer-motion';
-import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useState } from 'react';
 
 export default function SurveyList() {
-  useLoading({ forUser: true, unverifiedRoute: '/auth/login' });
   const queryClient = useQueryClient();
-  const router = useRouter();
+  const router = useBlackRouter();
   const { user } = useContext(AuthenticationContext);
   const [surveys, setSurveys] = useState<SearchSurvey[]>([]);
   const { handleOpenDialog } = useContext(GlobalDialogContext);
@@ -58,6 +43,10 @@ export default function SurveyList() {
     queryKey: ['surveyMetadata'],
     queryFn: () => getSurveyMetadata(MetadataStatusType.SurveyList),
   });
+
+  useEffect(() => {
+    router.prefetch('/dashboard/survey/create');
+  }, [router]);
 
   useEffect(() => {
     if (data?.payload && !isLoading) {

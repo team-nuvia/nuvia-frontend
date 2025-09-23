@@ -14,7 +14,7 @@ import QuestionCard from '@components/organism/QuestionCard';
 import { AuthenticationContext } from '@context/AuthenticationContext';
 import { GlobalDialogContext } from '@context/GlobalDialogContext';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
-import { useLoading } from '@hooks/useLoading';
+import { useBlackRouter } from '@hooks/useBlackRouter';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import SaveIcon from '@mui/icons-material/Save';
 import { Box, Button, CircularProgress, Container, Grid, Stack, useMediaQuery } from '@mui/material';
@@ -27,8 +27,7 @@ import { ICategory } from '@share/interface/icategory';
 import { AllQuestion, IQuestion, IQuestionOption } from '@share/interface/iquestion';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
-import { useFormik } from 'formik';
-import { useRouter } from 'next/navigation';
+import { FormikErrors, useFormik } from 'formik';
 import { useCallback, useContext, useEffect, useState } from 'react';
 import * as Yup from 'yup';
 import SurveyInformation from './SurveyInformation';
@@ -77,15 +76,9 @@ const initialValues: QuestionInitialValues = {
 // --- COMPONENT ---
 const Survey: React.FC<{ id?: string }> = ({ id }) => {
   /* hooks */
-  const { contentLoaded } = useLoading({
-    forUser: true,
-    verifiedRoute: '/survey',
-    unverifiedRoute: '/auth/login',
-    ifRole: [UserRole.Viewer, '/survey'],
-  });
   const { handleOpenDialog } = useContext(GlobalDialogContext);
   const { addNotice } = useContext(GlobalSnackbarContext);
-  const router = useRouter();
+  const router = useBlackRouter();
   const theme = useTheme();
   const { user } = useContext(AuthenticationContext);
 
@@ -110,7 +103,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
       if (data.ok) {
         addNotice((data.reason as string) || data.message, 'success');
         // Reset form
-        router.push('/survey');
+        router.push('/dashboard/survey');
       } else {
         addNotice((data.reason as string) || data.message, 'error');
       }
@@ -118,7 +111,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
     },
     onError: (error) => {
       const axiosError = error as AxiosError<ServerResponse<any>>;
-      console.error(axiosError);
+      // console.error(axiosError);
       if (axiosError?.response?.data?.reason === 'expiresAt') {
         addNotice('만료 일시는 최소 다음날부터 가능합니다.', 'error');
       } else {
@@ -146,7 +139,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
   });
 
   useEffect(() => {
-    if (!contentLoaded || isSurveyLoading || isCategoriesLoading) return;
+    if (isSurveyLoading || isCategoriesLoading) return;
 
     if (surveyData?.payload) {
       const payload = surveyData.payload;
@@ -173,8 +166,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
             description: option.description,
             sequence: option.sequence,
           })),
-          questionAnswers: new Map(),
-          isAnswered: false,
+          // isAnswered: false,
         })),
       });
     }
@@ -182,7 +174,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
 
   useEffect(() => {
     if (formik.isSubmitting && Object.keys(formik.errors).length > 0) {
-      console.log(formik.errors);
+      // console.log(formik.errors);
       addNotice('설문에 필요한 내용을 작성해주세요.', 'warning');
     }
   }, [formik.errors, formik.touched]);
@@ -225,8 +217,8 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
             label: option.label,
             sequence: option.sequence,
           })),
-          questionAnswers: new Map(),
-          isAnswered: false,
+          // questionAnswers: new Map(),
+          // isAnswered: false,
         })),
       };
 
@@ -250,8 +242,8 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
             label: optRest.label,
             sequence: optRest.sequence,
           })), // Remove client-side IDs
-          questionAnswers: new Map(),
-          isAnswered: false,
+          // questionAnswers: new Map(),
+          // isAnswered: false,
         })),
         // managementPassword: managementPassword,
       };
@@ -280,13 +272,13 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
 
       if (response.ok) {
         addNotice(response.reason || response.message, 'success');
-        router.push('/survey');
+        router.push('/dashboard/survey');
       } else {
         addNotice(response.reason || response.message, 'error');
       }
     } catch (err: any) {
       const axiosError = err as AxiosError<ServerResponse<any>>;
-      console.error(axiosError);
+      // console.error(axiosError);
       addNotice(
         ((axiosError?.response?.data?.reason as string) || axiosError?.response?.data?.message) ??
           '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
@@ -312,7 +304,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
         isRequired: false,
         // isAnswered: false,
         questionOptions: isSelectable ? [{ id: null, label: '', sequence: 0, idx: Date.now() }] : [],
-        isAnswered: false,
+        // isAnswered: false,
         sequence: formik.values.questions.length ?? 0,
       };
       nextValues.questions = [...nextValues.questions, newQuestion as Omit<AllQuestion, 'answers' | 'isAnswered'>];
@@ -429,8 +421,12 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
               status={formik.values.status}
               categoryId={formik.values.categoryId}
               handleChange={handleChangeBy}
-              touched={formik.touched as any}
-              errors={formik.errors as any}
+              touchedTitle={formik.touched.title}
+              touchedExpiresAt={formik.touched.expiresAt}
+              touchedCategoryId={formik.touched.categoryId}
+              errorsTitle={formik.errors.title}
+              errorsExpiresAt={formik.errors.expiresAt}
+              errorsCategoryId={formik.errors.categoryId}
             />
 
             {formik.values.questions.map((question, index) => (
@@ -444,7 +440,9 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
                 dataType={question.dataType}
                 isRequired={question.isRequired}
                 questionOptions={question.questionOptions}
-                // handleChangeBy={handleChangeBy}
+                touched={formik.touched.questions?.[index]}
+                errors={formik.errors.questions?.[index] as FormikErrors<Omit<AllQuestion, 'questionAnswers' | 'isAnswered'>> | undefined}
+                handleChangeBy={handleChangeBy}
                 handleChangeQuestionType={handleChangeQuestionType}
                 handleAddOption={handleAddOption}
                 handleRemoveQuestion={handleRemoveQuestion}
@@ -595,6 +593,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
               isRequired: question.isRequired,
               questionOptions: question.questionOptions,
               sequence: question.sequence,
+              questionAnswers: new Map(),
             })),
           }}
           handleClose={() => setIsPreview(false)}

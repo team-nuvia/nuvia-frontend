@@ -28,22 +28,12 @@ interface SurveyInformationProps {
   isPublic: boolean;
   status: SurveyStatus;
   categoryId: string;
-  touched: {
-    title: boolean;
-    description: boolean;
-    expiresAt: boolean;
-    isPublic: boolean;
-    status: boolean;
-    categoryId: boolean;
-  };
-  errors: {
-    title: string;
-    description: string;
-    expiresAt: string;
-    isPublic: string;
-    status: string;
-    categoryId: string;
-  };
+  touchedTitle?: boolean;
+  touchedExpiresAt?: boolean;
+  touchedCategoryId?: boolean;
+  errorsTitle?: string;
+  errorsExpiresAt?: string;
+  errorsCategoryId?: string;
 }
 const SurveyInformation: React.FC<SurveyInformationProps> = ({
   categories,
@@ -54,8 +44,12 @@ const SurveyInformation: React.FC<SurveyInformationProps> = ({
   isPublic,
   status,
   categoryId,
-  touched,
-  errors,
+  touchedTitle,
+  touchedExpiresAt,
+  touchedCategoryId,
+  errorsTitle,
+  errorsExpiresAt,
+  errorsCategoryId,
 }) => {
   const theme = useTheme();
   return (
@@ -115,8 +109,8 @@ const SurveyInformation: React.FC<SurveyInformationProps> = ({
               name="title"
               value={title}
               onChange={(e) => handleChange('title', e.target.value)}
-              error={touched.title && Boolean(errors.title)}
-              helperText={touched.title && errors.title}
+              error={touchedTitle && Boolean(errorsTitle)}
+              helperText={touchedTitle && errorsTitle}
               sx={{
                 '& .MuiOutlinedInput-root': {
                   borderRadius: 2,
@@ -139,8 +133,6 @@ const SurveyInformation: React.FC<SurveyInformationProps> = ({
               name="description"
               value={description}
               onChange={(e) => handleChange('description', e.target.value)}
-              error={touched.description && Boolean(errors.description)}
-              helperText={touched.description && errors.description}
               sx={{
                 '& .MuiOutlinedInput-root': {
                   borderRadius: 2,
@@ -179,8 +171,8 @@ const SurveyInformation: React.FC<SurveyInformationProps> = ({
               slotProps={{
                 textField: {
                   fullWidth: true,
-                  error: touched.expiresAt && Boolean(errors.expiresAt),
-                  helperText: touched.expiresAt && errors.expiresAt,
+                  error: touchedExpiresAt && Boolean(errorsExpiresAt),
+                  helperText: touchedExpiresAt && errorsExpiresAt,
                   sx: {
                     '& .MuiOutlinedInput-root': {
                       borderRadius: 2,
@@ -317,7 +309,7 @@ const SurveyInformation: React.FC<SurveyInformationProps> = ({
                 value={categoryId}
                 onChange={(e) => handleChange('categoryId', e.target.value)}
                 defaultValue=""
-                error={touched.categoryId && Boolean(errors.categoryId)}
+                error={touchedCategoryId && Boolean(errorsCategoryId)}
                 displayEmpty
                 sx={{
                   borderRadius: 2,
@@ -339,9 +331,9 @@ const SurveyInformation: React.FC<SurveyInformationProps> = ({
                   </MenuItem>
                 ))}
               </Select>
-              {touched.categoryId && errors.categoryId && (
+              {touchedCategoryId && errorsCategoryId && (
                 <FormHelperText error sx={{ ml: 0, mt: 1 }}>
-                  {errors.categoryId}
+                  {errorsCategoryId}
                 </FormHelperText>
               )}
             </Box>

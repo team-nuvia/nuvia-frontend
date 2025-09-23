@@ -1,13 +1,19 @@
 import { getUserOrganizations } from '@api/get-user-organizations';
 import { updateUserOrganization } from '@api/update-user-organization';
 import { AuthenticationContext } from '@context/AuthenticationContext';
+import { GlobalDialogContext } from '@context/GlobalDialogContext';
+import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import { MenuItem, Select, Stack } from '@mui/material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { usePathname } from 'next/navigation';
 import { useContext } from 'react';
 
 const UserOrganizationSelect: React.FC = () => {
+  const pathname = usePathname();
+  const { handleOpenDialog } = useContext(GlobalDialogContext);
   const queryClient = useQueryClient();
   const { fetchUser } = useContext(AuthenticationContext);
+  const { addNotice } = useContext(GlobalSnackbarContext);
   const { data } = useQuery({
     queryKey: ['user-organizations'],
     queryFn: getUserOrganizations,
@@ -18,6 +24,11 @@ const UserOrganizationSelect: React.FC = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-organizations'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-metadata'] });
+      queryClient.invalidateQueries({ queryKey: ['daily-response-count'] });
+      queryClient.invalidateQueries({ queryKey: ['surveyList'] });
+      queryClient.invalidateQueries({ queryKey: ['surveyMetadata'] });
+
       fetchUser();
     },
   });
@@ -35,7 +46,21 @@ const UserOrganizationSelect: React.FC = () => {
               return organization.id === e.target.value;
             });
             if (organization) {
-              updateUserOrganizationMutation({ organizationId: organization.id });
+              if (pathname.startsWith('/dashboard/survey/create')) {
+                handleOpenDialog({
+                  title: '사이트를 새로고침하시겠습니까?',
+                  content: '변경사항이 저장되지 않을 수 있습니다.',
+                  confirmText: '새로고침',
+                  cancelText: '취소',
+                  useConfirm: true,
+                  actionCallback: () => {
+                    window.location.reload();
+                    updateUserOrganizationMutation({ organizationId: organization.id });
+                  },
+                });
+              } else {
+                updateUserOrganizationMutation({ organizationId: organization.id });
+              }
             }
           }}
           sx={{

@@ -3,13 +3,17 @@
 import { GetMeResponse } from '@/models/GetMeResponse';
 import { getUsersMe } from '@api/get-users-me';
 import { getVerify } from '@api/get-verify';
+import { getVerifySession } from '@api/get-verify-session';
 import { logout } from '@api/logout';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { usePathname, useRouter } from 'next/navigation';
-import { createContext, useCallback, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { GlobalSnackbarContext } from './GlobalSnackbar';
+import { useBlackRouter } from '@hooks/useBlackRouter';
+import { useLoading } from '@hooks/useLoading';
 
 interface AuthenticationContextType {
   user: GetMeResponse | null;
@@ -17,6 +21,7 @@ interface AuthenticationContextType {
   mainUrl: string;
   clearUser: () => void;
   fetchUser: () => Promise<void>;
+  updateUser: () => void;
 }
 
 export const AuthenticationContext = createContext<AuthenticationContextType>({
@@ -25,32 +30,36 @@ export const AuthenticationContext = createContext<AuthenticationContextType>({
   mainUrl: '/',
   clearUser: () => {},
   fetchUser: async () => {},
+  updateUser: () => {},
 });
 
 const AuthenticationProvider = ({ children, user, initialize }: { children: React.ReactNode; user: GetMeResponse | null; initialize: boolean }) => {
+  useLoading();
+  const { addNotice } = useContext(GlobalSnackbarContext);
   const [mainUrl, setMainUrl] = useState('/');
   const [userData, setUserData] = useState<GetMeResponse | null>(user);
   const [isUserLoading, setIsUserLoading] = useState(false);
   const pathname = usePathname();
-  const router = useRouter();
+  const router = useBlackRouter();
   const { mutate: getUsersMeMutation } = useMutation({
     mutationFn: () => getUsersMe(),
     mutationKey: ['getUsersMe'],
     onSuccess: (data) => {
       setUserData(data.payload);
       setIsUserLoading(false);
+      setMainUrl('/dashboard');
     },
     onError: (error) => {
       if (error instanceof AxiosError && error.code === 'ERR_NETWORK') {
         localStorage.removeItem('access_token');
-        router.push('/');
+        logoutMutation();
       }
       setIsUserLoading(false);
     },
   });
-  const { mutate: verifyToken } = useMutation({
-    mutationKey: ['verifyToken'],
-    mutationFn: () => getVerify(),
+  const { mutate: verifySessionMutation } = useMutation({
+    mutationKey: ['verifySession'],
+    mutationFn: () => getVerifySession(),
     onSuccess: async (data) => {
       if (data.ok && data.payload?.verified) {
         getUsersMeMutation();
@@ -63,42 +72,54 @@ const AuthenticationProvider = ({ children, user, initialize }: { children: Reac
       setIsUserLoading(false);
     },
   });
+  const { mutate: verifyToken } = useMutation({
+    mutationKey: ['verifyToken'],
+    mutationFn: () => getVerify(),
+    onSuccess: async (data) => {
+      if (data.ok && data.payload?.verified) {
+        verifySessionMutation();
+      }
+    },
+    onError: async (error) => {
+      if (error instanceof AxiosError && error.code === 'ERR_NETWORK') {
+        logoutMutation();
+      }
+      setIsUserLoading(false);
+    },
+  });
   const { mutate: logoutMutation } = useMutation({
     mutationFn: () => logout(),
     mutationKey: ['logout'],
-    onSuccess: () => {
-      router.push('/');
+    onSuccess: (data) => {
       // verifyToken();
       setUserData(null);
+      setMainUrl('/');
       setIsUserLoading(false);
+      router.push(`/auth/login?redirect=${encodeURIComponent(pathname)}&action=view`);
+      addNotice(data.message, 'success');
     },
-    onError: (error) => {
+    onError: (error: AxiosError<ServerResponse<any>>) => {
       if (error instanceof AxiosError && error.code === 'ERR_NETWORK') {
         localStorage.removeItem('access_token');
       }
       setIsUserLoading(false);
+      addNotice(error.response?.data.message ?? '로그아웃 중 오류가 발생했습니다. 관리자에게 문의해주세요.', 'error');
     },
   });
 
   useEffect(() => {
     const accessToken = localStorage.getItem('access_token');
-    if (!accessToken) return;
-
     if (initialize) {
-      setIsUserLoading(true);
-      verifyToken();
-    }
-  }, [pathname, initialize]);
-
-  useEffect(() => {
-    if (!isUserLoading) {
-      if (userData) {
-        setMainUrl('/dashboard');
-      } else {
+      if (accessToken) {
+        verifyToken();
+        setIsUserLoading(true);
+      } else if(userData) {
         setMainUrl('/');
+        setUserData(null);
+        setIsUserLoading(false);
       }
     }
-  }, [userData, isUserLoading]);
+  }, [pathname, initialize]);
 
   const fetchUser = useCallback(() => {
     return new Promise<void>((resolve, reject) => {
@@ -116,7 +137,6 @@ const AuthenticationProvider = ({ children, user, initialize }: { children: Reac
 
       verifyToken(undefined, {
         onSuccess: () => {
-          console.log('verify token success!!!');
           setIsUserLoading(false);
           resolve();
         },
@@ -132,8 +152,12 @@ const AuthenticationProvider = ({ children, user, initialize }: { children: Reac
     logoutMutation();
   }, []);
 
+  const updateUser = useCallback(() => {
+    getUsersMeMutation();
+  }, []);
+
   return (
-    <AuthenticationContext.Provider value={{ user: userData, clearUser, fetchUser, isUserLoading, mainUrl }}>
+    <AuthenticationContext.Provider value={{ user: userData, clearUser, fetchUser, isUserLoading, mainUrl, updateUser }}>
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ko">
         {children}
       </LocalizationProvider>

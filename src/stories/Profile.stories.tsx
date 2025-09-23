@@ -33,6 +33,7 @@ export const Default: Story = {
           value={{
             isUserLoading: false,
             mainUrl: '',
+            updateUser: () => Promise.resolve(),
             user: {
               id: 1,
               name: 'Devkimson',
