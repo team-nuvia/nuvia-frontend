@@ -26,7 +26,6 @@ export default function Analysis({ params }: { params: { surveyId: string } }) {
         if (mounted) setLoading(false);
       }
     })();
-    console.log('로딩 끝');
     endLoading();
     return () => {
       mounted = false;

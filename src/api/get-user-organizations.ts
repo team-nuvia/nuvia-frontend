@@ -1,9 +1,14 @@
+import { PlanNameType } from '@share/enums/plan-name-type.enum';
 import { IOrganization } from '@share/interface/iorganization';
 import { snapApi } from '.';
 
+type IOrganizationWithPlanName = Omit<IOrganization, 'plan'> & {
+  plan: PlanNameType;
+};
+
 export interface IGetUserOrganizationsResponse {
-  currentOrganization: IOrganization;
-  organizations: IOrganization[];
+  currentOrganization: IOrganizationWithPlanName;
+  organizations: IOrganizationWithPlanName[];
 }
 
 export const getUserOrganizations = async (): Promise<ServerResponse<IGetUserOrganizationsResponse>> => {

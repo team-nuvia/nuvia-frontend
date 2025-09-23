@@ -67,7 +67,7 @@ export const AddQuestionSheet: React.FC<{
 
   // QUESTION_TYPE_MAP 중에서 실제 메타(getMeta)가 있는 키만 노출
   const allKeys = React.useMemo(() => {
-    return (Object.keys(QUESTION_TYPE_MAP) as QKey[]).filter((k) => Boolean(getMeta(k)));
+    return (Object.keys(QUESTION_TYPE_MAP) as QKey[]).filter((k) => k !== 'text' && Boolean(getMeta(k)));
   }, []);
 
   const categories = React.useMemo(() => {
@@ -122,7 +122,7 @@ export const AddQuestionSheet: React.FC<{
 
   return (
     <>
-      <Fab color="primary" aria-label="질문 추가" onClick={() => setOpen(true)} sx={{ position: 'fixed', bottom: 16, right: 16, zIndex: 1400 }}>
+      <Fab color="primary" aria-label="질문 추가" onClick={() => setOpen(true)} sx={{ position: 'fixed', bottom: 16, right: 16, zIndex: 1100 }}>
         <AddIcon />
       </Fab>
 

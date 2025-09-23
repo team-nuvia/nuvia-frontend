@@ -1,6 +1,6 @@
 'use client';
 
-import NotFound from '@/app/(protected)/dashboard/survey/view/[hash]/not-found';
+import NotFound from '@/app/(survey-view)/survey/view/[hash]/not-found';
 import { GetSurveyDetailResponse } from '@/models/GetSurveyDetailResponse';
 import { refreshJws } from '@api/refresh-jws';
 import { startAnswer } from '@api/start-answer';
@@ -123,6 +123,9 @@ export default function SurveyDetail({ survey }: { survey: GetSurveyDetailRespon
 
   const surveyDataWithAnswers = {
     ...survey,
+    questionCount: survey.questions.length,
+    respondentCount: survey.totalResponses,
+    isOwner: survey.isOwner,
     questions: survey.questions.map((question, idx) => {
       const questionAnswers = survey.questionAnswers?.filter((answer) => answer.questionId === question.id);
       const questionAnswersMap = new Map();

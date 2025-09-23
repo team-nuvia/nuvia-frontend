@@ -2,12 +2,10 @@
 
 import CommonText from '@components/atom/CommonText';
 import SettingItem from '@components/molecular/SettingItem';
-import { useLoading } from '@hooks/useLoading';
 import { Stack } from '@mui/material';
 
 interface SettingProps {}
 const Setting: React.FC<SettingProps> = () => {
-  useLoading({ forUser: true, unverifiedRoute: '/auth/login' });
   // TODO: 설정 데이터 가져오기
   return (
     <Stack flex={1} gap={3} p={5}>
@@ -23,7 +21,8 @@ const Setting: React.FC<SettingProps> = () => {
         }}
       >
         <SettingItem title="FAB 메뉴 🧪" description="Shift + 마우스 오른쪽 클릭 플로팅 작업 메뉴 활성화" />
-        <SettingItem title="알림" description="새로운 응답에 대한 이메일 알림을 받으세요" />
+        <SettingItem title="이메일 알림" description="새로운 응답에 대한 이메일 알림을 받으세요" />
+        <SettingItem title="다크모드" description="다크모드 활성화" />
       </Stack>
     </Stack>
   );

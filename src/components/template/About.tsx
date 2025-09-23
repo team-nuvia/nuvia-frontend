@@ -1,7 +1,7 @@
 'use client';
 
 import CommonText from '@/components/atom/CommonText';
-import { Box, Container, Paper, Stack, styled, Typography, useTheme } from '@mui/material';
+import { Box, Container, Paper, Stack, styled, Typography } from '@mui/material';
 
 const SectionContainer = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(4),
@@ -59,7 +59,6 @@ const FeatureList = styled(Box)(({ theme }) => ({
 }));
 
 const About: React.FC = () => {
-  const theme = useTheme();
   return (
     <Container maxWidth="md" sx={{ py: 6 }}>
       <Stack gap={4}>

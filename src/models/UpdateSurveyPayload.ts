@@ -3,7 +3,7 @@ import { CreateSurveyPayload } from './CreateSurveyPayload';
 
 export interface UpdateSurveyPayload {
   surveyFormData: Omit<CreateSurveyPayload, 'questions'>;
-  surveyQuestionData: (Omit<IQuestion, 'idx' | 'isAnswered' | 'answers' | 'questionOptions'> & {
+  surveyQuestionData: (Omit<IQuestion, 'idx' | 'isAnswered' | 'questionAnswers' | 'questionOptions'> & {
     questionOptions: Omit<IQuestionOption, 'idx'>[];
   })[];
 }

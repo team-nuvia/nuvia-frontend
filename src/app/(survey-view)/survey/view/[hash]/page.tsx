@@ -1,5 +1,9 @@
+'use server';
+
 import SurveyDetail from '@components/template/SurveyDetail';
+import { AxiosError } from 'axios';
 import { notFound } from 'next/navigation';
+import NotFound from './not-found';
 import { getSurveyDetailView } from './utils';
 
 interface PageProps {
@@ -16,8 +20,13 @@ const Page: React.FC<PageProps> = async ({ params }) => {
       return notFound();
     }
     return <SurveyDetail survey={survey.payload} />;
-  } catch (error) {
-    console.log('🚀 ~ Page ~ error:', error);
+  } catch (error: any) {
+    const axiosError = error as AxiosError<ServerResponse<void>>;
+    console.log('🚀 ~ Page ~ error:', axiosError.response?.data.reason);
+    if (axiosError.response?.status === 400) {
+      return <NotFound reason={axiosError.response?.data.message} />;
+    }
+
     return notFound();
   }
 };

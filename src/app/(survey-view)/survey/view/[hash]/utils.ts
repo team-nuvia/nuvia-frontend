@@ -1,4 +1,4 @@
-import { PreviewPayload } from '@/models/PreviewPayload';
+import { GetSurveyDetailResponse } from '@/models/GetSurveyDetailResponse';
 import { API_URL } from '@common/variables';
 import axios from 'axios';
 import { cookies } from 'next/headers';
@@ -18,7 +18,7 @@ export const getSurveyDetailView = async (hashedUniqueKey: string) => {
   const accessToken = await getAccessToken();
   const header = await getSubmissionHash();
 
-  const response = await axios.get<ServerResponse<PreviewPayload>>(`/surveys/view/${hashedUniqueKey}`, {
+  const response = await axios.get<ServerResponse<GetSurveyDetailResponse>>(`/surveys/view/${hashedUniqueKey}`, {
     baseURL: API_URL,
     withCredentials: true,
     headers: {

@@ -2,7 +2,6 @@
 
 import ActionButton from '@components/atom/ActionButton';
 import { AuthenticationContext } from '@context/AuthenticationContext';
-import { useLoading } from '@hooks/useLoading';
 import { AccountCircle, CalendarToday, Edit, Email, Person, Settings, VerifiedUser } from '@mui/icons-material';
 import {
   Avatar,
@@ -53,7 +52,6 @@ function a11yProps(index: number) {
 }
 
 const Profile: React.FC<ProfileProps> = () => {
-  useLoading({ forUser: true, unverifiedRoute: '/auth/login' });
   const router = useRouter();
   const theme = useTheme();
   const { user } = useContext(AuthenticationContext);

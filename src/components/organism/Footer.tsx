@@ -8,7 +8,6 @@ import { Divider, Stack, useTheme } from '@mui/material';
 
 interface FooterProps {}
 const Footer: React.FC<FooterProps> = () => {
-  const theme = useTheme();
   return (
     <Stack
       component="footer"
@@ -27,7 +26,7 @@ const Footer: React.FC<FooterProps> = () => {
       }}
       spacing={2}
     >
-      <BrandHead title={BRAND_NAME} width={45} height={45} primaryColor={'#565656'} secondaryColor={"#787878"} />
+      <BrandHead title={BRAND_NAME} width={45} height={45} primaryColor={'#565656'} secondaryColor={'#787878'} />
       <CommonText variant="body2" color="text.secondary">
         © {new Date().getFullYear()} {BRAND_NAME} | All rights reserved.
       </CommonText>

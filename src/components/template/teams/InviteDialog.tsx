@@ -21,7 +21,7 @@ export default function InviteDialog({ subscriptionId }: { subscriptionId: numbe
       setErrorEmails([]);
     },
     onError: (error: AxiosError<ServerResponse<null>>) => {
-      console.log('error!:', error);
+      // console.log('error!:', error);
       const data = error?.response?.data;
       if (data) {
         if (data.httpStatus === 400) {
@@ -43,7 +43,7 @@ export default function InviteDialog({ subscriptionId }: { subscriptionId: numbe
   });
 
   function handleOpenInviteDialog() {
-    console.log('초대 코드 생성');
+    // console.log('초대 코드 생성');
     inviteUsersMutate();
   }
 

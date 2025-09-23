@@ -4,7 +4,6 @@ import { getLast7DaysResponseCount } from '@api/get-daily-response-count';
 import { getSurveyMetadata } from '@api/get-survey-metadata';
 import RecentSurveyData from '@components/molecular/RecentSurveyData';
 import WelcomeDashboard from '@components/organism/WelcomeDashboard';
-import { useLoading } from '@hooks/useLoading';
 import { BarChart, CheckCircleOutline, DonutLarge, PeopleAlt } from '@mui/icons-material';
 import { Box, Card, Container, Grid, Paper, Skeleton, Stack, Typography } from '@mui/material';
 import { MetadataStatusType } from '@share/enums/metadata-status-type';
@@ -13,8 +12,6 @@ import { useMemo } from 'react';
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 const Dashboard = () => {
-  useLoading({ forUser: true, unverifiedRoute: '/' });
-
   const { data: metadataData, isLoading: metadataLoading } = useQuery({
     queryKey: ['dashboard-metadata'],
     queryFn: () => getSurveyMetadata(MetadataStatusType.Dashboard),

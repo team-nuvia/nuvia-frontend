@@ -7,6 +7,7 @@ import { DataType } from '@share/enums/data-type';
 import { QuestionType } from '@share/enums/question-type';
 import { IQuestionOption } from '@share/interface/iquestion';
 import dayjs from 'dayjs';
+import 'dayjs/locale/ko';
 import { useMemo } from 'react';
 
 // const DATA_TYPE_MAP = {

@@ -1,7 +1,5 @@
 'use client';
 
-import { AuthenticationContext } from '@context/AuthenticationContext';
-import { useLoading } from '@hooks/useLoading';
 import {
   ArrowBack as ArrowBackIcon,
   CheckCircle as CheckCircleIcon,
@@ -29,7 +27,7 @@ import {
 import { styled } from '@mui/material/styles';
 import { useMutation } from '@tanstack/react-query';
 import { useFormik } from 'formik';
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import * as Yup from 'yup';
 
 // API 함수들 (가명으로 작성)
@@ -99,7 +97,6 @@ const passwordSchema = Yup.object({
 
 interface ForgotPasswordProps {}
 const ForgotPassword: React.FC<ForgotPasswordProps> = () => {
-  useLoading();
   const [activeStep, setActiveStep] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
