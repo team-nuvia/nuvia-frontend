@@ -15,7 +15,7 @@ const getSubmissionHash = async () => {
 };
 
 export const getSurveyDetailView = async (hashedUniqueKey: string) => {
-  const accessToken = await getAccessToken();
+  // const accessToken = await getAccessToken();
   const header = await getSubmissionHash();
 
   const response = await axios.get<ServerResponse<GetSurveyDetailResponse>>(`/surveys/view/${hashedUniqueKey}`, {
@@ -23,7 +23,7 @@ export const getSurveyDetailView = async (hashedUniqueKey: string) => {
     withCredentials: true,
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
+      // Authorization: `Bearer ${accessToken}`,
       cookie: header,
     },
     timeout: 1 * 60 * 1000,
