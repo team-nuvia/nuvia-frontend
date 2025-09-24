@@ -4,15 +4,15 @@ import axios from 'axios';
 import { cookies } from 'next/headers';
 
 export async function getUserInformation() {
-  const refreshToken = (await cookies()).get('refresh_token')?.value;
+  const cookieStore = await cookies();
   try {
     const verifyResponse = await axios.post(
       `${API_URL}/auth/verify`,
       {},
       {
         headers: {
-          Authorization: `Bearer ${refreshToken}`,
           'cache-control': 'no-cache',
+          Cookie: cookieStore.toString(),
         },
       },
     );
@@ -25,7 +25,7 @@ export async function getUserInformation() {
   try {
     const userResponse = await axios.get(`${API_URL}/users/me`, {
       headers: {
-        Authorization: `Bearer ${refreshToken}`,
+        Cookie: cookieStore.toString(),
         'cache-control': 'no-cache',
       },
     });

@@ -51,7 +51,7 @@ const AuthenticationProvider = ({ children, user, initialize }: { children: Reac
     },
     onError: (error) => {
       if (error instanceof AxiosError && error.code === 'ERR_NETWORK') {
-        localStorage.removeItem('access_token');
+        // localStorage.removeItem('access_token');
         logoutMutation();
       }
       setIsUserLoading(false);
@@ -76,8 +76,9 @@ const AuthenticationProvider = ({ children, user, initialize }: { children: Reac
     mutationKey: ['verifyToken'],
     mutationFn: () => getVerify(),
     onSuccess: async (data) => {
-      if (data.ok && data.payload?.verified) {
+      if (data.ok && data.payload?.verified && data.payload?.token) {
         verifySessionMutation();
+        // localStorage.setItem('access_token', data.payload.token);
       }
     },
     onError: async (error) => {
@@ -100,7 +101,7 @@ const AuthenticationProvider = ({ children, user, initialize }: { children: Reac
     },
     onError: (error: AxiosError<ServerResponse<any>>) => {
       if (error instanceof AxiosError && error.code === 'ERR_NETWORK') {
-        localStorage.removeItem('access_token');
+        // localStorage.removeItem('access_token');
       }
       setIsUserLoading(false);
       addNotice(error.response?.data.message ?? '로그아웃 중 오류가 발생했습니다. 관리자에게 문의해주세요.', 'error');
@@ -108,32 +109,27 @@ const AuthenticationProvider = ({ children, user, initialize }: { children: Reac
   });
 
   useEffect(() => {
-    const accessToken = localStorage.getItem('access_token');
-    if (initialize) {
-      if (accessToken) {
+    // const accessToken = localStorage.getItem('access_token');
+    if (initialize && isUserLoading) {
+      if (user) {
         verifyToken();
-        setIsUserLoading(true);
-      } else if(userData) {
-        setMainUrl('/');
-        setUserData(null);
-        setIsUserLoading(false);
       }
     }
-  }, [pathname, initialize]);
+  }, [pathname, initialize, isUserLoading, user]);
 
   const fetchUser = useCallback(() => {
     return new Promise<void>((resolve, reject) => {
       setIsUserLoading(true);
 
-      const hasAccessToken = localStorage.getItem('access_token');
-      const noAccessToken = !hasAccessToken || hasAccessToken === 'undefined';
+      // const hasAccessToken = localStorage.getItem('access_token');
+      // const noAccessToken = !hasAccessToken || hasAccessToken === 'undefined';
 
-      if (noAccessToken) {
-        localStorage.removeItem('access_token');
-        setIsUserLoading(false);
-        resolve();
-        return;
-      }
+      // if (noAccessToken) {
+      //   localStorage.removeItem('access_token');
+      //   setIsUserLoading(false);
+      //   resolve();
+      //   return;
+      // }
 
       verifyToken(undefined, {
         onSuccess: () => {

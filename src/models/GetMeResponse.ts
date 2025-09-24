@@ -7,7 +7,8 @@ export interface GetMeResponse {
   name: string;
   role: UserRole;
   currentOrganization: IOrganization;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: Date;
+  updatedAt: Date;
+  lastLoginAt: Date | null;
   profileImageUrl: string | null;
 }

@@ -9,6 +9,7 @@ import { AuthenticationContext } from '@context/AuthenticationContext';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import { useBlackRouter } from '@hooks/useBlackRouter';
 import { Container, Grid, Link, Stack, TextField, useTheme } from '@mui/material';
+import { SocialProvider } from '@share/enums/social-provider.enum';
 import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { useFormik } from 'formik';
@@ -129,6 +130,7 @@ const Login: React.FC<LoginProps> = ({ searchParams }) => {
             />
           ))}
           submitText="로그인"
+          socialLogin={[SocialProvider.Google]}
           onSubmit={formik.handleSubmit}
           signupPath="/auth/signup"
           signupText="계정이 없으신가요?"

@@ -16,10 +16,10 @@ export const snapApi = axios.create({
 
 snapApi.interceptors.request.use(
   (config) => {
-    const accessToken = localStorage.getItem('access_token');
-    if (accessToken) {
-      config.headers.Authorization = `Bearer ${accessToken}`;
-    }
+    // const accessToken = localStorage.getItem('access_token');
+    // if (accessToken) {
+    //   config.headers.Authorization = `Bearer ${accessToken}`;
+    // }
 
     // 요청 키 생성 (URL + 메서드 + 파라미터)
     const requestKey = getRequestKey(config);

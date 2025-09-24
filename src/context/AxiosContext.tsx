@@ -32,7 +32,7 @@ export const AxiosProvider = ({ children }: { children: React.ReactNode }) => {
     async function processLogout(error: any) {
       // console.log('🚀 ~ processLogout ~ error:', error);
       await snapApi.post('/auth/logout');
-      localStorage.removeItem('access_token');
+      // localStorage.removeItem('access_token');
       router.push('/auth/login');
       return initialize(error);
     }
@@ -76,22 +76,25 @@ export const AxiosProvider = ({ children }: { children: React.ReactNode }) => {
                 try {
                   maxRetryCount.current++;
 
-                  const res = await snapApi.post('/auth/refresh');
-                  const accessToken = res.data.payload.accessToken;
+                  await snapApi.post('/auth/refresh');
+                  // const accessToken = res.data.payload.accessToken;
 
-                  if (accessToken) {
-                    localStorage.setItem('access_token', accessToken);
-                  }
+                  // if (accessToken) {
+                  //   localStorage.setItem('access_token', accessToken);
+                  // }
                 } catch (error: any) {
                   // console.log('🔥 refresh 실패?', error.response.data);
                   if (error.response.data.name === 'RefreshTokenRequiredExceptionDto') {
+                    return processLogout(error);
+                  }
+                  if (error.response.data.name === 'NotFoundUserExceptionDto') {
                     return processLogout(error);
                   }
                   return initialize(error);
                 }
 
                 try {
-                  error.config.headers.Authorization = `Bearer ${localStorage.getItem('access_token')}`;
+                  // error.config.headers.Authorization = `Bearer ${localStorage.getItem('access_token')}`;
                   const result = snapApi(error.config);
                   maxRetryCount.current = 0;
                   return Promise.resolve(result);

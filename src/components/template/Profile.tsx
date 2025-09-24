@@ -25,6 +25,7 @@ import { UserRole } from '@share/enums/user-role';
 import { DateFormat } from '@util/dateFormat';
 import { useRouter } from 'next/navigation';
 import { useContext, useState } from 'react';
+import LatestActive from './dashboard/user/LatestActive';
 
 interface ProfileProps {}
 
@@ -90,7 +91,7 @@ const Profile: React.FC<ProfileProps> = () => {
   };
 
   return (
-    <Box sx={{ flexGrow: 1, bgcolor: 'grey.50', minHeight: '100vh' }}>
+    <Box sx={{ flexGrow: 1, minHeight: '100vh' }}>
       <Container maxWidth="lg" sx={{ py: 4 }}>
         {/* Header */}
         <Box
@@ -130,12 +131,6 @@ const Profile: React.FC<ProfileProps> = () => {
                     <Typography variant="h5" fontWeight="bold">
                       {user?.name}
                     </Typography>
-                    <Chip
-                      icon={<VerifiedUser />}
-                      label={getRoleLabel(user?.role || UserRole.Viewer)}
-                      color={getRoleColor(user?.role || UserRole.Viewer)}
-                      size="small"
-                    />
                   </Stack>
 
                   <Divider sx={{ width: '100%' }} />
@@ -219,12 +214,12 @@ const Profile: React.FC<ProfileProps> = () => {
                               {user?.email}
                             </Typography>
                           </Box>
-                          <Box>
+                          {/* <Box>
                             <Typography variant="body2" color="text.secondary">
                               권한
                             </Typography>
                             <Chip label={getRoleLabel(user?.role)} color={getRoleColor(user?.role)} size="small" />
-                          </Box>
+                          </Box> */}
                         </Stack>
                       </Card>
                     </Grid>
@@ -277,30 +272,7 @@ const Profile: React.FC<ProfileProps> = () => {
               </TabPanel>
 
               <TabPanel value={tabValue} index={1}>
-                <Container maxWidth="md">
-                  <Typography variant="h6" fontWeight="bold" mb={3}>
-                    최근 활동
-                  </Typography>
-                  <Stack spacing={2}>
-                    {[1, 2, 3].map((item) => (
-                      <Card key={item} elevation={1} sx={{ p: 3 }}>
-                        <Stack direction="row" justifyContent="space-between" alignItems="center">
-                          <Stack spacing={1}>
-                            <Typography variant="body1" fontWeight="medium">
-                              설문 응답 완료
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              "2024년 고객 만족도 조사" 설문에 응답했습니다.
-                            </Typography>
-                          </Stack>
-                          <Typography variant="caption" color="text.secondary">
-                            {item}일 전
-                          </Typography>
-                        </Stack>
-                      </Card>
-                    ))}
-                  </Stack>
-                </Container>
+                <LatestActive />
               </TabPanel>
 
               <TabPanel value={tabValue} index={2}>
@@ -319,13 +291,13 @@ const Profile: React.FC<ProfileProps> = () => {
                             마지막 변경: 30일 전
                           </Typography>
                         </Stack>
-                        <Button variant="outlined" size="small">
+                        <Button variant="outlined" size="small" onClick={() => router.push('/dashboard/user/settings')}>
                           변경
                         </Button>
                       </Stack>
                     </Card>
 
-                    <Card elevation={1} sx={{ p: 3 }}>
+                    {/* <Card elevation={1} sx={{ p: 3 }}>
                       <Stack direction="row" justifyContent="space-between" alignItems="center">
                         <Stack spacing={1}>
                           <Typography variant="body1" fontWeight="medium">
@@ -339,9 +311,9 @@ const Profile: React.FC<ProfileProps> = () => {
                           설정
                         </Button>
                       </Stack>
-                    </Card>
+                    </Card> */}
 
-                    <Card elevation={1} sx={{ p: 3 }}>
+                    {/* <Card elevation={1} sx={{ p: 3 }}>
                       <Stack direction="row" justifyContent="space-between" alignItems="center">
                         <Stack spacing={1}>
                           <Typography variant="body1" fontWeight="medium">
@@ -355,7 +327,7 @@ const Profile: React.FC<ProfileProps> = () => {
                           관리
                         </Button>
                       </Stack>
-                    </Card>
+                    </Card> */}
                   </Stack>
                 </Container>
               </TabPanel>
