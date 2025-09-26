@@ -1,6 +1,6 @@
+import { useAuthStore } from '@/store/auth.store';
 import { API_URL } from '@common/variables';
 import ActionButton from '@components/atom/ActionButton';
-import { useBlackRouter } from '@hooks/useBlackRouter';
 import { Stack } from '@mui/material';
 import { SocialProvider } from '@share/enums/social-provider.enum';
 import { detectBrowser } from '@util/detectBrowser';
@@ -18,7 +18,7 @@ interface ActionFormProps {
   isLoading?: boolean;
 }
 const ActionForm: React.FC<ActionFormProps> = ({ title, onSubmit, submitText, slots, signupPath, signupText, isLoading, socialLogin }) => {
-  const router = useBlackRouter();
+  const router = useAuthStore((state) => state.router)!;
 
   useEffect(() => {
     const nq = localStorage.getItem('nq');

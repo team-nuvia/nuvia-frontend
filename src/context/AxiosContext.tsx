@@ -1,17 +1,19 @@
 'use client';
 
+import { useAuthStore } from '@/store/auth.store';
 import { requestMap } from '@/store/request.store';
 import { snapApi } from '@api/index';
-import { useBlackRouter } from '@hooks/useBlackRouter';
 import { getRequestKey } from '@util/getRequestKey';
 import { AxiosInstance } from 'axios';
-import { createContext, useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { createContext, useEffect, useLayoutEffect, useRef } from 'react';
 
 export const AxiosContext = createContext<AxiosInstance | null>(null);
 const MAX_RETRY_COUNT = 10;
 
 export const AxiosProvider = ({ children }: { children: React.ReactNode }) => {
-  const router = useBlackRouter();
+  const router = useRouter();
+  const setRouter = useAuthStore((state) => state.actions.setRouter);
   const maxRetryCount = useRef(0);
   const originalMethod = useRef<{ [key: string]: (...args: any[]) => any }>({
     get: snapApi.get,
@@ -23,6 +25,10 @@ export const AxiosProvider = ({ children }: { children: React.ReactNode }) => {
     head: snapApi.head,
   });
 
+  useLayoutEffect(() => {
+    setRouter(router);
+  }, []);
+
   useEffect(() => {
     function initialize(error: any) {
       maxRetryCount.current = 0;
@@ -30,9 +36,7 @@ export const AxiosProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     async function processLogout(error: any) {
-      // console.log('🚀 ~ processLogout ~ error:', error);
       await snapApi.post('/auth/logout');
-      // localStorage.removeItem('access_token');
       router.push('/auth/login');
       return initialize(error);
     }
@@ -67,23 +71,14 @@ export const AxiosProvider = ({ children }: { children: React.ReactNode }) => {
               return processLogout(error);
             }
 
-            if (error.response.data.name === 'UnauthorizedException') {
-              return processLogout(error);
-            }
-
-            if (error.response.data.name === 'ExpiredTokenExceptionDto') {
+            if (['ExpiredTokenExceptionDto', 'UnauthorizedException'].includes(error.response.data.name)) {
               if (maxRetryCount.current < MAX_RETRY_COUNT) {
                 try {
                   maxRetryCount.current++;
 
                   await snapApi.post('/auth/refresh');
-                  // const accessToken = res.data.payload.accessToken;
-
-                  // if (accessToken) {
-                  //   localStorage.setItem('access_token', accessToken);
-                  // }
+                  maxRetryCount.current = 0;
                 } catch (error: any) {
-                  // console.log('🔥 refresh 실패?', error.response.data);
                   if (error.response.data.name === 'RefreshTokenRequiredExceptionDto') {
                     return processLogout(error);
                   }
@@ -94,7 +89,6 @@ export const AxiosProvider = ({ children }: { children: React.ReactNode }) => {
                 }
 
                 try {
-                  // error.config.headers.Authorization = `Bearer ${localStorage.getItem('access_token')}`;
                   const result = snapApi(error.config);
                   maxRetryCount.current = 0;
                   return Promise.resolve(result);

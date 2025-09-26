@@ -1,4 +1,4 @@
-import ForgotPassword from '@components/template/ForgotPassword';
+import ForgotPassword from '@components/template/auth/ForgotPassword';
 
 interface PageProps {}
 const Page: React.FC<PageProps> = () => {

@@ -1,18 +1,17 @@
 import AuthenticationProvider from '@/context/AuthenticationContext';
 import { LoadingProvider } from '@/context/LoadingContext';
+import { QueryInvalidationBridge } from '@/context/QueryInvalidationBridge';
 import '@/styles/global.css';
 import { getUserInformation } from '@api/server/get-user-information';
 import { BRAND_NAME } from '@common/variables';
-import Footer from '@components/organism/Footer';
-import Header from '@components/organism/Header';
 import { AxiosProvider } from '@context/AxiosContext';
 import GlobalDialogProvider from '@context/GlobalDialogContext';
 import { GlobalSnackbar } from '@context/GlobalSnackbar';
 import { GlobalSnackbarSettingProvider } from '@context/GlobalSnackbarSettingProvider';
 import ReactQueryProvider from '@context/ReactQueryProvider';
-import { CssBaseline, ThemeProvider } from '@mui/material';
+import { ThemeProvider } from '@context/ThemeContext';
+import { CssBaseline, InitColorSchemeScript } from '@mui/material';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
-import { darkTheme } from '@util/theme';
 import type { Metadata, Viewport } from 'next';
 
 export const metadata: Metadata = {
@@ -46,15 +45,17 @@ export default async function RootLayout({
 }>) {
   const user = await getUserInformation();
   return (
-    <html lang="ko">
+    <html lang="ko" suppressHydrationWarning>
       <body>
-        <AxiosProvider>
-          <ReactQueryProvider>
-            <AppRouterCacheProvider>
-              <ThemeProvider theme={darkTheme}>
-                <CssBaseline />
-                <GlobalSnackbarSettingProvider>
-                  <GlobalSnackbar>
+        <InitColorSchemeScript defaultMode="system" attribute="class" modeStorageKey="theme-mode" />
+        <AppRouterCacheProvider>
+          <ThemeProvider>
+            <AxiosProvider>
+              <CssBaseline />
+              <GlobalSnackbarSettingProvider>
+                <GlobalSnackbar>
+                  <ReactQueryProvider>
+                    <QueryInvalidationBridge />
                     <GlobalDialogProvider>
                       <LoadingProvider>
                         <AuthenticationProvider initialize={true} user={user}>
@@ -62,12 +63,12 @@ export default async function RootLayout({
                         </AuthenticationProvider>
                       </LoadingProvider>
                     </GlobalDialogProvider>
-                  </GlobalSnackbar>
-                </GlobalSnackbarSettingProvider>
-              </ThemeProvider>
-            </AppRouterCacheProvider>
-          </ReactQueryProvider>
-        </AxiosProvider>
+                  </ReactQueryProvider>
+                </GlobalSnackbar>
+              </GlobalSnackbarSettingProvider>
+            </AxiosProvider>
+          </ThemeProvider>
+        </AppRouterCacheProvider>
       </body>
     </html>
   );

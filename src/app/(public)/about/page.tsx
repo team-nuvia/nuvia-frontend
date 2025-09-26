@@ -1,4 +1,4 @@
-import About from '@components/template/About';
+import About from '@components/template/public/About';
 
 interface PageProps {}
 const Page: React.FC<PageProps> = () => {

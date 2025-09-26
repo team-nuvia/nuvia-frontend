@@ -1,16 +1,15 @@
 'use client';
 
+import { useAuthStore } from '@/store/auth.store';
 import ActionButton from '@components/atom/ActionButton';
-import { AuthenticationContext } from '@context/AuthenticationContext';
 import { ArrowBack, Home, SearchOff } from '@mui/icons-material';
 import { Box, Paper, Stack, Typography } from '@mui/material';
 import { useRouter } from 'next/navigation';
-import { useContext } from 'react';
 
 interface NotFoundProps {}
 const NotFound: React.FC<NotFoundProps> = () => {
   const router = useRouter();
-  const { mainUrl } = useContext(AuthenticationContext);
+  const mainUrl = useAuthStore((state) => state.mainUrl);
 
   return (
     <Stack

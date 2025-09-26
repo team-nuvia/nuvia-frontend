@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
@@ -28,12 +28,7 @@ function isMemberPath(pathname: string) {
   return pathname && MEMBER_PATHS.some((memberPath) => memberPath === pathname || pathname.startsWith(memberPath + '/'));
 }
 
-async function forceLogout() {
-  const result = await axios.post(`${API_URL}/auth/logout`, undefined, {
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
+async function setCookies(result: AxiosResponse) {
   const cookieList = result.headers['set-cookie'] ?? [];
   for (const cookie of cookieList) {
     const [main, ...cookieRows] = cookie.split(';').map((keyValue) => keyValue.trim().split('='));
@@ -50,7 +45,33 @@ async function forceLogout() {
   }
 }
 
-async function verifySession(req: NextRequest, res: NextResponse): Promise<string | null> {
+async function forceLogout(url: URL) {
+  try {
+    const result = await axios.post(`${API_URL}/auth/logout`, undefined, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    await setCookies(result);
+    if (!url.pathname.startsWith('/auth/login')) {
+      url.search = `redirect=${encodeURIComponent(url.pathname)}&action=view`;
+    }
+    url.pathname = '/auth/login';
+    return NextResponse.redirect(url);
+  } catch (error) {
+    const cookieStore = await cookies();
+    cookieStore.delete('session');
+    cookieStore.delete('access_token');
+    cookieStore.delete('refresh_token');
+    if (!url.pathname.startsWith('/auth/login')) {
+      url.search = `redirect=${encodeURIComponent(url.pathname)}&action=view&reason=server_error`;
+    }
+    url.pathname = '/auth/login';
+    return NextResponse.redirect(url);
+  }
+}
+
+async function verifySession(req: NextRequest, res: NextResponse, url: URL): Promise<string | null> {
   try {
     const response = await axios.post(`${API_URL}/auth/session`, undefined, {
       headers: {
@@ -60,9 +81,20 @@ async function verifySession(req: NextRequest, res: NextResponse): Promise<strin
     });
     return response.data.payload;
   } catch (error) {
-    await forceLogout();
+    await forceLogout(url);
     return null;
   }
+}
+
+async function getRefreshToken(req: NextRequest) {
+  const response = await axios.post(`${API_URL}/auth/refresh`, undefined, {
+    headers: {
+      'Content-Type': 'application/json',
+      Cookie: req.cookies.toString(),
+    },
+  });
+  await setCookies(response);
+  return response.data.payload;
 }
 
 export async function middleware(req: NextRequest, res: NextResponse) {
@@ -76,37 +108,50 @@ export async function middleware(req: NextRequest, res: NextResponse) {
   const redirect = url.pathname;
 
   if (!session) {
-    if (!refreshToken && isMemberPath(pathname)) {
-      await forceLogout();
-      // 잘못된 접근
-      url.pathname = '/auth/login';
-      url.search = `redirect=${encodeURIComponent(redirect)}&action=view`;
-      return NextResponse.redirect(url);
-    }
+    if (!refreshToken) {
+      // 비회원
+      if (isMemberPath(pathname)) {
+        // 잘못된 접근
+        if (!url.pathname.startsWith('/auth/login')) {
+          url.search = `redirect=${encodeURIComponent(redirect)}&action=view`;
+        }
+        url.pathname = '/auth/login';
+        await forceLogout(url);
+        return NextResponse.redirect(url);
+      }
 
-    // 비회원
-    if (isMemberPath(pathname)) {
-      url.pathname = '/auth/login';
-      url.search = `redirect=${encodeURIComponent(redirect)}&action=view`;
-      return NextResponse.redirect(url);
+      return NextResponse.next();
+    } else {
+      // 리프레시
+      await getRefreshToken(req);
     }
-
-    return NextResponse.next();
   }
 
+  let verifiedSessionStatus = null;
+
   try {
-    const verifiedSession = await verifySession(req, res);
+    const verifiedSession = await verifySession(req, res, url);
 
     if (verifiedSession && (isGuestPath(pathname) || pathname === '/')) {
       url.pathname = '/dashboard';
       url.search = '';
       return NextResponse.redirect(url);
     }
-  } catch (error) {
-    url.pathname = '/auth/login';
-    url.search = `redirect=${encodeURIComponent(redirect)}&action=view`;
-    await forceLogout();
-    return NextResponse.redirect(url);
+  } catch (error: any) {
+    verifiedSessionStatus = error.response.status;
+  }
+
+  if (verifiedSessionStatus !== null) {
+    try {
+      await getRefreshToken(req);
+    } catch (error) {
+      if (!url.pathname.startsWith('/auth/login')) {
+        url.search = `redirect=${encodeURIComponent(redirect)}&action=view`;
+      }
+      url.pathname = '/auth/login';
+      await forceLogout(url);
+      return NextResponse.redirect(url);
+    }
   }
 
   return NextResponse.next();

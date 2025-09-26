@@ -1,8 +1,8 @@
 'use client';
 
+import { useAuthStore } from '@/store/auth.store';
 import ActionButton from '@components/atom/ActionButton';
-import { AuthenticationContext } from '@context/AuthenticationContext';
-import { AccountCircle, CalendarToday, Edit, Email, Person, Settings, VerifiedUser } from '@mui/icons-material';
+import { AccountCircle, CalendarToday, Edit, Email, Person, Settings } from '@mui/icons-material';
 import {
   Avatar,
   Box,
@@ -24,7 +24,7 @@ import {
 import { UserRole } from '@share/enums/user-role';
 import { DateFormat } from '@util/dateFormat';
 import { useRouter } from 'next/navigation';
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import LatestActive from './dashboard/user/LatestActive';
 
 interface ProfileProps {}
@@ -55,7 +55,7 @@ function a11yProps(index: number) {
 const Profile: React.FC<ProfileProps> = () => {
   const router = useRouter();
   const theme = useTheme();
-  const { user } = useContext(AuthenticationContext);
+  const user = useAuthStore((state) => state.user);
   const [tabValue, setTabValue] = useState(0);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {

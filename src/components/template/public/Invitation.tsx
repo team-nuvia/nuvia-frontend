@@ -1,18 +1,15 @@
 'use client';
 
-import LoadingContext from '@context/LoadingContext';
-import { useContext, useEffect, useRef } from 'react';
-
+import { useAuthStore } from '@/store/auth.store';
 import { getVerify } from '@api/get-verify';
 import { verifyInvitationToken } from '@api/verify-invitation-token';
-import { AuthenticationContext } from '@context/AuthenticationContext';
-import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
+import LoadingContext from '@context/LoadingContext';
 import { CheckCircle as CheckCircleIcon, Error as ErrorIcon, Mail as MailIcon } from '@mui/icons-material';
 import { Alert, Box, Button, Card, CardContent, CircularProgress, Container, Fade, Stack, Typography, useTheme } from '@mui/material';
 import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { usePathname } from 'next/navigation';
+import { useContext, useEffect, useRef, useState } from 'react';
 
 // 초대 승락 페이지 로직
 // 1. 토큰 유효성 검증을 위해 서버에 요청
@@ -33,10 +30,11 @@ interface InvitationProps {
 type InvitationStatus = 'loading' | 'success' | 'error' | 'unauthorized';
 
 const Invitation: React.FC<InvitationProps> = ({ token }) => {
-  const routerURL = `/auth/login?action=invitation&token=${encodeURIComponent(token)}&redirect=${encodeURIComponent(window.location.pathname)}`;
-  const router = useRouter();
-  const { mainUrl } = useContext(AuthenticationContext);
-  const { addNotice } = useContext(GlobalSnackbarContext);
+  const pathname = usePathname();
+  const routerURL = `/auth/login?action=invitation&token=${encodeURIComponent(token)}&redirect=${encodeURIComponent(pathname)}`;
+  const router = useAuthStore((state) => state.router)!;
+  const mainUrl = useAuthStore((state) => state.mainUrl);
+  const addNotice = useAuthStore((state) => state.addNotice)!;
   const { endLoading } = useContext(LoadingContext);
   const theme = useTheme();
   const [status, setStatus] = useState<InvitationStatus>('loading');
@@ -71,6 +69,9 @@ const Invitation: React.FC<InvitationProps> = ({ token }) => {
             setErrorMessage(error?.response?.data?.message);
             addNotice(error?.response?.data?.message ?? '잘못된 토큰입니다. 다시 시도해주세요.', 'error');
           } else if (error.response?.data.reason === 'inviter') {
+            setErrorMessage(error?.response?.data?.message ?? '잘못된 토큰입니다. 다시 시도해주세요.');
+            addNotice(error?.response?.data?.message ?? '잘못된 토큰입니다. 다시 시도해주세요.', 'error');
+          } else {
             setErrorMessage(error?.response?.data?.message ?? '잘못된 토큰입니다. 다시 시도해주세요.');
             addNotice(error?.response?.data?.message ?? '잘못된 토큰입니다. 다시 시도해주세요.', 'error');
           }

@@ -4,7 +4,7 @@ import { BRAND_NAME } from '@common/variables';
 import CommonText from '@components/atom/CommonText';
 import LinkText from '@components/atom/LinkText';
 import BrandHead from '@components/molecular/BrandHead';
-import { Divider, Stack, useTheme } from '@mui/material';
+import { Divider, Stack } from '@mui/material';
 
 interface FooterProps {}
 const Footer: React.FC<FooterProps> = () => {
@@ -28,7 +28,7 @@ const Footer: React.FC<FooterProps> = () => {
     >
       <BrandHead title={BRAND_NAME} width={45} height={45} primaryColor={'#565656'} secondaryColor={'#787878'} />
       <CommonText variant="body2" color="text.secondary">
-        © {new Date().getFullYear()} {BRAND_NAME} | All rights reserved.
+        © 2025 {BRAND_NAME} | All rights reserved.
       </CommonText>
       <Stack direction="row" spacing={2}>
         <LinkText to="/privacy" variant="body2" color="text.secondary">

@@ -1,6 +1,6 @@
 'use server';
 
-import SurveyDetail from '@components/template/SurveyDetail';
+import SurveyDetail from '@components/template/survey/SurveyDetail';
 import { AxiosError } from 'axios';
 import { notFound } from 'next/navigation';
 import NotFound from './not-found';

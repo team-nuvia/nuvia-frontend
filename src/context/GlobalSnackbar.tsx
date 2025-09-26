@@ -1,7 +1,8 @@
 'use client';
 
+import { useAuthStore } from '@/store/auth.store';
 import { useSnackbar, VariantType } from 'notistack';
-import { createContext } from 'react';
+import { createContext, useCallback, useEffect } from 'react';
 
 export const GlobalSnackbarContext = createContext<{
   addNotice: (message: string, variant?: VariantType) => void;
@@ -11,8 +12,9 @@ export const GlobalSnackbarContext = createContext<{
 
 export const GlobalSnackbar = ({ children }: { children: React.ReactNode }) => {
   const { enqueueSnackbar } = useSnackbar();
+  const setAddNotice = useAuthStore((state) => state.actions.setAddNotice);
 
-  const addNotice = (message: string, variant: VariantType = 'default') => {
+  const addNotice = useCallback((message: string, variant: VariantType = 'default') => {
     enqueueSnackbar(message, {
       variant,
       // preventDuplicate: false,
@@ -21,7 +23,11 @@ export const GlobalSnackbar = ({ children }: { children: React.ReactNode }) => {
       // anchorOrigin: { vertical: 'bottom', horizontal: 'center' },
       // transitionDuration: 150,
     });
-  };
+  }, []);
+
+  useEffect(() => {
+    setAddNotice(addNotice);
+  }, []);
 
   return <GlobalSnackbarContext.Provider value={{ addNotice }}>{children}</GlobalSnackbarContext.Provider>;
 };

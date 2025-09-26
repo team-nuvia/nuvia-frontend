@@ -1,0 +1,154 @@
+'use client';
+
+import { GetMeResponse } from '@/models/GetMeResponse';
+import { getUsersMe } from '@api/get-users-me';
+import { getVerify } from '@api/get-verify';
+import { getVerifySession } from '@api/get-verify-session';
+import { logout } from '@api/logout';
+import { AxiosError } from 'axios';
+import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
+import { VariantType } from 'notistack';
+import { create } from 'zustand';
+import { combine } from 'zustand/middleware';
+
+interface AuthStore {
+  user: GetMeResponse | null;
+  isUserLoading: boolean;
+  mainUrl: string;
+  router: AppRouterInstance | null;
+  addNotice: ((message: string, variant?: VariantType) => void) | null;
+  // setUser: (user: GetMeResponse | null) => void;
+  // setIsUserLoading: (isUserLoading: boolean) => void;
+  // setMainUrl: (mainUrl: string) => void;
+  // clearUser: () => Promise<void>;
+  // verify: () => Promise<void>;
+  // verifySession: () => Promise<void>;
+  // fetchUser: () => Promise<void>;
+  // updateUser: () => Promise<void>;
+}
+
+const PUBLIC_PATHS = [
+  '/',
+  '/invitation',
+  '/howtouse',
+  '/pricing',
+  '/privacy-policy',
+  '/terms-of-service',
+  '/about',
+  //
+];
+const GUEST_PATHS = ['/auth/login', '/auth/signup', '/auth/forgot-password'];
+const MEMBER_PATHS = ['/dashboard'];
+
+const initialState: AuthStore = {
+  user: null,
+  isUserLoading: false,
+  mainUrl: '/',
+  router: null,
+  addNotice: null,
+};
+
+export const useAuthStore = create(
+  combine(initialState, (set, get) => {
+    function getUser() {
+      return get().user;
+    }
+    function getAddNotice() {
+      return get().addNotice!;
+    }
+    function setRouter(router: AppRouterInstance) {
+      set({
+        router: {
+          push: (path: string) => {
+            const user = get().user;
+            const addNotice = get().addNotice!;
+            if (user) {
+              if (GUEST_PATHS.some((guest) => path.startsWith(guest))) {
+                addNotice('접근 불가한 페이지입니다.', 'warning');
+                return;
+              }
+            } else {
+              if (MEMBER_PATHS.some((member) => path.startsWith(member))) {
+                console.log('여기 아님?', get().addNotice);
+                addNotice('로그인이 필요한 페이지입니다.', 'warning');
+                return;
+              }
+            }
+
+            router.push(path);
+          },
+          back: router.back,
+          replace: router.replace,
+          refresh: router.refresh,
+          prefetch: router.prefetch,
+          forward: router.forward,
+        },
+      });
+    }
+    function setAddNotice(addNotice: (message: string, variant?: VariantType) => void) {
+      set({ addNotice });
+    }
+    function setUser(user: GetMeResponse | null) {
+      set({ user });
+    }
+    function setIsUserLoading(isUserLoading: boolean) {
+      set({ isUserLoading });
+    }
+    function setMainUrl(mainUrl: string) {
+      set({ mainUrl });
+    }
+    async function verify() {
+      await getVerify();
+    }
+    async function verifySession() {
+      const sessionData = await getVerifySession();
+      if (sessionData.ok && sessionData.payload?.verified) {
+        await getUsersMe();
+      }
+    }
+    async function clearUser() {
+      const prev = window.location.pathname;
+      try {
+        await logout();
+        // verifyToken();
+      } finally {
+        set({ user: null });
+        set({ mainUrl: '/' });
+        set({ isUserLoading: false });
+        if (!prev.startsWith('/auth/login')) {
+          get().router?.push(`/auth/login?redirect=${encodeURIComponent(prev)}&action=view`);
+        }
+        get().addNotice!('로그아웃 되었습니다.', 'success');
+      }
+    }
+    async function fetchUser() {
+      set({ isUserLoading: true });
+      const response = await getUsersMe();
+      set({ user: response.payload });
+      set({ isUserLoading: false });
+      set({ mainUrl: '/dashboard' });
+    }
+    async function updateUser() {
+      const response = await getUsersMe();
+      set({ user: response.payload });
+      set({ isUserLoading: false });
+      set({ mainUrl: '/dashboard' });
+    }
+    return {
+      actions: {
+        getAddNotice,
+        setAddNotice,
+        setRouter,
+        getUser,
+        setUser,
+        setIsUserLoading,
+        setMainUrl,
+        verify,
+        verifySession,
+        clearUser,
+        fetchUser,
+        updateUser,
+      },
+    };
+  }),
+);

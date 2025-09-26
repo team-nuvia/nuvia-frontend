@@ -3,6 +3,7 @@
 import { CreateSurveyPayload } from '@/models/CreateSurveyPayload';
 import { GetSurveyDetailResponse } from '@/models/GetSurveyDetailResponse';
 import { UpdateSurveyPayload } from '@/models/UpdateSurveyPayload';
+import { useAuthStore } from '@/store/auth.store';
 import { createSurvey } from '@api/create-survey';
 import { getCategories } from '@api/get-categories';
 import { getSurveyDetail } from '@api/get-survey-detail';
@@ -11,10 +12,7 @@ import Loading from '@components/atom/Loading';
 import { AddQuestionSheet } from '@components/molecular/AddQuestionSheet';
 import Preview from '@components/organism/Preview';
 import QuestionCard from '@components/organism/QuestionCard';
-import { AuthenticationContext } from '@context/AuthenticationContext';
 import { GlobalDialogContext } from '@context/GlobalDialogContext';
-import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
-import { useBlackRouter } from '@hooks/useBlackRouter';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import SaveIcon from '@mui/icons-material/Save';
 import { Box, Button, CircularProgress, Container, Grid, Stack, useMediaQuery } from '@mui/material';
@@ -76,11 +74,11 @@ const initialValues: QuestionInitialValues = {
 // --- COMPONENT ---
 const Survey: React.FC<{ id?: string }> = ({ id }) => {
   /* hooks */
-  const { handleOpenDialog } = useContext(GlobalDialogContext);
-  const { addNotice } = useContext(GlobalSnackbarContext);
-  const router = useBlackRouter();
   const theme = useTheme();
-  const { user } = useContext(AuthenticationContext);
+  const user = useAuthStore((state) => state.user);
+  const router = useAuthStore((state) => state.router)!;
+  const addNotice = useAuthStore((state) => state.addNotice)!;
+  const { handleOpenDialog } = useContext(GlobalDialogContext);
 
   /* state */
   const SUBMIT_BUTTON_TEXT = id ? '설문 수정' : '설문 저장';

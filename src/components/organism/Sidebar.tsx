@@ -1,8 +1,8 @@
 'use client';
 
+import { useAuthStore } from '@/store/auth.store';
 import { getUserOrganizations } from '@api/get-user-organizations';
 import SidebarMenuList from '@components/molecular/SidebarMenuList';
-import { AuthenticationContext } from '@context/AuthenticationContext';
 import { GlobalDialogContext } from '@context/GlobalDialogContext';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
@@ -15,13 +15,14 @@ import { UserRole } from '@share/enums/user-role';
 import { useQuery } from '@tanstack/react-query';
 import { LocalizationManager } from '@util/LocalizationManager';
 import { roleAtLeast } from '@util/roleAtLeast';
-import { useContext, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import InviteDialog from '../template/teams/InviteDialog';
 import UserCard from './UserCard';
+import { useRefetchStore } from '@/store/event-bus.store';
 
 interface SidebarProps {}
 const Sidebar: React.FC<SidebarProps> = () => {
-  const { user } = useContext(AuthenticationContext);
+  const user = useAuthStore((state) => state.user);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { data } = useQuery({
     queryKey: ['user-organizations'],
@@ -91,6 +92,10 @@ const Sidebar: React.FC<SidebarProps> = () => {
   const toggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
   };
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <Stack

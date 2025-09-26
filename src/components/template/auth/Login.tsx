@@ -1,20 +1,18 @@
 'use client';
 
+import { useAuthStore } from '@/store/auth.store';
 import { login } from '@api/login';
 import { BRAND_NAME } from '@common/variables';
 import CommonText from '@components/atom/CommonText';
 import ActionForm from '@components/molecular/ActionForm';
 import BrandHead from '@components/molecular/BrandHead';
-import { AuthenticationContext } from '@context/AuthenticationContext';
-import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
-import { useBlackRouter } from '@hooks/useBlackRouter';
 import { Container, Grid, Link, Stack, TextField, useTheme } from '@mui/material';
 import { SocialProvider } from '@share/enums/social-provider.enum';
 import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { useFormik } from 'formik';
 import NextLink from 'next/link';
-import { useContext, useEffect } from 'react';
+import { useEffect } from 'react';
 import * as yup from 'yup';
 
 const validationSchema = yup.object().shape({
@@ -34,9 +32,11 @@ interface LoginProps {
 const Login: React.FC<LoginProps> = ({ searchParams }) => {
   const { action, token, redirect } = searchParams;
   const theme = useTheme();
-  const router = useBlackRouter();
-  const { fetchUser, mainUrl } = useContext(AuthenticationContext);
-  const { addNotice } = useContext(GlobalSnackbarContext);
+  const router = useAuthStore((state) => state.router)!;
+  const addNotice = useAuthStore((state) => state.addNotice)!;
+  const getUser = useAuthStore((state) => state.actions.getUser);
+  const fetchUser = useAuthStore((state) => state.actions.fetchUser);
+  const mainUrl = useAuthStore((state) => state.mainUrl);
   const { mutate: loginMutation } = useMutation({
     mutationFn: (values: { email: string; password: string }) => login(values.email, values.password),
     mutationKey: ['login'],
@@ -44,14 +44,20 @@ const Login: React.FC<LoginProps> = ({ searchParams }) => {
       formik.setSubmitting(false);
 
       await fetchUser();
-
-      if (action === 'invitation' && redirect && token) {
-        router.push(`${redirect}?q=${token}`);
-      } else if (action === 'view' && redirect) {
-        router.push(redirect);
+      const user = getUser();
+      if (user) {
+        if (action === 'invitation' && redirect && token) {
+          router.push(`${redirect}?q=${token}`);
+        } else if (action === 'view' && redirect) {
+          router.push(redirect);
+        } else {
+          router.push(mainUrl);
+        }
       } else {
-        router.push(mainUrl);
+        router.push('/auth/login');
       }
+
+      localStorage.removeItem('nq');
 
       addNotice(response.message, 'success');
     },
@@ -67,6 +73,7 @@ const Login: React.FC<LoginProps> = ({ searchParams }) => {
       }
     },
   });
+
   const formik = useFormik<{ email: string; password: string }>({
     initialValues: {
       email: '',
@@ -80,7 +87,20 @@ const Login: React.FC<LoginProps> = ({ searchParams }) => {
   });
 
   useEffect(() => {
-    router.prefetch(mainUrl);
+    const nq = localStorage.getItem('nq');
+    const url = new URLSearchParams(window.location.search.slice(1));
+    const reason = url.get('reason');
+    if (nq) {
+      window.location.search = nq;
+      localStorage.removeItem('nq');
+    }
+    if (reason) {
+      addNotice(reason, 'warning');
+    }
+  }, []);
+
+  useEffect(() => {
+    router?.prefetch(mainUrl);
   }, [router]);
 
   return (
@@ -131,7 +151,10 @@ const Login: React.FC<LoginProps> = ({ searchParams }) => {
           ))}
           submitText="로그인"
           socialLogin={[SocialProvider.Google]}
-          onSubmit={formik.handleSubmit}
+          onSubmit={(e) => {
+            e.preventDefault();
+            formik.handleSubmit(e);
+          }}
           signupPath="/auth/signup"
           signupText="계정이 없으신가요?"
         />

@@ -1,4 +1,3 @@
 export interface GetMeSettingsResponse {
-  fabMenu: boolean;
-  emailNotification: boolean;
+  mailing: boolean;
 }

@@ -51,6 +51,15 @@ body {
   flex-direction: column;
 }
 
+/* 테마 전환 시 깜빡임 방지 */
+html {
+  transition: none !important;
+}
+
+/* html {
+  color-scheme: light dark;
+} */
+
 .notistack-SnackbarContainer {
   &,
   [class^='go'] {

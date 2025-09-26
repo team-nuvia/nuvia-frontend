@@ -1,4 +1,4 @@
-import { useBlackRouter } from '@hooks/useBlackRouter';
+import { useAuthStore } from '@/store/auth.store';
 import { Ballot } from '@mui/icons-material';
 import { useTheme } from '@mui/material';
 import ActionButton from './ActionButton';
@@ -10,7 +10,7 @@ interface CTAButtonProps {
 }
 const CTAButton: React.FC<CTAButtonProps> = ({ invert, label, path = '/auth/login' }) => {
   const theme = useTheme();
-  const router = useBlackRouter();
+  const router = useAuthStore((state) => state.router)!;
 
   function handleClick() {
     if (path) {
