@@ -17,7 +17,7 @@ import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useContext, useLayoutEffect, useMemo, useState } from 'react';
 import ExpiredAnswer from './ExpiredAnswer';
-import ResponseSurvey from './ResponseSurvey';
+import ResponseSurvey from '../public/ResponseSurvey';
 
 export default function SurveyDetail({ survey }: { survey: GetSurveyDetailResponse }) {
   const theme = useTheme();

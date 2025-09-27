@@ -15,10 +15,9 @@ import { UserRole } from '@share/enums/user-role';
 import { useQuery } from '@tanstack/react-query';
 import { LocalizationManager } from '@util/LocalizationManager';
 import { roleAtLeast } from '@util/roleAtLeast';
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import InviteDialog from '../template/teams/InviteDialog';
 import UserCard from './UserCard';
-import { useRefetchStore } from '@/store/event-bus.store';
 
 interface SidebarProps {}
 const Sidebar: React.FC<SidebarProps> = () => {
