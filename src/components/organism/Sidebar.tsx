@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuthStore } from '@/store/auth.store';
+import queryKeys from '@/store/lib/query-key';
 import { getUserOrganizations } from '@api/user/get-user-organizations';
 import SidebarMenuList from '@components/molecular/SidebarMenuList';
 import { GlobalDialogContext } from '@context/GlobalDialogContext';
@@ -24,7 +25,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
   const user = useAuthStore((state) => state.user);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { data } = useQuery({
-    queryKey: ['user-organizations'],
+    queryKey: queryKeys.organization.list(),
     queryFn: getUserOrganizations,
     enabled: !!user,
   });
@@ -138,7 +139,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
         <UserCard
           name={user?.currentOrganization?.name ?? ''}
           caption={LocalizationManager.translate(user?.role ?? UserRole.Viewer)}
-          content={user?.name ?? ''}
+          content={user?.nickname ?? ''}
           nameSize={16}
           profileImage={user?.profileImageUrl ?? ''}
         />

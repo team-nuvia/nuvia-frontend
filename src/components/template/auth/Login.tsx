@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuthStore } from '@/store/auth.store';
+import mutationKeys from '@/store/lib/mutation-key';
 import { login } from '@api/auth/login';
 import { BRAND_NAME } from '@common/variables';
 import CommonText from '@components/atom/CommonText';
@@ -38,8 +39,8 @@ const Login: React.FC<LoginProps> = ({ searchParams }) => {
   const fetchUser = useAuthStore((state) => state.actions.fetchUser);
   const mainUrl = useAuthStore((state) => state.mainUrl);
   const { mutate: loginMutation } = useMutation({
+    mutationKey: mutationKeys.user.login(),
     mutationFn: (values: { email: string; password: string }) => login(values.email, values.password),
-    mutationKey: ['login'],
     onSuccess: async (response) => {
       formik.setSubmitting(false);
 
@@ -149,8 +150,8 @@ const Login: React.FC<LoginProps> = ({ searchParams }) => {
               }}
             />
           ))}
-          submitText="로그인"
-          socialLogin={[SocialProvider.Google]}
+          submitText="Login"
+          socialLogin={[SocialProvider.Google, SocialProvider.Kakao]}
           onSubmit={(e) => {
             e.preventDefault();
             formik.handleSubmit(e);

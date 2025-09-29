@@ -17,15 +17,15 @@ const GUEST_PATHS = ['/auth/login', '/auth/signup', '/auth/forgot-password'];
 const MEMBER_PATHS = ['/dashboard'];
 
 function isPublicPath(pathname: string) {
-  return pathname && PUBLIC_PATHS.some((publicPath) => publicPath === pathname || pathname.startsWith(publicPath + '/'));
+  return pathname && PUBLIC_PATHS.some((publicPath) => publicPath === pathname || pathname.startsWith(publicPath));
 }
 
 function isGuestPath(pathname: string) {
-  return pathname && (pathname === '/' || GUEST_PATHS.some((guestPath) => guestPath === pathname || pathname.startsWith(guestPath + '/')));
+  return pathname && (pathname === '/' || GUEST_PATHS.some((guestPath) => guestPath === pathname || pathname.startsWith(guestPath)));
 }
 
 function isMemberPath(pathname: string) {
-  return pathname && MEMBER_PATHS.some((memberPath) => memberPath === pathname || pathname.startsWith(memberPath + '/'));
+  return pathname && MEMBER_PATHS.some((memberPath) => memberPath === pathname || pathname.startsWith(memberPath));
 }
 
 async function setCookies(result: AxiosResponse) {

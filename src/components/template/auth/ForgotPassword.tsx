@@ -1,5 +1,6 @@
 'use client';
 
+import mutationKeys from '@/store/lib/mutation-key';
 import {
   ArrowBack as ArrowBackIcon,
   CheckCircle as CheckCircleIcon,
@@ -118,6 +119,7 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = () => {
 
   // 이메일 전송 mutation
   const emailMutation = useMutation({
+    mutationKey: mutationKeys.user.forgotPassword(),
     mutationFn: sendPasswordResetEmail,
     onSuccess: () => {
       setActiveStep(1);
@@ -129,6 +131,7 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = () => {
 
   // 비밀번호 변경 mutation
   const passwordMutation = useMutation({
+    mutationKey: mutationKeys.user.resetPassword(),
     mutationFn: resetPassword,
     onSuccess: () => {
       setActiveStep(2);

@@ -123,10 +123,7 @@ export const useAuthStore = create(
     }
     async function fetchUser() {
       set({ isUserLoading: true });
-      const response = await getUsersMe();
-      set({ user: response.payload });
-      set({ isUserLoading: false });
-      set({ mainUrl: '/dashboard' });
+      await updateUser();
     }
     async function updateUser() {
       const response = await getUsersMe();

@@ -1,15 +1,19 @@
 'use client';
 
 import ActionButton from '@components/atom/ActionButton';
-import { Dialog, DialogActions, DialogContent, DialogTitle, Portal, Typography } from '@mui/material';
+import { CheckCircleOutline, ErrorOutline, InfoOutlined, WarningAmberOutlined } from '@mui/icons-material';
+import { Dialog, DialogActions, DialogContent, DialogTitle, Portal, Stack, SvgIcon, Typography } from '@mui/material';
 import React, { createContext, createRef, RefObject, useCallback, useEffect, useRef, useState } from 'react';
 
 interface GlobalDialogContextProps {
   children: React.ReactNode;
 }
 
-interface DialogItem {
+export type DialogType = 'success' | 'error' | 'warning' | 'info';
+
+export interface DialogItem {
   id: string;
+  type?: DialogType;
   title: string;
   content: string | React.ReactNode;
   confirmText?: string;
@@ -21,23 +25,7 @@ interface DialogItem {
 
 interface GlobalDialogContextType {
   dialogs: DialogItem[];
-  handleOpenDialog: ({
-    title,
-    content,
-    confirmText,
-    cancelText,
-    actionCallback,
-    useConfirm,
-    onClose,
-  }: {
-    title: string;
-    content: string | React.ReactNode;
-    confirmText?: string;
-    cancelText?: string;
-    actionCallback?: () => void;
-    useConfirm?: boolean;
-    onClose?: () => void;
-  }) => string;
+  handleOpenDialog: ({ title, content, type, confirmText, cancelText, actionCallback, useConfirm, onClose }: Omit<DialogItem, 'id'>) => string;
   handleCloseDialog: (dialogId?: string) => void;
 }
 
@@ -53,34 +41,18 @@ const GlobalDialogProvider: React.FC<GlobalDialogContextProps> = ({ children }) 
 
   const handleOpenDialog = useCallback(
     ({
+      type = 'success',
       title,
       content,
-      confirmText,
-      cancelText,
+      confirmText = '확인',
+      cancelText = '닫기',
       actionCallback,
       useConfirm = true,
       onClose,
-    }: {
-      title: string;
-      content: string | React.ReactNode;
-      confirmText?: string;
-      cancelText?: string;
-      actionCallback?: () => void;
-      useConfirm?: boolean;
-      onClose?: () => void;
-    }) => {
+    }: Omit<DialogItem, 'id'>) => {
       const generateId = () => `dialog-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
       const id = generateId();
-      const newDialog: DialogItem = {
-        id,
-        title,
-        content,
-        confirmText,
-        cancelText,
-        actionCallback,
-        useConfirm,
-        onClose,
-      };
+      const newDialog: DialogItem = { id, type, title, content, confirmText, cancelText, actionCallback, useConfirm, onClose };
 
       const current = confirmButtonRefs.current;
       if (current) {
@@ -140,6 +112,19 @@ const GlobalDialogProvider: React.FC<GlobalDialogContextProps> = ({ children }) 
     }
   }, [dialogs]);
 
+  const icon = useCallback((type: DialogType) => {
+    switch (type) {
+      case 'success':
+        return <CheckCircleOutline />;
+      case 'error':
+        return <ErrorOutline />;
+      case 'warning':
+        return <WarningAmberOutlined />;
+      case 'info':
+        return <InfoOutlined />;
+    }
+  }, []);
+
   return (
     <GlobalDialogContext.Provider value={{ dialogs, handleOpenDialog, handleCloseDialog }}>
       {children}
@@ -155,17 +140,34 @@ const GlobalDialogProvider: React.FC<GlobalDialogContextProps> = ({ children }) 
             aria-labelledby={`dialog-title-${dialog.id}`}
             aria-describedby={`dialog-content-${dialog.id}`}
             disableRestoreFocus
+            slotProps={{
+              paper: {
+                sx: {
+                  p: 2,
+                },
+              },
+            }}
           >
             <DialogTitle id={`dialog-title-${dialog.id}`}>
-              <Typography variant="h6">{dialog.title}</Typography>
+              <Stack direction="row" alignItems="center" gap={1}>
+                <SvgIcon color={dialog.type}>{icon(dialog.type!)}</SvgIcon>
+                <Typography variant="h6">{dialog.title}</Typography>
+              </Stack>
             </DialogTitle>
             <DialogContent id={`dialog-content-${dialog.id}`} sx={{ whiteSpace: 'pre-wrap' }}>
               {dialog.content}
             </DialogContent>
             <DialogActions>
-              <ActionButton onClick={() => handleCloseDialog(dialog.id)}>{dialog.cancelText ?? '닫기'}</ActionButton>
+              <ActionButton onClick={() => handleCloseDialog(dialog.id)} color={dialog.type!} variant="outlined">
+                {dialog.cancelText ?? '닫기'}
+              </ActionButton>
               {dialog.useConfirm && (
-                <ActionButton ref={confirmButtonRefs.current[dialog.id]} onClick={() => handleAction(dialog)}>
+                <ActionButton
+                  ref={confirmButtonRefs.current[dialog.id]}
+                  onClick={() => handleAction(dialog)}
+                  color={dialog.type!}
+                  variant="contained"
+                >
                   {dialog.confirmText ?? '확인'}
                 </ActionButton>
               )}

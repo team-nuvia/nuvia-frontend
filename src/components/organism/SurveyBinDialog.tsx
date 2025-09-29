@@ -1,3 +1,6 @@
+import { useEventBus } from '@/store/event-bus.store';
+import { AppEventType } from '@/store/lib/app-event';
+import queryKeys from '@/store/lib/query-key';
 import { getSurveyBinList } from '@api/survey/get-survey-bin-list';
 import { restoreAllSurvey } from '@api/survey/restore-all-survey';
 import { restoreSurvey } from '@api/survey/restore-survey';
@@ -13,19 +16,18 @@ import { useContext } from 'react';
 
 export default function SurveyBinDialog() {
   const queryClient = useQueryClient();
+  const publish = useEventBus((s) => s.publish);
   const { handleOpenDialog } = useContext(GlobalDialogContext);
   const { addNotice } = useContext(GlobalSnackbarContext);
   const { data: binList } = useQuery({
-    queryKey: ['surveyBinList'],
+    queryKey: queryKeys.survey.binList(),
     queryFn: () => getSurveyBinList({ page: 1, limit: 10, search: '' }),
   });
   const { mutate: restoreSurveyMutate } = useMutation({
     mutationFn: ({ surveyId }: { surveyId: string }) => restoreSurvey(surveyId),
     onSuccess: () => {
       addNotice('설문이 복원되었습니다', 'success');
-      queryClient.invalidateQueries({ queryKey: ['surveyMetadata'] });
-      queryClient.invalidateQueries({ queryKey: ['surveyList'] });
-      queryClient.invalidateQueries({ queryKey: ['surveyBinList'] });
+      publish({ type: AppEventType.SURVEY_BIN_RESTORED });
     },
     onError: () => {
       addNotice('설문 복원에 실패했습니다', 'error');
@@ -35,9 +37,7 @@ export default function SurveyBinDialog() {
     mutationFn: () => restoreAllSurvey(),
     onSuccess: () => {
       addNotice('모든 설문이 복원되었습니다', 'success');
-      queryClient.invalidateQueries({ queryKey: ['surveyMetadata'] });
-      queryClient.invalidateQueries({ queryKey: ['surveyList'] });
-      queryClient.invalidateQueries({ queryKey: ['surveyBinList'] });
+      publish({ type: AppEventType.SURVEY_BIN_RESTORED });
     },
     onError: () => {
       addNotice('모든 설문 복원에 실패했습니다', 'error');

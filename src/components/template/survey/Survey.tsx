@@ -4,6 +4,8 @@ import { CreateSurveyPayload } from '@/models/CreateSurveyPayload';
 import { GetSurveyDetailResponse } from '@/models/GetSurveyDetailResponse';
 import { UpdateSurveyPayload } from '@/models/UpdateSurveyPayload';
 import { useAuthStore } from '@/store/auth.store';
+import mutationKeys from '@/store/lib/mutation-key';
+import queryKeys from '@/store/lib/query-key';
 import { createSurvey } from '@api/survey/create-survey';
 import { getCategories } from '@api/survey/get-categories';
 import { getSurveyDetail } from '@api/survey/get-survey-detail';
@@ -86,16 +88,16 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { data: categories, isLoading: isCategoriesLoading } = useQuery<ServerResponse<ICategory[]>>({
-    queryKey: ['categories'],
+    queryKey: queryKeys.category.list(),
     queryFn: () => getCategories(),
   });
   const { data: surveyData, isLoading: isSurveyLoading } = useQuery<ServerResponse<GetSurveyDetailResponse>>({
-    queryKey: ['survey', id],
+    queryKey: queryKeys.survey.detail(+id!),
     queryFn: () => getSurveyDetail(id as string),
     enabled: !!id,
   });
   const { mutate: createSurveyMutate } = useMutation({
-    mutationKey: ['createSurvey'],
+    mutationKey: mutationKeys.survey.create(),
     mutationFn: ({ surveyData }: { surveyData: CreateSurveyPayload }) => createSurvey(surveyData),
     onSuccess: (data) => {
       if (data.ok) {

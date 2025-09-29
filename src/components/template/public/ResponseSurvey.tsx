@@ -1,6 +1,7 @@
 import { AnswerEachPayload, AnswerPayload } from '@/models/AnswerPayload';
 import { PreviewPayload } from '@/models/PreviewPayload';
 import { useAuthStore } from '@/store/auth.store';
+import mutationKeys from '@/store/lib/mutation-key';
 import { createAnswer } from '@api/survey/create-answer';
 import ActionButton from '@components/atom/ActionButton';
 import CommonText from '@components/atom/CommonText';
@@ -70,19 +71,19 @@ interface ResponseSurveyProps {
 // --- COMPONENT ---
 const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false }) => {
   // --- STATE ---
+  const theme = useTheme();
   const user = useAuthStore((state) => state.user);
   const router = useAuthStore((state) => state.router)!;
-  const [questions, setQuestions] = useState<PreviewPayload['questions']>(survey.questions);
+  const { addNotice } = useContext(GlobalSnackbarContext);
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const { addNotice } = useContext(GlobalSnackbarContext);
-  const theme = useTheme();
-  // const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [direction, setDirection] = useState<'next' | 'previous'>('next');
+  const [questions, setQuestions] = useState<PreviewPayload['questions']>(survey.questions);
   const { mutate: autoSaveMutate } = useMutation({
+    mutationKey: mutationKeys.survey.createAnswer(),
     mutationFn: ({ surveyId, answerData }: { surveyId: number; answerData: AnswerPayload }) => createAnswer(surveyId, answerData),
     onSuccess: (response) => {
       // console.log('🚀 ~ ResponseSurvey ~ response:', response);
@@ -99,7 +100,9 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
       setIsSubmitting(false);
     },
   });
+  /* TODO: auto save랑 분리할지 통합할지 결정 */
   const { mutate: createAnswerMutate } = useMutation({
+    mutationKey: mutationKeys.survey.createAnswer(),
     mutationFn: ({ surveyId, answerData }: { surveyId: number; answerData: AnswerPayload }) => createAnswer(surveyId, answerData),
     onSuccess: (response) => {
       // console.log('🚀 ~ ResponseSurvey ~ response:', response);

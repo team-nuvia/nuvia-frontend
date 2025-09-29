@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuthStore } from '@/store/auth.store';
+import mutationKeys from '@/store/lib/mutation-key';
 import { getVerify } from '@api/auth/get-verify';
 import { verifyInvitationToken } from '@api/auth/verify-invitation-token';
 import LoadingContext from '@context/LoadingContext';
@@ -42,6 +43,7 @@ const Invitation: React.FC<InvitationProps> = ({ token }) => {
   const [timer, setTimer] = useState(3);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const { mutate: verifyInvitationTokenMutate } = useMutation({
+    mutationKey: mutationKeys.user.verifyInvitationToken(),
     mutationFn: () => verifyInvitationToken(token),
     onSuccess: async (data) => {
       if (data.ok && data.payload.verified) {
@@ -80,6 +82,7 @@ const Invitation: React.FC<InvitationProps> = ({ token }) => {
     },
   });
   const { mutate: verifyToken } = useMutation({
+    mutationKey: mutationKeys.user.verifyToken(),
     mutationFn: () => getVerify(),
     onSuccess: async (data) => {
       if (data.ok && data.payload?.verified) {

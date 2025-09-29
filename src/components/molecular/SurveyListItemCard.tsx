@@ -1,3 +1,5 @@
+import { useEventBus } from '@/store/event-bus.store';
+import { AppEventType } from '@/store/lib/app-event';
 import { deleteSurvey } from '@api/survey/delete-survey';
 import { toggleSurveyVisibility } from '@api/survey/toggle-survey-visibility';
 import { updateSurveyStatus } from '@api/survey/update-survey-status';
@@ -35,6 +37,7 @@ const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey }) => {
   const queryClient = useQueryClient();
   const router = useRouter();
   const theme = useTheme();
+  const publish = useEventBus((s) => s.publish);
   const [prefetchEdit, setPrefetchEdit] = useState(false);
   const [prefetchResults, setPrefetchResults] = useState(false);
   const { handleOpenDialog } = useContext(GlobalDialogContext);
@@ -46,7 +49,7 @@ const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey }) => {
     mutationFn: toggleSurveyVisibility,
     onSuccess: () => {
       addNotice(`설문이 ${survey.isPublic ? '비활성화' : '활성화'}되었습니다`, 'success');
-      queryClient.invalidateQueries({ queryKey: ['surveyList'] });
+      publish({ type: AppEventType.SURVEY_TOGGLE_VISIBILITY });
     },
     onError: () => {
       addNotice('설문 활성화에 실패했습니다', 'error');
@@ -57,8 +60,7 @@ const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey }) => {
     mutationFn: deleteSurvey,
     onSuccess: () => {
       addNotice('설문이 삭제되었습니다', 'success');
-      queryClient.invalidateQueries({ queryKey: ['surveyList'] });
-      queryClient.invalidateQueries({ queryKey: ['surveyMetadata'] });
+      publish({ type: AppEventType.SURVEY_DELETED });
     },
     onError: () => {
       addNotice('설문 삭제에 실패했습니다', 'error');
@@ -69,8 +71,7 @@ const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey }) => {
     mutationFn: ({ status }: { status: SurveyStatus }) => updateSurveyStatus(survey.id, status),
     onSuccess: () => {
       addNotice('설문 상태가 변경되었습니다', 'success');
-      queryClient.invalidateQueries({ queryKey: ['surveyList'] });
-      queryClient.invalidateQueries({ queryKey: ['surveyMetadata'] });
+      publish({ type: AppEventType.SURVEY_UPDATED });
     },
     onError: () => {
       addNotice('설문 상태 변경에 실패했습니다', 'error');

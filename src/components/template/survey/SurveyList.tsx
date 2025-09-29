@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuthStore } from '@/store/auth.store';
+import queryKeys from '@/store/lib/query-key';
 import { getSurveyList } from '@api/survey/get-survey-list';
 import { getSurveyMetadata } from '@api/survey/get-survey-metadata';
 import ActionButton from '@components/atom/ActionButton';
@@ -29,7 +30,7 @@ export default function SurveyList() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>(SurveyStatusList.join(','));
   const { data, isLoading } = useQuery({
-    queryKey: ['surveyList'],
+    queryKey: queryKeys.survey.list(),
     queryFn: () =>
       getSurveyList({
         page: 1,
@@ -39,7 +40,7 @@ export default function SurveyList() {
       }),
   });
   const { data: surveyMetadata } = useQuery({
-    queryKey: ['surveyMetadata'],
+    queryKey: queryKeys.survey.metadata(),
     queryFn: () => getSurveyMetadata(MetadataStatusType.SurveyList),
   });
 
@@ -49,9 +50,9 @@ export default function SurveyList() {
     }
   }, [data, isLoading]);
 
-  useEffect(() => {
-    queryClient.invalidateQueries({ queryKey: ['surveyList'] });
-  }, [selectedTab]);
+  // useEffect(() => {
+  //   queryClient.invalidateQueries({ queryKey: queryKeys.survey.list() });
+  // }, [selectedTab]);
 
   const handleRedirectCreate = () => {
     router.push('/dashboard/survey/create');
