@@ -1,6 +1,6 @@
-import { deleteSurvey } from '@api/delete-survey';
-import { toggleSurveyVisibility } from '@api/toggle-survey-visibility';
-import { updateSurveyStatus } from '@api/update-survey-status';
+import { deleteSurvey } from '@api/survey/delete-survey';
+import { toggleSurveyVisibility } from '@api/survey/toggle-survey-visibility';
+import { updateSurveyStatus } from '@api/survey/update-survey-status';
 import { GlobalDialogContext } from '@context/GlobalDialogContext';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import {

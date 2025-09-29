@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuthStore } from '@/store/auth.store';
-import { getUserOrganizations } from '@api/get-user-organizations';
+import { getUserOrganizations } from '@api/user/get-user-organizations';
 import SidebarMenuList from '@components/molecular/SidebarMenuList';
 import { GlobalDialogContext } from '@context/GlobalDialogContext';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';

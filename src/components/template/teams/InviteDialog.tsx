@@ -1,5 +1,5 @@
 import { useAuthStore } from '@/store/auth.store';
-import { inviteUsers } from '@api/invite-users';
+import { inviteUsers } from '@api/subscription/invite-users';
 import ActionButton from '@components/atom/ActionButton';
 import { Add } from '@mui/icons-material';
 import { Chip, Stack, TextField, Typography } from '@mui/material';

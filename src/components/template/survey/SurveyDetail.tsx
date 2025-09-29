@@ -2,9 +2,9 @@
 
 import NotFound from '@/app/(survey-view)/survey/view/[hash]/not-found';
 import { GetSurveyDetailResponse } from '@/models/GetSurveyDetailResponse';
-import { refreshJws } from '@api/refresh-jws';
-import { startAnswer } from '@api/start-answer';
-import { validateFirstSurveyAnswer } from '@api/validate-first-answer';
+import { refreshJws } from '@api/auth/refresh-jws';
+import { startAnswer } from '@api/survey/start-answer';
+import { validateFirstSurveyAnswer } from '@api/survey/validate-first-answer';
 import ActionButton from '@components/atom/ActionButton';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import LoadingContext from '@context/LoadingContext';

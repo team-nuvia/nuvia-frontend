@@ -1,9 +1,9 @@
 'use client';
 
 import { useAuthStore } from '@/store/auth.store';
-import { getOrganizationRoles } from '@api/get-organization-roles';
-import { getUserOrganizations } from '@api/get-user-organizations';
-import { updateOrganizationRole } from '@api/update-organization-role';
+import { getOrganizationRoles } from '@api/subscription/get-organization-roles';
+import { getUserOrganizations } from '@api/user/get-user-organizations';
+import { updateOrganizationRole } from '@api/subscription/update-organization-role';
 import CommonText from '@components/atom/CommonText';
 import Loading from '@components/atom/Loading';
 import InviteDialog from '@components/template/teams/InviteDialog';

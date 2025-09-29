@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuthStore } from '@/store/auth.store';
-import { signup } from '@api/signup';
+import { signup } from '@api/user/signup';
 import { BRAND_NAME } from '@common/variables';
 import CommonText from '@components/atom/CommonText';
 import ActionForm from '@components/molecular/ActionForm';

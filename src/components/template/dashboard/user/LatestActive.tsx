@@ -1,4 +1,4 @@
-import { getUserAccesses, UserAccess } from '@api/get-user-accesses';
+import { getUserAccesses, UserAccess } from '@api/user/get-user-accesses';
 import { Card, Container, Stack, Typography } from '@mui/material';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { DateFormat } from '@util/dateFormat';

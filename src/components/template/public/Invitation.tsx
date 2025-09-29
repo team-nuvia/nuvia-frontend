@@ -1,8 +1,8 @@
 'use client';
 
 import { useAuthStore } from '@/store/auth.store';
-import { getVerify } from '@api/get-verify';
-import { verifyInvitationToken } from '@api/verify-invitation-token';
+import { getVerify } from '@api/auth/get-verify';
+import { verifyInvitationToken } from '@api/auth/verify-invitation-token';
 import LoadingContext from '@context/LoadingContext';
 import { CheckCircle as CheckCircleIcon, Error as ErrorIcon, Mail as MailIcon } from '@mui/icons-material';
 import { Alert, Box, Button, Card, CardContent, CircularProgress, Container, Fade, Stack, Typography, useTheme } from '@mui/material';
