@@ -1,46 +1,43 @@
 'use client';
 
-import React, { useContext, useState } from 'react';
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
+import { getUsersMe } from '@api/get-users-me';
 import {
+  AccessTime as AccessTimeIcon,
+  CalendarToday as CalendarIcon,
+  Cancel as CancelIcon,
+  Delete as DeleteIcon,
+  Edit as EditIcon,
+  Email as EmailIcon,
+  Pause as PauseIcon,
+  Person as PersonIcon,
+  Save as SaveIcon,
+  Security as SecurityIcon,
+  Warning as WarningIcon,
+} from '@mui/icons-material';
+import {
+  Alert,
+  Avatar,
   Box,
+  Button,
   Card,
   CardContent,
-  Typography,
-  TextField,
-  Button,
-  Divider,
-  Alert,
-  Grid,
-  Paper,
-  Chip,
-  IconButton,
   Dialog,
-  DialogTitle,
-  DialogContent,
   DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  Grid,
+  IconButton,
+  Paper,
   Stack,
-  Avatar,
+  TextField,
+  Typography,
 } from '@mui/material';
-import {
-  Edit as EditIcon,
-  Save as SaveIcon,
-  Cancel as CancelIcon,
-  Warning as WarningIcon,
-  Person as PersonIcon,
-  Email as EmailIcon,
-  CalendarToday as CalendarIcon,
-  AccessTime as AccessTimeIcon,
-  Security as SecurityIcon,
-  Delete as DeleteIcon,
-  Pause as PauseIcon,
-} from '@mui/icons-material';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { AuthenticationContext } from '@context/AuthenticationContext';
-import { getUsersMe } from '@api/get-users-me';
-import { GetMeResponse } from '@/models/GetMeResponse';
 import { DateFormat } from '@util/dateFormat';
+import { useFormik } from 'formik';
+import React, { useState } from 'react';
+import * as Yup from 'yup';
 
 interface UpdateUserInfoData {
   name: string;

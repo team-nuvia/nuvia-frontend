@@ -1,27 +1,24 @@
 'use client';
 
+import { useAuthStore } from '@/store/auth.store';
 import { signup } from '@api/signup';
 import { BRAND_NAME } from '@common/variables';
 import CommonText from '@components/atom/CommonText';
 import ActionForm from '@components/molecular/ActionForm';
 import BrandHead from '@components/molecular/BrandHead';
-import { AuthenticationContext } from '@context/AuthenticationContext';
-import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import { Container, Stack, TextField, useTheme } from '@mui/material';
 import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { useFormik } from 'formik';
-import { useRouter } from 'next/navigation';
-import { useContext, useLayoutEffect } from 'react';
+import { useLayoutEffect } from 'react';
 import * as Yup from 'yup';
 
 interface SignupProps {}
 
 const Signup: React.FC<SignupProps> = () => {
   const theme = useTheme();
-  const router = useRouter();
-  const { user } = useContext(AuthenticationContext);
-  const { addNotice } = useContext(GlobalSnackbarContext);
+  const router = useAuthStore((state) => state.router)!;
+  const addNotice = useAuthStore((state) => state.addNotice)!;
   const { mutate: signupMutation } = useMutation({
     mutationFn: signup,
     onSuccess: () => {
@@ -90,12 +87,6 @@ const Signup: React.FC<SignupProps> = () => {
       formik.setFieldError('passwordConfirm', '비밀번호가 일치하지 않습니다.');
     }
   }, [formik.touched.password, formik.touched.passwordConfirm, formik.values.password, formik.values.passwordConfirm]);
-
-  // useEffect(() => {
-  //   if (user) {
-  //     router.push('/');
-  //   }
-  // }, [user]);
 
   // 필드 라벨과 타입 매핑
   const fieldConfig = [

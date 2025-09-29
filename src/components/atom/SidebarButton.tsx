@@ -1,6 +1,6 @@
 'use client';
 
-import { useBlackRouter } from '@hooks/useBlackRouter';
+import { useAuthStore } from '@/store/auth.store';
 import { ButtonOwnProps, Tooltip } from '@mui/material';
 import CommonButton from './CommonButton';
 import CommonText from './CommonText';
@@ -13,7 +13,7 @@ interface SidebarButtonProps {
 }
 
 const SidebarButton: React.FC<SidebarButtonProps & ButtonOwnProps> = ({ selected, menu, onClick, isCollapsed = false, ...props }) => {
-  const router = useBlackRouter();
+  const router = useAuthStore((state) => state.router)!;
 
   return (
     <Tooltip title={menu.label} placement="right" arrow disableHoverListener={!isCollapsed}>

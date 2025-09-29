@@ -1,15 +1,14 @@
 'use client';
 
-import { AuthenticationContext } from '@context/AuthenticationContext';
+import { useAuthStore } from '@/store/auth.store';
 import { Stack } from '@mui/material';
-import { useContext } from 'react';
 import Sidebar from './Sidebar';
 
 interface WrapChildrenProps {
   children: React.ReactNode;
 }
 const WrapChildren: React.FC<WrapChildrenProps> = ({ children }) => {
-  const { user } = useContext(AuthenticationContext);
+  const user = useAuthStore((state) => state.user);
 
   if (user) {
     return (
