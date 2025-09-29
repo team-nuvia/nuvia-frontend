@@ -15,9 +15,10 @@ export const TRANSLATE_TOKEN = {
   [OrganizationRoleStatusType.Invited]: '초대됨',
   [OrganizationRoleStatusType.Joined]: '참여',
   [OrganizationRoleStatusType.Deactivated]: '비활성',
-  [NotificationActionStatus.Rejected]: '거절',
   [MetadataStatusType.Dashboard]: '대시보드',
   [MetadataStatusType.SurveyList]: '설문 목록',
+  ['notification.' + NotificationActionStatus.Joined]: '초대됨',
+  ['notification.' + NotificationActionStatus.Rejected]: '거절',
 } as const;
 export type TRANSLATE_TOKEN = (typeof TRANSLATE_TOKEN)[keyof typeof TRANSLATE_TOKEN];
 
@@ -32,9 +33,10 @@ export const COLOR_TOKEN = {
   [OrganizationRoleStatusType.Invited]: 'textSecondary',
   [OrganizationRoleStatusType.Joined]: 'success.main',
   [OrganizationRoleStatusType.Deactivated]: 'error.main',
-  [NotificationActionStatus.Rejected]: 'error.main',
   [MetadataStatusType.Dashboard]: 'textSecondary',
   [MetadataStatusType.SurveyList]: 'textSecondary',
+  ['notification.' + NotificationActionStatus.Joined]: 'success.main',
+  ['notification.' + NotificationActionStatus.Rejected]: 'error.main',
 } as const;
 export type COLOR_TOKEN = (typeof COLOR_TOKEN)[keyof typeof COLOR_TOKEN];
 

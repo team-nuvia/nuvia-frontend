@@ -1,31 +1,40 @@
 'use client';
 
+import { useAuthStore } from '@/store/auth.store';
 import { BRAND_NAME } from '@common/variables';
 import ActionButton from '@components/atom/ActionButton';
 import CommonText from '@components/atom/CommonText';
 import BrandHead from '@components/molecular/BrandHead';
 import Notification from '@components/molecular/Notification';
 import UserOrganizationSelect from '@components/molecular/UserOrganizationSelect';
-import { AuthenticationContext } from '@context/AuthenticationContext';
-import { useBlackRouter } from '@hooks/useBlackRouter';
 import { useScroll } from '@hooks/useScroll';
 import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded';
 import { Avatar, Menu, MenuItem, Stack, Toolbar, Tooltip, Typography, useTheme } from '@mui/material';
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 interface HeaderProps {}
 const Header: React.FC<HeaderProps> = () => {
   const theme = useTheme();
   const { y } = useScroll();
-  const router = useBlackRouter();
   const [shadow, setShadow] = useState(false);
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
-  const { user, clearUser } = useContext(AuthenticationContext);
+  const user = useAuthStore((state) => state.user);
+  const router = useAuthStore((state) => state.router)!;
+  const clearUser = useAuthStore((state) => state.actions.clearUser);
+  const [commonMenus, setCommonMenus] = useState<MenuOption[]>([
+    {
+      label: 'Nuvia란?',
+      to: '/about',
+    },
+    {
+      label: '로그인',
+      to: '/auth/login',
+    },
+  ]);
+  const [menus, setMenus] = useState<MenuOption[]>([{ label: 'Login', to: '/auth/login' }]);
 
-  // hydration 문제 방지: 서버와 클라이언트의 초기 렌더링이 다를 수 있으므로
-  // 로딩 중일 때는 기본 메뉴만 표시하여 hydration mismatch 방지
-  const commonMenus: MenuOption[] = useMemo(
-    () =>
+  useEffect(() => {
+    setCommonMenus(
       user
         ? [
             {
@@ -47,23 +56,21 @@ const Header: React.FC<HeaderProps> = () => {
               to: '/auth/login',
             },
           ],
-    [user],
-  );
-  const menus: MenuOption[] = useMemo(
-    () =>
+    );
+    setMenus(
       user
         ? [
             { label: 'Profile', to: '/dashboard/user' },
             {
               label: 'Logout',
-              request: () => {
-                clearUser();
+              request: async () => {
+                await clearUser();
               },
             },
           ]
         : [{ label: 'Login', to: '/auth/login' }],
-    [user],
-  );
+    );
+  }, [user]);
 
   useEffect(() => {
     if (y > 61) {

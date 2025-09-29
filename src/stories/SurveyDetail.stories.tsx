@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { DataType } from '@share/enums/data-type';
 import { QuestionType } from '@share/enums/question-type';
 import { SurveyStatus } from '@share/enums/survey-status';
-import SurveyDetail from '../components/template/SurveyDetail';
+import SurveyDetail from '../components/template/survey/SurveyDetail';
 
 const meta = {
   component: SurveyDetail,

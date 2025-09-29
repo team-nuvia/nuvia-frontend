@@ -1,10 +1,10 @@
 'use client';
 
 import { GetMeResponse } from '@/models/GetMeResponse';
+import { useAuthStore } from '@/store/auth.store';
 import { Box, LinearProgress, Stack, Typography } from '@mui/material';
 import { usePathname } from 'next/navigation';
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { AuthenticationContext } from './AuthenticationContext';
+import { createContext, useCallback, useEffect, useState } from 'react';
 
 export const LoadingContext = createContext({
   loading: true,
@@ -29,7 +29,7 @@ interface LoadingProviderProps {
   children: React.ReactNode;
 }
 export const LoadingProvider: React.FC<LoadingProviderProps> = ({ children }) => {
-  const { user } = useContext(AuthenticationContext);
+  const user = useAuthStore((state) => state.user);
   const pathname = usePathname();
   const [loading, setLoading] = useState(true);
   const [loadingText, setLoadingText] = useState(routerMap(pathname, user));
@@ -67,7 +67,7 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({ children }) =>
           justifyContent="center"
           alignItems="center"
           sx={{
-            background: (theme) => theme.palette.background.paper,
+            background: (theme) => theme.palette.background.default,
             position: 'fixed',
             top: 0,
             left: 0,

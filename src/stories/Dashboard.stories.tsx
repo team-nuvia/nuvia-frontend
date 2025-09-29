@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 import { decorators, parameters } from '.storybook/variables';
-import Dashboard from '../components/template/Dashboard';
+import Dashboard from '../components/template/dashboard/Dashboard';
 
 const meta = {
   component: Dashboard,

@@ -1,8 +1,10 @@
+import { useAuthStore } from '@/store/auth.store';
+import { useEventBus } from '@/store/event-bus.store';
+import { AppEventType } from '@/store/lib/app-event';
 import { getNotifications } from '@api/get-notifications';
 import { toggleReadNotification } from '@api/toggle-read-notification';
 import { updateInvitationResult } from '@api/update-invitation-result';
 import ActionButton from '@components/atom/ActionButton';
-import { AuthenticationContext } from '@context/AuthenticationContext';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
@@ -24,25 +26,31 @@ import React, { useContext, useMemo, useState } from 'react';
 const Notification = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
+  const user = useAuthStore((state) => state.user);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState('');
   const { addNotice } = useContext(GlobalSnackbarContext);
-  const { user } = useContext(AuthenticationContext);
+  // event bus 적용
+  const publish = useEventBus((s) => s.publish);
   const [anchorElNotification, setAnchorElNotification] = useState<null | HTMLElement>(null);
   const { data: notifications } = useQuery({
     queryKey: ['notifications'],
     queryFn: () => getNotifications({ page, limit, search }),
   });
-  const { mutate: acceptInvitationMutate } = useMutation({
-    mutationFn: ({ subscriptionId, notificationId }: { subscriptionId: number; notificationId: number }) =>
-      updateInvitationResult(subscriptionId, notificationId, OrganizationRoleStatusType.Joined),
-    onSuccess: (data) => {
-      addNotice(data.message ?? '초대 수락 완료', 'success');
-      queryClient.invalidateQueries({ queryKey: ['user-organizations'] });
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-    },
-  });
+const { mutate: acceptInvitationMutate } = useMutation({
+  mutationFn: ({ subscriptionId, notificationId }: { subscriptionId: number; notificationId: number }) =>
+    updateInvitationResult(subscriptionId, notificationId, OrganizationRoleStatusType.Joined),
+  onSuccess: (data) => {
+    addNotice(data.message ?? '초대 수락 완료', 'success');
+    publish({ type: AppEventType.NOTIFICATION_RELOAD });
+    
+    // queryClient.invalidateQueries({ queryKey: ['user-organizations'] });
+    // queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    // queryClient.invalidateQueries({ queryKey: ['surveyList'] });
+    // queryClient.invalidateQueries({ queryKey: ['surveyMetadata'] });
+  },
+});
   const { mutate: rejectInvitationMutate } = useMutation({
     mutationFn: ({ subscriptionId, notificationId }: { subscriptionId: number; notificationId: number }) =>
       updateInvitationResult(subscriptionId, notificationId, OrganizationRoleStatusType.Rejected),
@@ -50,6 +58,8 @@ const Notification = () => {
       addNotice(data.message ?? '초대 거절 완료', 'success');
       queryClient.invalidateQueries({ queryKey: ['user-organizations'] });
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['surveyList'] });
+      queryClient.invalidateQueries({ queryKey: ['surveyMetadata'] });
     },
   });
   const { mutate: toggleReadNotificationMutate } = useMutation({
@@ -58,6 +68,8 @@ const Notification = () => {
       addNotice(data.message ?? '알림 읽음 처리 완료', 'success');
       queryClient.invalidateQueries({ queryKey: ['user-organizations'] });
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['surveyList'] });
+      queryClient.invalidateQueries({ queryKey: ['surveyMetadata'] });
     },
   });
   const notificationList = notifications?.payload?.data ?? [];

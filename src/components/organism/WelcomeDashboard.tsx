@@ -1,15 +1,14 @@
+import { useAuthStore } from '@/store/auth.store';
 import ActionButton from '@components/atom/ActionButton';
 import CommonText from '@components/atom/CommonText';
-import { AuthenticationContext } from '@context/AuthenticationContext';
 import { Add } from '@mui/icons-material';
 import { Stack } from '@mui/material';
 import { UserRole } from '@share/enums/user-role';
 import { roleAtLeast } from '@util/roleAtLeast';
 import { useRouter } from 'next/navigation';
-import { useContext } from 'react';
 
 const WelcomeDashboard = () => {
-  const { user } = useContext(AuthenticationContext);
+  const user = useAuthStore((state) => state.user);
   const router = useRouter();
 
   return (

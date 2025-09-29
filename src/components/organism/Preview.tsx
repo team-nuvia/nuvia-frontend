@@ -1,6 +1,6 @@
 import { PreviewPayload } from '@/models/PreviewPayload';
 import CommonText from '@components/atom/CommonText';
-import ResponseSurvey from '@components/template/ResponseSurvey';
+import ResponseSurvey from '@components/template/public/ResponseSurvey';
 import CloseIcon from '@mui/icons-material/Close';
 import FullscreenIcon from '@mui/icons-material/Fullscreen';
 import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';

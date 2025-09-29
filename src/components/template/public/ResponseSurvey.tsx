@@ -1,12 +1,12 @@
 import { AnswerEachPayload, AnswerPayload } from '@/models/AnswerPayload';
 import { PreviewPayload } from '@/models/PreviewPayload';
+import { useAuthStore } from '@/store/auth.store';
 import { createAnswer } from '@api/create-answer';
 import ActionButton from '@components/atom/ActionButton';
 import CommonText from '@components/atom/CommonText';
 import SurveyProgress from '@components/molecular/SurveyProgress';
 import UserDescription from '@components/molecular/UserDescription';
 import ResponseCard from '@components/organism/ResponseCard';
-import { AuthenticationContext } from '@context/AuthenticationContext';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import { ArrowBack, ArrowForward, Category, CheckCircle, Person, ThumbUp } from '@mui/icons-material';
 import SaveIcon from '@mui/icons-material/Save';
@@ -36,7 +36,6 @@ import { isEmpty } from '@util/isEmpty';
 import { isNil } from '@util/isNil';
 import { AxiosError } from 'axios';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import * as Yup from 'yup';
 
@@ -71,7 +70,8 @@ interface ResponseSurveyProps {
 // --- COMPONENT ---
 const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false }) => {
   // --- STATE ---
-  const router = useRouter();
+  const user = useAuthStore((state) => state.user);
+  const router = useAuthStore((state) => state.router)!;
   const [questions, setQuestions] = useState<PreviewPayload['questions']>(survey.questions);
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
@@ -81,7 +81,6 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
   const { addNotice } = useContext(GlobalSnackbarContext);
   const theme = useTheme();
   // const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { user } = useContext(AuthenticationContext);
   const [direction, setDirection] = useState<'next' | 'previous'>('next');
   const { mutate: autoSaveMutate } = useMutation({
     mutationFn: ({ surveyId, answerData }: { surveyId: number; answerData: AnswerPayload }) => createAnswer(surveyId, answerData),

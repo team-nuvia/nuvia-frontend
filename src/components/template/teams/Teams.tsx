@@ -1,15 +1,13 @@
 'use client';
 
+import { useAuthStore } from '@/store/auth.store';
 import { getOrganizationRoles } from '@api/get-organization-roles';
 import { getUserOrganizations } from '@api/get-user-organizations';
 import { updateOrganizationRole } from '@api/update-organization-role';
 import CommonText from '@components/atom/CommonText';
 import Loading from '@components/atom/Loading';
 import InviteDialog from '@components/template/teams/InviteDialog';
-import { AuthenticationContext } from '@context/AuthenticationContext';
 import { GlobalDialogContext } from '@context/GlobalDialogContext';
-import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
-import { useBlackRouter } from '@hooks/useBlackRouter';
 import { Add, Group, Settings } from '@mui/icons-material';
 import CancelIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
@@ -58,11 +56,13 @@ function TabPanel(props: TabPanelProps) {
 }
 
 const Teams = () => {
-  const router = useBlackRouter();
   const apiRef = useGridApiRef();
   const [tabValue, setTabValue] = useState(0);
-  const { addNotice } = useContext(GlobalSnackbarContext);
-  const { user, mainUrl, updateUser } = useContext(AuthenticationContext);
+  const addNotice = useAuthStore((state) => state.addNotice)!;
+  const router = useAuthStore((state) => state.router)!;
+  const user = useAuthStore((state) => state.user);
+  const mainUrl = useAuthStore((state) => state.mainUrl);
+  const updateUser = useAuthStore((state) => state.actions.updateUser);
   const { handleOpenDialog } = useContext(GlobalDialogContext);
   const { data: organizationData, isLoading: isOrganizationLoading } = useQuery({
     queryKey: ['user-organizations'],
@@ -309,7 +309,7 @@ const Teams = () => {
             <Select
               value={params.value}
               onChange={(event: SelectChangeEvent<string>) => {
-                apiRef.current?.setEditCellValue({ id: params.id, field: 'status', value: event.target.value });
+                apiRef.current?.setEditCellValue({ id: params.id, field: 'role', value: event.target.value });
               }}
             >
               {UserRoleList.filter((role) => role !== UserRole.Owner)

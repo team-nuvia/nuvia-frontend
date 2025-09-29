@@ -1,6 +1,6 @@
+import { useAuthStore } from '@/store/auth.store';
 import { getUserOrganizations } from '@api/get-user-organizations';
 import { updateUserOrganization } from '@api/update-user-organization';
-import { AuthenticationContext } from '@context/AuthenticationContext';
 import { GlobalDialogContext } from '@context/GlobalDialogContext';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import { MenuItem, Select, Stack } from '@mui/material';
@@ -12,10 +12,11 @@ const UserOrganizationSelect: React.FC = () => {
   const pathname = usePathname();
   const { handleOpenDialog } = useContext(GlobalDialogContext);
   const queryClient = useQueryClient();
-  const { fetchUser } = useContext(AuthenticationContext);
+  const user = useAuthStore((state) => state.user);
+  const fetchUser = useAuthStore((state) => state.actions.fetchUser);
   const { addNotice } = useContext(GlobalSnackbarContext);
   const { data } = useQuery({
-    queryKey: ['user-organizations'],
+    queryKey: ['user-organizations', user],
     queryFn: getUserOrganizations,
   });
   const { mutate: updateUserOrganizationMutation } = useMutation({
@@ -23,7 +24,7 @@ const UserOrganizationSelect: React.FC = () => {
       return updateUserOrganization(organizationId);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user-organizations'] });
+      queryClient.invalidateQueries({ queryKey: ['user-organizations', user] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-metadata'] });
       queryClient.invalidateQueries({ queryKey: ['daily-response-count'] });
       queryClient.invalidateQueries({ queryKey: ['surveyList'] });

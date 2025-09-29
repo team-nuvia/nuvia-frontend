@@ -1,17 +1,16 @@
+import { useAuthStore } from '@/store/auth.store';
 import { getDashboardRecentSurveysServer } from '@api/get-dashboard-recent-surveys-server';
 import CommonText from '@components/atom/CommonText';
-import { AuthenticationContext } from '@context/AuthenticationContext';
-import { useBlackRouter } from '@hooks/useBlackRouter';
 import { DataGrid, GridColDef, GridRowsProp } from '@mui/x-data-grid';
 import { SurveyStatus } from '@share/enums/survey-status';
 import { useQuery } from '@tanstack/react-query';
 import { LocalizationManager } from '@util/LocalizationManager';
-import { memo, useContext, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 
 interface RecentSurveyDataProps {}
 const RecentSurveyData: React.FC<RecentSurveyDataProps> = () => {
-  const router = useBlackRouter();
-  const { user } = useContext(AuthenticationContext);
+  const router = useAuthStore((state) => state.router)!;
+  const user = useAuthStore((state) => state.user);
   const { data: recentSurveysData, isLoading: recentSurveysLoading } = useQuery({
     queryKey: ['dashboard-recent-surveys'],
     queryFn: getDashboardRecentSurveysServer,

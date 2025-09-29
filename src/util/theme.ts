@@ -240,7 +240,9 @@ const components: Components<Omit<Theme, 'components'>> = {
 };
 
 const lightTheme = createTheme({
-  cssVariables: true,
+  cssVariables: {
+    colorSchemeSelector: 'class',
+  },
   typography: {
     fontFamily: 'var(--font-roboto)',
   },
@@ -273,7 +275,9 @@ const lightTheme = createTheme({
 });
 
 const darkTheme = createTheme({
-  cssVariables: true,
+  cssVariables: {
+    colorSchemeSelector: 'class',
+  },
   typography: {
     fontFamily: 'var(--font-roboto)',
   },

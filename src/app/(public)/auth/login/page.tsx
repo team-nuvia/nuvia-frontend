@@ -1,4 +1,4 @@
-import Login from '@components/template/Login';
+import Login from '@components/template/auth/Login';
 
 interface PageProps {
   searchParams: Promise<Record<string, string>>;

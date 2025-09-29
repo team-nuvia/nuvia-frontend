@@ -1,13 +1,12 @@
 'use client';
 
+import { useAuthStore } from '@/store/auth.store';
 import { getSurveyList } from '@api/get-survey-list';
 import { getSurveyMetadata } from '@api/get-survey-metadata';
 import ActionButton from '@components/atom/ActionButton';
 import SurveyListItemCard from '@components/molecular/SurveyListItemCard';
 import SurveyBinDialog from '@components/organism/SurveyBinDialog';
-import { AuthenticationContext } from '@context/AuthenticationContext';
 import { GlobalDialogContext } from '@context/GlobalDialogContext';
-import { useBlackRouter } from '@hooks/useBlackRouter';
 import { Add, Delete } from '@mui/icons-material';
 import { Box, Button, Card, CardContent, Container, Fab, Grid, Stack, Tab, Tabs, Tooltip, Typography } from '@mui/material';
 import { MetadataStatusType } from '@share/enums/metadata-status-type';
@@ -22,8 +21,8 @@ import { useContext, useEffect, useState } from 'react';
 
 export default function SurveyList() {
   const queryClient = useQueryClient();
-  const router = useBlackRouter();
-  const { user } = useContext(AuthenticationContext);
+  const router = useAuthStore((state) => state.router)!;
+  const user = useAuthStore((state) => state.user);
   const [surveys, setSurveys] = useState<SearchSurvey[]>([]);
   const { handleOpenDialog } = useContext(GlobalDialogContext);
   const [selectedTab, setSelectedTab] = useState(0);
@@ -43,10 +42,6 @@ export default function SurveyList() {
     queryKey: ['surveyMetadata'],
     queryFn: () => getSurveyMetadata(MetadataStatusType.SurveyList),
   });
-
-  useEffect(() => {
-    router.prefetch('/dashboard/survey/create');
-  }, [router]);
 
   useEffect(() => {
     if (data?.payload && !isLoading) {
@@ -206,7 +201,14 @@ export default function SurveyList() {
                   {searchQuery || !isFilterStatus ? '다른 검색어나 필터를 시도해보세요' : '첫 번째 설문을 만들어보세요'}
                 </Typography>
                 {!searchQuery && isAllFilterStatus && (
-                  <Button variant="contained" startIcon={<Add />} onClick={handleRedirectCreate}>
+                  <Button
+                    variant="contained"
+                    startIcon={<Add />}
+                    onMouseEnter={() => {
+                      router.prefetch('/dashboard/survey/create');
+                    }}
+                    onClick={handleRedirectCreate}
+                  >
                     설문 만들기
                   </Button>
                 )}
@@ -227,7 +229,14 @@ export default function SurveyList() {
       {/* FAB */}
       {roleAtLeast(UserRole.Editor, user?.role) && (
         <Tooltip title="설문 만들기">
-          <Fab color="primary" sx={{ position: 'fixed', bottom: 24, right: 24 }} onClick={handleRedirectCreate}>
+          <Fab
+            color="primary"
+            sx={{ position: 'fixed', bottom: 24, right: 24 }}
+            onMouseEnter={() => {
+              router.prefetch('/dashboard/survey/create');
+            }}
+            onClick={handleRedirectCreate}
+          >
             <Add />
           </Fab>
         </Tooltip>

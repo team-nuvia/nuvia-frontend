@@ -1,16 +1,16 @@
+import { useAuthStore } from '@/store/auth.store';
 import { inviteUsers } from '@api/invite-users';
 import ActionButton from '@components/atom/ActionButton';
-import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import { Add } from '@mui/icons-material';
 import { Chip, Stack, TextField, Typography } from '@mui/material';
 import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
-import { useCallback, useContext, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 export default function InviteDialog({ subscriptionId }: { subscriptionId: number }) {
   const [emails, setEmails] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState('');
-  const { addNotice } = useContext(GlobalSnackbarContext);
+  const addNotice = useAuthStore((state) => state.addNotice)!;
   const [errorEmails, setErrorEmails] = useState<string[]>([]);
   const { mutate: inviteUsersMutate } = useMutation({
     mutationFn: () => inviteUsers(subscriptionId, emails),

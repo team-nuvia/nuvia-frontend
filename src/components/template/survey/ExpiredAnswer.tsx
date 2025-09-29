@@ -1,18 +1,16 @@
 'use client';
 
 import { GetSurveyDetailResponse } from '@/models/GetSurveyDetailResponse';
+import { useAuthStore } from '@/store/auth.store';
 import ActionButton from '@components/atom/ActionButton';
-import { AuthenticationContext } from '@context/AuthenticationContext';
 import { Container, Stack, Typography } from '@mui/material';
-import { useRouter } from 'next/navigation';
-import { useContext } from 'react';
 
 interface ExpiredAnswerProps {
   survey: GetSurveyDetailResponse;
 }
 const ExpiredAnswer: React.FC<ExpiredAnswerProps> = ({ survey }) => {
-  const { mainUrl } = useContext(AuthenticationContext);
-  const router = useRouter();
+  const router = useAuthStore((state) => state.router)!;
+  const mainUrl = useAuthStore((state) => state.mainUrl);
 
   function handleNewAnswer() {
     window.location.href = `/dashboard/survey/view/${survey.hashedUniqueKey}`;
