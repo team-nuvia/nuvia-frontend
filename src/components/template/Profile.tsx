@@ -2,30 +2,14 @@
 
 import { useAuthStore } from '@/store/auth.store';
 import ActionButton from '@components/atom/ActionButton';
-import { AccountCircle, CalendarToday, Edit, Email, Person, Settings } from '@mui/icons-material';
-import {
-  Avatar,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Chip,
-  ChipOwnProps,
-  Container,
-  Divider,
-  Grid,
-  Paper,
-  Stack,
-  Tab,
-  Tabs,
-  Typography,
-  useTheme,
-} from '@mui/material';
-import { UserRole } from '@share/enums/user-role';
-import { DateFormat } from '@util/dateFormat';
+import { Settings } from '@mui/icons-material';
+import { Box, Container, Grid, Paper, Tab, Tabs, Typography } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import AccountOverview from './dashboard/user/AccountOverview';
 import LatestActive from './dashboard/user/LatestActive';
+import Security from './dashboard/user/Security';
+import UserProfileCard from './dashboard/user/UserProfileCard';
 
 interface ProfileProps {}
 
@@ -54,40 +38,11 @@ function a11yProps(index: number) {
 
 const Profile: React.FC<ProfileProps> = () => {
   const router = useRouter();
-  const theme = useTheme();
   const user = useAuthStore((state) => state.user);
   const [tabValue, setTabValue] = useState(0);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
-  };
-
-  const getRoleColor = (role: UserRole | undefined): ChipOwnProps['color'] => {
-    switch (role) {
-      case UserRole.Owner:
-        return 'info';
-      case UserRole.Admin:
-        return 'warning';
-      case UserRole.Editor:
-        return 'secondary';
-      case UserRole.Viewer:
-      default:
-        return 'default';
-    }
-  };
-
-  const getRoleLabel = (role: UserRole | undefined) => {
-    switch (role) {
-      case UserRole.Owner:
-        return '소유자';
-      case UserRole.Admin:
-        return '관리자';
-      case UserRole.Editor:
-        return '편집자';
-      case UserRole.Viewer:
-      default:
-        return '뷰어';
-    }
   };
 
   return (
@@ -113,57 +68,7 @@ const Profile: React.FC<ProfileProps> = () => {
         <Grid container spacing={4}>
           {/* Profile Card */}
           <Grid size={{ xs: 12, md: 4 }}>
-            <Card elevation={2} sx={{ height: 'fit-content' }}>
-              <CardContent sx={{ p: 4 }}>
-                <Stack alignItems="center" spacing={3}>
-                  <Avatar
-                    sx={{
-                      width: 120,
-                      height: 120,
-                      fontSize: '3rem',
-                      bgcolor: theme.palette.primary.main,
-                    }}
-                  >
-                    {user?.name?.charAt(0) || <AccountCircle />}
-                  </Avatar>
-
-                  <Stack alignItems="center" spacing={1}>
-                    <Typography variant="h5" fontWeight="bold">
-                      {user?.name}
-                    </Typography>
-                  </Stack>
-
-                  <Divider sx={{ width: '100%' }} />
-
-                  <Stack spacing={2} sx={{ width: '100%' }}>
-                    <Stack direction="row" alignItems="center" spacing={2}>
-                      <Email color="action" />
-                      <Typography variant="body2" color="text.secondary">
-                        {user?.email}
-                      </Typography>
-                    </Stack>
-
-                    <Stack direction="row" alignItems="center" spacing={2}>
-                      <CalendarToday color="action" />
-                      <Typography variant="body2" color="text.secondary">
-                        가입일: {DateFormat.toKST('YYYY-MM-dd HH:mm', user?.createdAt)}
-                      </Typography>
-                    </Stack>
-
-                    <Stack direction="row" alignItems="center" spacing={2}>
-                      <Person color="action" />
-                      <Typography variant="body2" color="text.secondary">
-                        최근 접속: {DateFormat.toKST('YYYY-MM-dd HH:mm', user?.updatedAt)}
-                      </Typography>
-                    </Stack>
-                  </Stack>
-
-                  <Button variant="contained" startIcon={<Edit />} fullWidth size="large">
-                    프로필 편집
-                  </Button>
-                </Stack>
-              </CardContent>
-            </Card>
+            <UserProfileCard user={user} />
           </Grid>
 
           {/* Main Content */}
@@ -178,97 +83,7 @@ const Profile: React.FC<ProfileProps> = () => {
               </Box>
 
               <TabPanel value={tabValue} index={0}>
-                <Container maxWidth="md">
-                  <Grid container spacing={3}>
-                    <Grid size={{ xs: 12, sm: 6 }}>
-                      <Card elevation={1} sx={{ p: 3 }}>
-                        <Stack direction="row" alignItems="center" spacing={2} mb={2}>
-                          <Box
-                            sx={{
-                              p: 1,
-                              borderRadius: 1,
-                              bgcolor: 'primary.light',
-                              color: 'primary.contrastText',
-                            }}
-                          >
-                            <Person />
-                          </Box>
-                          <Typography variant="h6" fontWeight="bold">
-                            기본 정보
-                          </Typography>
-                        </Stack>
-                        <Stack spacing={2}>
-                          <Box>
-                            <Typography variant="body2" color="text.secondary">
-                              이름
-                            </Typography>
-                            <Typography variant="body1" fontWeight="medium">
-                              {user?.name}
-                            </Typography>
-                          </Box>
-                          <Box>
-                            <Typography variant="body2" color="text.secondary">
-                              이메일
-                            </Typography>
-                            <Typography variant="body1" fontWeight="medium">
-                              {user?.email}
-                            </Typography>
-                          </Box>
-                          {/* <Box>
-                            <Typography variant="body2" color="text.secondary">
-                              권한
-                            </Typography>
-                            <Chip label={getRoleLabel(user?.role)} color={getRoleColor(user?.role)} size="small" />
-                          </Box> */}
-                        </Stack>
-                      </Card>
-                    </Grid>
-
-                    <Grid size={{ xs: 12, sm: 6 }}>
-                      <Card elevation={1} sx={{ p: 3 }}>
-                        <Stack direction="row" alignItems="center" spacing={2} mb={2}>
-                          <Box
-                            sx={{
-                              p: 1,
-                              borderRadius: 1,
-                              bgcolor: 'success.light',
-                              color: 'success.contrastText',
-                            }}
-                          >
-                            <CalendarToday />
-                          </Box>
-                          <Typography variant="h6" fontWeight="bold">
-                            계정 정보
-                          </Typography>
-                        </Stack>
-                        <Stack spacing={2}>
-                          <Box>
-                            <Typography variant="body2" color="text.secondary">
-                              가입일
-                            </Typography>
-                            <Typography variant="body1" fontWeight="medium">
-                              {DateFormat.toKST('YYYY-MM-dd', user?.createdAt)}
-                            </Typography>
-                          </Box>
-                          <Box>
-                            <Typography variant="body2" color="text.secondary">
-                              최근 접속
-                            </Typography>
-                            <Typography variant="body1" fontWeight="medium">
-                              {DateFormat.toKST('YYYY-MM-dd HH:mm', user?.updatedAt)}
-                            </Typography>
-                          </Box>
-                          <Box>
-                            <Typography variant="body2" color="text.secondary">
-                              계정 상태
-                            </Typography>
-                            <Chip label="활성" color="success" size="small" />
-                          </Box>
-                        </Stack>
-                      </Card>
-                    </Grid>
-                  </Grid>
-                </Container>
+                <AccountOverview user={user} />
               </TabPanel>
 
               <TabPanel value={tabValue} index={1}>
@@ -276,60 +91,7 @@ const Profile: React.FC<ProfileProps> = () => {
               </TabPanel>
 
               <TabPanel value={tabValue} index={2}>
-                <Container maxWidth="md">
-                  <Typography variant="h6" fontWeight="bold" mb={3}>
-                    보안 설정
-                  </Typography>
-                  <Stack spacing={3}>
-                    <Card elevation={1} sx={{ p: 3 }}>
-                      <Stack direction="row" justifyContent="space-between" alignItems="center">
-                        <Stack spacing={1}>
-                          <Typography variant="body1" fontWeight="medium">
-                            비밀번호 변경
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            마지막 변경: 30일 전
-                          </Typography>
-                        </Stack>
-                        <Button variant="outlined" size="small" onClick={() => router.push('/dashboard/user/settings')}>
-                          변경
-                        </Button>
-                      </Stack>
-                    </Card>
-
-                    {/* <Card elevation={1} sx={{ p: 3 }}>
-                      <Stack direction="row" justifyContent="space-between" alignItems="center">
-                        <Stack spacing={1}>
-                          <Typography variant="body1" fontWeight="medium">
-                            이중 인증
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            계정 보안을 강화하세요
-                          </Typography>
-                        </Stack>
-                        <Button variant="outlined" size="small">
-                          설정
-                        </Button>
-                      </Stack>
-                    </Card> */}
-
-                    {/* <Card elevation={1} sx={{ p: 3 }}>
-                      <Stack direction="row" justifyContent="space-between" alignItems="center">
-                        <Stack spacing={1}>
-                          <Typography variant="body1" fontWeight="medium">
-                            로그인 세션
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            현재 활성 세션: 1개
-                          </Typography>
-                        </Stack>
-                        <Button variant="outlined" size="small">
-                          관리
-                        </Button>
-                      </Stack>
-                    </Card> */}
-                  </Stack>
-                </Container>
+                <Security />
               </TabPanel>
             </Paper>
           </Grid>

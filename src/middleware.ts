@@ -81,7 +81,7 @@ async function verifySession(req: NextRequest, res: NextResponse, url: URL): Pro
     });
     return response.data.payload;
   } catch (error) {
-    await forceLogout(url);
+    // await forceLogout(url);
     return null;
   }
 }
@@ -116,8 +116,8 @@ export async function middleware(req: NextRequest, res: NextResponse) {
           url.search = `redirect=${encodeURIComponent(redirect)}&action=view`;
         }
         url.pathname = '/auth/login';
-        await forceLogout(url);
-        return NextResponse.redirect(url);
+        return forceLogout(url);
+        // return NextResponse.redirect(url);
       }
 
       return NextResponse.next();
@@ -131,6 +131,10 @@ export async function middleware(req: NextRequest, res: NextResponse) {
 
   try {
     const verifiedSession = await verifySession(req, res, url);
+
+    if (verifiedSession === null) {
+      return forceLogout(url);
+    }
 
     if (verifiedSession && (isGuestPath(pathname) || pathname === '/')) {
       url.pathname = '/dashboard';
@@ -149,8 +153,8 @@ export async function middleware(req: NextRequest, res: NextResponse) {
         url.search = `redirect=${encodeURIComponent(redirect)}&action=view`;
       }
       url.pathname = '/auth/login';
-      await forceLogout(url);
-      return NextResponse.redirect(url);
+      return await forceLogout(url);
+      // return NextResponse.redirect(url);
     }
   }
 
