@@ -1,7 +1,7 @@
 'use client';
 
-import { getLast7DaysResponseCount } from '@api/get-daily-response-count';
-import { getSurveyMetadata } from '@api/get-survey-metadata';
+import { getLast7DaysResponseCount } from '@api/survey/get-daily-response-count';
+import { getSurveyMetadata } from '@api/survey/get-survey-metadata';
 import RecentSurveyData from '@components/molecular/RecentSurveyData';
 import WelcomeDashboard from '@components/organism/WelcomeDashboard';
 import { BarChart, CheckCircleOutline, DonutLarge, PeopleAlt } from '@mui/icons-material';

@@ -1,5 +1,5 @@
 import { useAuthStore } from '@/store/auth.store';
-import { getDashboardRecentSurveysServer } from '@api/get-dashboard-recent-surveys-server';
+import { getDashboardRecentSurveysServer } from '@api/survey/get-dashboard-recent-surveys-server';
 import CommonText from '@components/atom/CommonText';
 import { DataGrid, GridColDef, GridRowsProp } from '@mui/x-data-grid';
 import { SurveyStatus } from '@share/enums/survey-status';

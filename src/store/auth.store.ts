@@ -1,10 +1,10 @@
 'use client';
 
 import { GetMeResponse } from '@/models/GetMeResponse';
-import { getUsersMe } from '@api/get-users-me';
-import { getVerify } from '@api/get-verify';
-import { getVerifySession } from '@api/get-verify-session';
-import { logout } from '@api/logout';
+import { getUsersMe } from '@api/user/get-users-me';
+import { getVerify } from '@api/auth/get-verify';
+import { getVerifySession } from '@api/auth/get-verify-session';
+import { logout } from '@api/auth/logout';
 import { AxiosError } from 'axios';
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import { VariantType } from 'notistack';

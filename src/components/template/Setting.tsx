@@ -1,8 +1,8 @@
 'use client';
 
 import { useAuthStore } from '@/store/auth.store';
-import { getUserSettings } from '@api/get-user-settings';
-import { updateUserSettings } from '@api/update-user-settings';
+import { getUserSettings } from '@api/user/get-user-settings';
+import { updateUserSettings } from '@api/user/setting/update-user-settings';
 import CommonText from '@components/atom/CommonText';
 import SettingItem from '@components/molecular/SettingItem';
 import { useTheme } from '@context/ThemeContext';

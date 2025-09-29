@@ -1,8 +1,8 @@
 'use client';
 
 import { useAuthStore } from '@/store/auth.store';
-import { getSurveyList } from '@api/get-survey-list';
-import { getSurveyMetadata } from '@api/get-survey-metadata';
+import { getSurveyList } from '@api/survey/get-survey-list';
+import { getSurveyMetadata } from '@api/survey/get-survey-metadata';
 import ActionButton from '@components/atom/ActionButton';
 import SurveyListItemCard from '@components/molecular/SurveyListItemCard';
 import SurveyBinDialog from '@components/organism/SurveyBinDialog';

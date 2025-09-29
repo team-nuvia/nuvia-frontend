@@ -1,6 +1,8 @@
 'use client';
 
-import { getUsersMe } from '@api/get-users-me';
+import { getUsersMe } from '@api/user/get-users-me';
+import { updateNickname } from '@api/user/setting/update-nickname';
+import LimitTextField from '@components/atom/LimitTextField';
 import {
   AccessTime as AccessTimeIcon,
   CalendarToday as CalendarIcon,
@@ -33,6 +35,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import { SocialProvider } from '@share/enums/social-provider.enum';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { DateFormat } from '@util/dateFormat';
 import { useFormik } from 'formik';
@@ -78,11 +81,7 @@ const Settings: React.FC<SettingProps> = () => {
 
   // 사용자 기본 정보 수정 mutation
   const updateUserInfoMutation = useMutation({
-    mutationFn: async (data: UpdateUserInfoData) => {
-      // 실제 API 호출 코드는 여기에 구현
-      console.log('사용자 정보 수정:', data);
-      return data;
-    },
+    mutationFn: ({ nickname }: { nickname: string }) => updateNickname(nickname),
     onSuccess: () => {
       setIsEditingName(false);
       // 성공 알림 표시
@@ -145,15 +144,19 @@ const Settings: React.FC<SettingProps> = () => {
   });
 
   // 이름 수정 폼
-  const nameForm = useFormik({
+  const nicknameForm = useFormik({
     initialValues: {
-      name: user?.name || '',
+      nickname: user?.nickname || '',
     },
     validationSchema: Yup.object({
-      name: Yup.string().min(2, '이름은 최소 2자 이상이어야 합니다').max(20, '이름은 최대 20자까지 가능합니다').required('이름을 입력해주세요'),
+      nickname: Yup.string()
+        .min(2, '닉네임은 최소 2자 이상이어야 합니다')
+        .max(20, '닉네임은 최대 20자까지 가능합니다')
+        .matches(/^[a-zA-Z0-9]+$/, '닉네임은 영문 대소문자와 숫자만 가능합니다')
+        .required('닉네임을 입력해주세요'),
     }),
     onSubmit: (values) => {
-      updateUserInfoMutation.mutate(values);
+      updateUserInfoMutation.mutate({ nickname: values.nickname });
     },
   });
 
@@ -270,7 +273,7 @@ const Settings: React.FC<SettingProps> = () => {
                     최근 접속
                   </Typography>
                 </Box>
-                <Typography variant="body1">{DateFormat.toKST('YYYY-MM-dd HH:mm', user.lastLoginAt)}</Typography>
+                <Typography variant="body1">{DateFormat.toKST('YYYY-MM-dd HH:mm', user.lastAccessAt)}</Typography>
               </Paper>
             </Grid>
           </Grid>
@@ -280,7 +283,7 @@ const Settings: React.FC<SettingProps> = () => {
       {/* 이름 수정 */}
       <Card sx={{ mb: 3 }}>
         <CardContent>
-          <Typography variant="h6" gutterBottom>
+          <Typography variant="h6" sx={{ mb: 3 }}>
             기본 정보 수정
           </Typography>
 
@@ -288,25 +291,26 @@ const Settings: React.FC<SettingProps> = () => {
             <Box display="flex" alignItems="center" justifyContent="space-between">
               <Box>
                 <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                  이름
+                  닉네임
                 </Typography>
-                <Typography variant="body1">{user?.name}</Typography>
+                <Typography variant="body1">{user?.nickname}</Typography>
               </Box>
               <IconButton onClick={() => setIsEditingName(true)} color="primary">
                 <EditIcon />
               </IconButton>
             </Box>
           ) : (
-            <form onSubmit={nameForm.handleSubmit}>
-              <TextField
+            <form onSubmit={nicknameForm.handleSubmit}>
+              <LimitTextField
                 fullWidth
-                label="이름"
-                name="name"
-                value={nameForm.values.name}
-                onChange={nameForm.handleChange}
-                onBlur={nameForm.handleBlur}
-                error={nameForm.touched.name && Boolean(nameForm.errors.name)}
-                helperText={nameForm.touched.name && nameForm.errors.name}
+                maxLength={20}
+                label="닉네임"
+                name="nickname"
+                value={nicknameForm.values.nickname}
+                onChange={nicknameForm.handleChange}
+                onBlur={nicknameForm.handleBlur}
+                error={nicknameForm.touched.nickname && Boolean(nicknameForm.errors.nickname)}
+                helperText={nicknameForm.touched.nickname && nicknameForm.errors.nickname}
                 sx={{ mb: 2 }}
               />
               <Box display="flex" gap={1}>
@@ -318,7 +322,7 @@ const Settings: React.FC<SettingProps> = () => {
                   startIcon={<CancelIcon />}
                   onClick={() => {
                     setIsEditingName(false);
-                    nameForm.resetForm();
+                    nicknameForm.resetForm();
                   }}
                 >
                   취소
@@ -330,83 +334,85 @@ const Settings: React.FC<SettingProps> = () => {
       </Card>
 
       {/* 비밀번호 변경 */}
-      <Card sx={{ mb: 3 }}>
-        <CardContent>
-          <Typography variant="h6" gutterBottom>
-            비밀번호 변경
-          </Typography>
+      {user.provider === SocialProvider.Local && (
+        <Card sx={{ mb: 3 }}>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              비밀번호 변경
+            </Typography>
 
-          {!isChangingPassword ? (
-            <Box display="flex" alignItems="center" justifyContent="space-between">
-              <Box>
-                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                  비밀번호
-                </Typography>
-                <Typography variant="body1">••••••••</Typography>
-              </Box>
-              <Button variant="outlined" startIcon={<SecurityIcon />} onClick={() => setIsChangingPassword(true)}>
-                변경
-              </Button>
-            </Box>
-          ) : (
-            <form onSubmit={passwordForm.handleSubmit}>
-              <Stack spacing={2}>
-                <TextField
-                  fullWidth
-                  type="password"
-                  label="현재 비밀번호"
-                  name="currentPassword"
-                  autoComplete="current-password"
-                  value={passwordForm.values.currentPassword}
-                  onChange={passwordForm.handleChange}
-                  onBlur={passwordForm.handleBlur}
-                  error={passwordForm.touched.currentPassword && Boolean(passwordForm.errors.currentPassword)}
-                  helperText={passwordForm.touched.currentPassword && passwordForm.errors.currentPassword}
-                />
-                <TextField
-                  fullWidth
-                  type="password"
-                  label="새 비밀번호"
-                  name="newPassword"
-                  autoComplete="new-password"
-                  value={passwordForm.values.newPassword}
-                  onChange={passwordForm.handleChange}
-                  onBlur={passwordForm.handleBlur}
-                  error={passwordForm.touched.newPassword && Boolean(passwordForm.errors.newPassword)}
-                  helperText={passwordForm.touched.newPassword && passwordForm.errors.newPassword}
-                />
-                <TextField
-                  fullWidth
-                  type="password"
-                  label="새 비밀번호 확인"
-                  name="confirmPassword"
-                  autoComplete="new-password"
-                  value={passwordForm.values.confirmPassword}
-                  onChange={passwordForm.handleChange}
-                  onBlur={passwordForm.handleBlur}
-                  error={passwordForm.touched.confirmPassword && Boolean(passwordForm.errors.confirmPassword)}
-                  helperText={passwordForm.touched.confirmPassword && passwordForm.errors.confirmPassword}
-                />
-                <Box display="flex" gap={1}>
-                  <Button type="submit" variant="contained" startIcon={<SaveIcon />} disabled={changePasswordMutation.isPending}>
-                    변경
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    startIcon={<CancelIcon />}
-                    onClick={() => {
-                      setIsChangingPassword(false);
-                      passwordForm.resetForm();
-                    }}
-                  >
-                    취소
-                  </Button>
+            {!isChangingPassword ? (
+              <Box display="flex" alignItems="center" justifyContent="space-between">
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                    비밀번호
+                  </Typography>
+                  <Typography variant="body1">••••••••</Typography>
                 </Box>
-              </Stack>
-            </form>
-          )}
-        </CardContent>
-      </Card>
+                <Button variant="outlined" startIcon={<SecurityIcon />} onClick={() => setIsChangingPassword(true)}>
+                  변경
+                </Button>
+              </Box>
+            ) : (
+              <form onSubmit={passwordForm.handleSubmit}>
+                <Stack spacing={2}>
+                  <TextField
+                    fullWidth
+                    type="password"
+                    label="현재 비밀번호"
+                    name="currentPassword"
+                    autoComplete="current-password"
+                    value={passwordForm.values.currentPassword}
+                    onChange={passwordForm.handleChange}
+                    onBlur={passwordForm.handleBlur}
+                    error={passwordForm.touched.currentPassword && Boolean(passwordForm.errors.currentPassword)}
+                    helperText={passwordForm.touched.currentPassword && passwordForm.errors.currentPassword}
+                  />
+                  <TextField
+                    fullWidth
+                    type="password"
+                    label="새 비밀번호"
+                    name="newPassword"
+                    autoComplete="new-password"
+                    value={passwordForm.values.newPassword}
+                    onChange={passwordForm.handleChange}
+                    onBlur={passwordForm.handleBlur}
+                    error={passwordForm.touched.newPassword && Boolean(passwordForm.errors.newPassword)}
+                    helperText={passwordForm.touched.newPassword && passwordForm.errors.newPassword}
+                  />
+                  <TextField
+                    fullWidth
+                    type="password"
+                    label="새 비밀번호 확인"
+                    name="confirmPassword"
+                    autoComplete="new-password"
+                    value={passwordForm.values.confirmPassword}
+                    onChange={passwordForm.handleChange}
+                    onBlur={passwordForm.handleBlur}
+                    error={passwordForm.touched.confirmPassword && Boolean(passwordForm.errors.confirmPassword)}
+                    helperText={passwordForm.touched.confirmPassword && passwordForm.errors.confirmPassword}
+                  />
+                  <Box display="flex" gap={1}>
+                    <Button type="submit" variant="contained" startIcon={<SaveIcon />} disabled={changePasswordMutation.isPending}>
+                      변경
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      startIcon={<CancelIcon />}
+                      onClick={() => {
+                        setIsChangingPassword(false);
+                        passwordForm.resetForm();
+                      }}
+                    >
+                      취소
+                    </Button>
+                  </Box>
+                </Stack>
+              </form>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Danger Zone */}
       <Card sx={{ border: '2px solid', borderColor: 'error.main' }}>

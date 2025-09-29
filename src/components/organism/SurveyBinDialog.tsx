@@ -1,6 +1,6 @@
-import { getSurveyBinList } from '@api/get-survey-bin-list';
-import { restoreAllSurvey } from '@api/restore-all-survey';
-import { restoreSurvey } from '@api/restore-survey';
+import { getSurveyBinList } from '@api/survey/get-survey-bin-list';
+import { restoreAllSurvey } from '@api/survey/restore-all-survey';
+import { restoreSurvey } from '@api/survey/restore-survey';
 import ActionButton from '@components/atom/ActionButton';
 import { GlobalDialogContext } from '@context/GlobalDialogContext';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';

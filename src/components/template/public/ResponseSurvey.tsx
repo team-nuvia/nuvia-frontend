@@ -1,7 +1,7 @@
 import { AnswerEachPayload, AnswerPayload } from '@/models/AnswerPayload';
 import { PreviewPayload } from '@/models/PreviewPayload';
 import { useAuthStore } from '@/store/auth.store';
-import { createAnswer } from '@api/create-answer';
+import { createAnswer } from '@api/survey/create-answer';
 import ActionButton from '@components/atom/ActionButton';
 import CommonText from '@components/atom/CommonText';
 import SurveyProgress from '@components/molecular/SurveyProgress';
