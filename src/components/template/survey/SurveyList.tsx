@@ -9,7 +9,7 @@ import SurveyListItemCard from '@components/molecular/SurveyListItemCard';
 import SurveyBinDialog from '@components/organism/SurveyBinDialog';
 import { GlobalDialogContext } from '@context/GlobalDialogContext';
 import { Add, Delete } from '@mui/icons-material';
-import { Box, Button, Card, CardContent, Container, Fab, Grid, Stack, Tab, Tabs, Tooltip, Typography } from '@mui/material';
+import { Box, Card, CardContent, Container, Fab, Grid, Stack, Tab, Tabs, Tooltip, Typography } from '@mui/material';
 import { MetadataStatusType } from '@share/enums/metadata-status-type';
 import { SurveyStatus, SurveyStatusList } from '@share/enums/survey-status';
 import { UserRole } from '@share/enums/user-role';
@@ -202,7 +202,7 @@ export default function SurveyList() {
                   {searchQuery || !isFilterStatus ? '다른 검색어나 필터를 시도해보세요' : '첫 번째 설문을 만들어보세요'}
                 </Typography>
                 {!searchQuery && isAllFilterStatus && (
-                  <Button
+                  <ActionButton
                     variant="contained"
                     startIcon={<Add />}
                     onMouseEnter={() => {
@@ -211,7 +211,7 @@ export default function SurveyList() {
                     onClick={handleRedirectCreate}
                   >
                     설문 만들기
-                  </Button>
+                  </ActionButton>
                 )}
               </>
             )}

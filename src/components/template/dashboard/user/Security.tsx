@@ -1,4 +1,5 @@
-import { Container, Typography, Stack, Card, Button } from '@mui/material';
+import ActionButton from '@components/atom/ActionButton';
+import { Card, Container, Stack, Typography } from '@mui/material';
 import router from 'next/router';
 
 interface SecurityProps {}
@@ -19,9 +20,9 @@ const Security: React.FC<SecurityProps> = () => {
                 마지막 변경: 30일 전
               </Typography>
             </Stack>
-            <Button variant="outlined" size="small" onClick={() => router.push('/dashboard/user/settings')}>
+            <ActionButton variant="outlined" size="small" onClick={() => router.push('/dashboard/user/settings')}>
               변경
-            </Button>
+            </ActionButton>
           </Stack>
         </Card>
 

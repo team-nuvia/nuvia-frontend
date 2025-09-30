@@ -11,22 +11,7 @@ import ResponseCard from '@components/organism/ResponseCard';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import { ArrowBack, ArrowForward, Category, CheckCircle, Person, ThumbUp } from '@mui/icons-material';
 import SaveIcon from '@mui/icons-material/Save';
-import {
-  Alert,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Chip,
-  CircularProgress,
-  Container,
-  Divider,
-  Fade,
-  Grid,
-  Paper,
-  Stack,
-  Typography,
-} from '@mui/material';
+import { Alert, Box, Card, CardContent, Chip, CircularProgress, Container, Divider, Fade, Grid, Paper, Stack, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { TimeIcon } from '@mui/x-date-pickers/icons';
 import { AnswerStatus } from '@share/enums/answer-status';
@@ -560,9 +545,9 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
               alignItems: 'center',
             }}
           >
-            <Button variant="outlined" startIcon={<ArrowBack />} onClick={handlePrevious} disabled={currentStep === 0} sx={{ minWidth: 120 }}>
+            <ActionButton variant="outlined" startIcon={<ArrowBack />} onClick={handlePrevious} disabled={currentStep === 0} sx={{ minWidth: 120 }}>
               이전
-            </Button>
+            </ActionButton>
 
             <Box sx={{ display: 'flex', gap: 1 }}>
               {survey.questions.map((_, index) => (
@@ -580,7 +565,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
             </Box>
 
             <Stack direction="row" gap={1}>
-              <Button
+              <ActionButton
                 type="button"
                 variant="contained"
                 startIcon={<SaveIcon />}
@@ -588,10 +573,10 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
                 sx={{ minWidth: 120 }}
               >
                 임시 저장
-              </Button>
+              </ActionButton>
 
               {isLastQuestion ? (
-                <Button
+                <ActionButton
                   variant="contained"
                   startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
                   type="submit"
@@ -599,11 +584,11 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
                   sx={{ minWidth: 120 }}
                 >
                   {isSubmitting ? '제출 중...' : '제출하기'}
-                </Button>
+                </ActionButton>
               ) : (
-                <Button type="button" variant="contained" endIcon={<ArrowForward />} onClick={handleNext} sx={{ minWidth: 120 }}>
+                <ActionButton type="button" variant="contained" endIcon={<ArrowForward />} onClick={handleNext} sx={{ minWidth: 120 }}>
                   다음
-                </Button>
+                </ActionButton>
               )}
             </Stack>
           </Box>

@@ -8,6 +8,7 @@ import { AxiosProvider } from '@context/AxiosContext';
 import GlobalDialogProvider from '@context/GlobalDialogContext';
 import { GlobalSnackbar } from '@context/GlobalSnackbar';
 import { GlobalSnackbarSettingProvider } from '@context/GlobalSnackbarSettingProvider';
+import { NetworkProvider } from '@context/NetworkContext';
 import ReactQueryProvider from '@context/ReactQueryProvider';
 import { ThemeProvider } from '@context/ThemeContext';
 import { CssBaseline, InitColorSchemeScript } from '@mui/material';
@@ -31,7 +32,6 @@ export const metadata: Metadata = {
   },
   robots: { index: true, follow: true },
 };
-
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
@@ -56,13 +56,15 @@ export default async function RootLayout({
                 <GlobalSnackbar>
                   <ReactQueryProvider>
                     <QueryInvalidationBridge />
-                    <GlobalDialogProvider>
-                      <LoadingProvider>
-                        <AuthenticationProvider initialize={true} user={user}>
-                          {children}
-                        </AuthenticationProvider>
-                      </LoadingProvider>
-                    </GlobalDialogProvider>
+                    <NetworkProvider>
+                      <GlobalDialogProvider>
+                        <LoadingProvider>
+                          <AuthenticationProvider initialize={true} user={user}>
+                            {children}
+                          </AuthenticationProvider>
+                        </LoadingProvider>
+                      </GlobalDialogProvider>
+                    </NetworkProvider>
                   </ReactQueryProvider>
                 </GlobalSnackbar>
               </GlobalSnackbarSettingProvider>

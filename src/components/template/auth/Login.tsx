@@ -67,6 +67,12 @@ const Login: React.FC<LoginProps> = ({ searchParams }) => {
       const axiosError = error as AxiosError;
       const response = axiosError.response;
       const errorData = response?.data as ServerResponse<any>;
+
+      if (axiosError.message === 'Network Error') {
+        addNotice('서버가 응답하지 않습니다. 다시 시도해주세요.', 'error');
+        return;
+      }
+
       if (errorData.httpStatus !== 500) {
         addNotice(errorData.message, 'error');
       } else {

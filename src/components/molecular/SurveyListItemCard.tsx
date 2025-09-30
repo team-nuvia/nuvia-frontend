@@ -3,6 +3,7 @@ import { AppEventType } from '@/store/lib/app-event';
 import { deleteSurvey } from '@api/survey/delete-survey';
 import { toggleSurveyVisibility } from '@api/survey/toggle-survey-visibility';
 import { updateSurveyStatus } from '@api/survey/update-survey-status';
+import ActionButton from '@components/atom/ActionButton';
 import { GlobalDialogContext } from '@context/GlobalDialogContext';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import {
@@ -19,7 +20,7 @@ import {
   Visibility,
   VisibilityOff,
 } from '@mui/icons-material';
-import { Box, Button, Card, CardContent, Chip, Grid, IconButton, Menu, MenuItem, TextField, Typography, useTheme } from '@mui/material';
+import { Box, Card, CardContent, Chip, Grid, IconButton, Menu, MenuItem, TextField, Typography, useTheme } from '@mui/material';
 import { SurveyStatus } from '@share/enums/survey-status';
 import { SearchSurvey } from '@share/interface/search-survey';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -306,7 +307,7 @@ const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey }) => {
           {/* 액션 버튼 */}
           <Box sx={{ p: 2, pt: 0 }}>
             <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button
+              <ActionButton
                 size="small"
                 variant="outlined"
                 startIcon={<Edit />}
@@ -315,9 +316,9 @@ const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey }) => {
                 sx={{ flexGrow: 1 }}
               >
                 편집
-              </Button>
+              </ActionButton>
               {survey.responseAmount > 0 && (
-                <Button
+                <ActionButton
                   size="small"
                   variant="contained"
                   startIcon={<Analytics />}
@@ -326,7 +327,7 @@ const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey }) => {
                   sx={{ flexGrow: 1 }}
                 >
                   결과보기
-                </Button>
+                </ActionButton>
               )}
             </Box>
           </Box>

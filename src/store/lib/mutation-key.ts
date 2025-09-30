@@ -26,6 +26,9 @@ const mutationKeys = {
     inviteUsers: () => ['subscription', 'inviteUsers'] as const,
     updateOrganizationRole: () => ['subscription', 'updateOrganizationRole'] as const,
   },
+  server: {
+    healthCheck: () => ['server', 'healthCheck'] as const,
+  },
 };
 
 export default mutationKeys;

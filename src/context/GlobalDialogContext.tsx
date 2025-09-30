@@ -1,8 +1,7 @@
 'use client';
 
-import ActionButton from '@components/atom/ActionButton';
 import { CheckCircleOutline, ErrorOutline, InfoOutlined, WarningAmberOutlined } from '@mui/icons-material';
-import { Dialog, DialogActions, DialogContent, DialogTitle, Portal, Stack, SvgIcon, Typography } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Portal, Stack, SvgIcon, Typography } from '@mui/material';
 import React, { createContext, createRef, RefObject, useCallback, useEffect, useRef, useState } from 'react';
 
 interface GlobalDialogContextProps {
@@ -158,18 +157,13 @@ const GlobalDialogProvider: React.FC<GlobalDialogContextProps> = ({ children }) 
               {dialog.content}
             </DialogContent>
             <DialogActions>
-              <ActionButton onClick={() => handleCloseDialog(dialog.id)} color={dialog.type!} variant="outlined">
+              <Button onClick={() => handleCloseDialog(dialog.id)} color={dialog.type!} variant="outlined">
                 {dialog.cancelText ?? '닫기'}
-              </ActionButton>
+              </Button>
               {dialog.useConfirm && (
-                <ActionButton
-                  ref={confirmButtonRefs.current[dialog.id]}
-                  onClick={() => handleAction(dialog)}
-                  color={dialog.type!}
-                  variant="contained"
-                >
+                <Button ref={confirmButtonRefs.current[dialog.id]} onClick={() => handleAction(dialog)} color={dialog.type!} variant="contained">
                   {dialog.confirmText ?? '확인'}
-                </ActionButton>
+                </Button>
               )}
             </DialogActions>
           </Dialog>

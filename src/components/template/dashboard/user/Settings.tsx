@@ -11,6 +11,7 @@ import { deleteAccount } from '@api/user/delete-account';
 import { getUsersMe } from '@api/user/get-users-me';
 import { updateNickname } from '@api/user/setting/update-nickname';
 import { suspendAccount } from '@api/user/suspend-account';
+import ActionButton from '@components/atom/ActionButton';
 import LimitTextField from '@components/atom/LimitTextField';
 import { GlobalDialogContext } from '@context/GlobalDialogContext';
 import {
@@ -26,7 +27,7 @@ import {
   Security as SecurityIcon,
   Warning as WarningIcon,
 } from '@mui/icons-material';
-import { Alert, Avatar, Box, Button, Card, CardContent, Divider, Grid, IconButton, Paper, Stack, TextField, Typography } from '@mui/material';
+import { Alert, Avatar, Box, Card, CardContent, Divider, Grid, IconButton, Paper, Stack, TextField, Typography } from '@mui/material';
 import { SocialProvider } from '@share/enums/social-provider.enum';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { DateFormat } from '@util/dateFormat';
@@ -338,10 +339,10 @@ const Settings: React.FC<SettingProps> = () => {
                 sx={{ mb: 2 }}
               />
               <Box display="flex" gap={1}>
-                <Button type="submit" variant="contained" startIcon={<SaveIcon />} disabled={updateUserInfoMutation.isPending}>
+                <ActionButton type="submit" variant="contained" startIcon={<SaveIcon />} disabled={updateUserInfoMutation.isPending}>
                   저장
-                </Button>
-                <Button
+                </ActionButton>
+                <ActionButton
                   variant="outlined"
                   startIcon={<CancelIcon />}
                   onClick={() => {
@@ -350,7 +351,7 @@ const Settings: React.FC<SettingProps> = () => {
                   }}
                 >
                   취소
-                </Button>
+                </ActionButton>
               </Box>
             </form>
           )}
@@ -373,9 +374,9 @@ const Settings: React.FC<SettingProps> = () => {
                   </Typography>
                   <Typography variant="body1">••••••••</Typography>
                 </Box>
-                <Button variant="outlined" startIcon={<SecurityIcon />} onClick={() => setIsChangingPassword(true)}>
+                <ActionButton variant="outlined" startIcon={<SecurityIcon />} onClick={() => setIsChangingPassword(true)}>
                   변경
-                </Button>
+                </ActionButton>
               </Box>
             ) : (
               <form onSubmit={passwordForm.handleSubmit}>
@@ -417,10 +418,10 @@ const Settings: React.FC<SettingProps> = () => {
                     helperText={passwordForm.touched.confirmPassword && passwordForm.errors.confirmPassword}
                   />
                   <Box display="flex" gap={1}>
-                    <Button type="submit" variant="contained" startIcon={<SaveIcon />} disabled={changePasswordMutation.isPending}>
+                    <ActionButton type="submit" variant="contained" startIcon={<SaveIcon />} disabled={changePasswordMutation.isPending}>
                       변경
-                    </Button>
-                    <Button
+                    </ActionButton>
+                    <ActionButton
                       variant="outlined"
                       startIcon={<CancelIcon />}
                       onClick={() => {
@@ -429,7 +430,7 @@ const Settings: React.FC<SettingProps> = () => {
                       }}
                     >
                       취소
-                    </Button>
+                    </ActionButton>
                   </Box>
                 </Stack>
               </form>
@@ -460,9 +461,9 @@ const Settings: React.FC<SettingProps> = () => {
                   계정을 일시적으로 비활성화합니다.
                 </Typography>
               </Box>
-              <Button variant="outlined" color="warning" startIcon={<PauseIcon />} onClick={handleOpenSuspendDialog}>
+              <ActionButton variant="outlined" color="warning" startIcon={<PauseIcon />} onClick={handleOpenSuspendDialog}>
                 휴면 처리
-              </Button>
+              </ActionButton>
             </Box>
 
             <Divider />
@@ -474,9 +475,9 @@ const Settings: React.FC<SettingProps> = () => {
                   계정과 모든 데이터를 영구적으로 삭제합니다.
                 </Typography>
               </Box>
-              <Button variant="outlined" color="error" startIcon={<DeleteIcon />} onClick={handleOpenDeleteDialog}>
+              <ActionButton variant="outlined" color="error" startIcon={<DeleteIcon />} onClick={handleOpenDeleteDialog}>
                 탈퇴하기
-              </Button>
+              </ActionButton>
             </Box>
           </Stack>
         </CardContent>

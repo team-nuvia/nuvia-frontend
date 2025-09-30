@@ -1,8 +1,7 @@
-import NotFound from '@/components/template/NotFound';
+import ErrorTemplate from "@components/template/error/ErrorTemplate";
 
-const Page = () => {
-  return <NotFound />;
+const NotFound = () => {
+  return <ErrorTemplate type="not-found" />;
 };
 
-
-export default Page;
+export default NotFound;

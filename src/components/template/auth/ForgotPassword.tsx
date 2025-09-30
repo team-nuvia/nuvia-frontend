@@ -1,6 +1,7 @@
 'use client';
 
 import mutationKeys from '@/store/lib/mutation-key';
+import ActionButton from '@components/atom/ActionButton';
 import {
   ArrowBack as ArrowBackIcon,
   CheckCircle as CheckCircleIcon,
@@ -393,8 +394,8 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = () => {
             {activeStep < 2 && (
               <Box sx={{ mt: 4, textAlign: 'center' }}>
                 <Typography variant="body2" color="text.secondary">
-                  계정이 기억나셨나요?{' '}
-                  <Button
+                  계정이 기억나셨나요?
+                  <ActionButton
                     href="/auth/login"
                     sx={{
                       textTransform: 'none',
@@ -404,7 +405,7 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = () => {
                     }}
                   >
                     로그인하기
-                  </Button>
+                  </ActionButton>
                 </Typography>
               </Box>
             )}

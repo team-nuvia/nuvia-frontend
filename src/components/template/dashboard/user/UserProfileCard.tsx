@@ -1,6 +1,7 @@
 import { GetMeResponse } from '@/models/GetMeResponse';
+import ActionButton from '@components/atom/ActionButton';
 import { AccountCircle, CalendarToday, Edit, Email, Person } from '@mui/icons-material';
-import { Avatar, Button, Card, CardContent, Divider, Stack, Typography, useTheme } from '@mui/material';
+import { Avatar, Card, CardContent, Divider, Stack, Typography, useTheme } from '@mui/material';
 import { DateFormat } from '@util/dateFormat';
 
 interface UserProfileCardProps {
@@ -55,9 +56,9 @@ const UserProfileCard: React.FC<UserProfileCardProps> = ({ user }) => {
             </Stack>
           </Stack>
 
-          <Button variant="contained" startIcon={<Edit />} fullWidth size="large">
+          <ActionButton variant="contained" startIcon={<Edit />} fullWidth size="large">
             프로필 편집
-          </Button>
+          </ActionButton>
         </Stack>
       </CardContent>
     </Card>
