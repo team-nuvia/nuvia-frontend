@@ -59,6 +59,7 @@ async function forceLogout(url: URL) {
     url.pathname = '/auth/login';
     return NextResponse.redirect(url);
   } catch (error) {
+    console.log('🚀 ~ forceLogout ~ error:', error);
     const cookieStore = await cookies();
     cookieStore.delete('session');
     cookieStore.delete('access_token');
