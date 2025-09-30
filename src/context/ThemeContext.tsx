@@ -1,5 +1,6 @@
 'use client';
 
+import { useAuthStore } from '@/store/auth.store';
 import { ThemeProvider as MuiThemeProvider, Theme } from '@mui/material/styles';
 import { darkTheme, lightTheme } from '@util/theme';
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useState } from 'react';
@@ -54,6 +55,7 @@ const getEffectiveTheme = (mode: ThemeMode): 'light' | 'dark' => {
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const [mode, setMode] = useState<ThemeMode>('system');
   const [theme, setTheme] = useState<Theme>(lightTheme);
+  const user = useAuthStore((state) => state.user);
 
   // 초기 테마 설정 (깜빡임 방지)
   useLayoutEffect(() => {
@@ -62,8 +64,10 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
 
     setMode(storedMode);
     setTheme(effectiveTheme === 'dark' ? darkTheme : lightTheme);
-    localStorage.setItem('theme-mode', storedMode);
-  }, []);
+    if (user) {
+      localStorage.setItem(`theme-mode:${user.id}`, storedMode);
+    }
+  }, [user]);
 
   // 시스템 테마 변경 감지
   useEffect(() => {
@@ -73,7 +77,9 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
       const handleChange = (e: MediaQueryListEvent) => {
         const effectiveTheme = e.matches ? 'dark' : 'light';
         setTheme(effectiveTheme === 'dark' ? darkTheme : lightTheme);
-        localStorage.setItem('theme-mode', effectiveTheme);
+        if (user) {
+          localStorage.setItem(`theme-mode:${user.id}`, effectiveTheme);
+        }
       };
 
       mediaQuery.addEventListener('change', handleChange);
@@ -86,7 +92,9 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
 
     // 로컬스토리지에 저장
     if (typeof window !== 'undefined') {
-      localStorage.setItem('theme-mode', newMode);
+      if (user) {
+        localStorage.setItem(`theme-mode:${user.id}`, newMode);
+      }
     }
 
     // 즉시 테마 적용
