@@ -67,7 +67,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     if (user) {
       localStorage.setItem(`theme-mode:${user.id}`, storedMode);
     }
-  }, []);
+  }, [user]);
 
   // 시스템 테마 변경 감지
   useEffect(() => {
