@@ -1,11 +1,13 @@
 'use client';
 
 import { useAuthStore } from '@/store/auth.store';
-import { getVerify } from '@api/get-verify';
-import { verifyInvitationToken } from '@api/verify-invitation-token';
+import mutationKeys from '@/store/lib/mutation-key';
+import { getVerify } from '@api/auth/get-verify';
+import { verifyInvitationToken } from '@api/auth/verify-invitation-token';
+import ActionButton from '@components/atom/ActionButton';
 import LoadingContext from '@context/LoadingContext';
 import { CheckCircle as CheckCircleIcon, Error as ErrorIcon, Mail as MailIcon } from '@mui/icons-material';
-import { Alert, Box, Button, Card, CardContent, CircularProgress, Container, Fade, Stack, Typography, useTheme } from '@mui/material';
+import { Alert, Box, Card, CardContent, CircularProgress, Container, Fade, Stack, Typography, useTheme } from '@mui/material';
 import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { usePathname } from 'next/navigation';
@@ -42,6 +44,7 @@ const Invitation: React.FC<InvitationProps> = ({ token }) => {
   const [timer, setTimer] = useState(3);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const { mutate: verifyInvitationTokenMutate } = useMutation({
+    mutationKey: mutationKeys.user.verifyInvitationToken(),
     mutationFn: () => verifyInvitationToken(token),
     onSuccess: async (data) => {
       if (data.ok && data.payload.verified) {
@@ -80,6 +83,7 @@ const Invitation: React.FC<InvitationProps> = ({ token }) => {
     },
   });
   const { mutate: verifyToken } = useMutation({
+    mutationKey: mutationKeys.user.verifyToken(),
     mutationFn: () => getVerify(),
     onSuccess: async (data) => {
       if (data.ok && data.payload?.verified) {
@@ -183,9 +187,9 @@ const Invitation: React.FC<InvitationProps> = ({ token }) => {
                 <br />
                 이제 모든 기능을 사용하실 수 있습니다.
               </Typography>
-              <Button variant="contained" size="large" sx={{ mt: 2, borderRadius: 2, px: 4 }} onClick={() => (window.location.href = mainUrl)}>
+              <ActionButton variant="contained" size="large" sx={{ mt: 2, borderRadius: 2, px: 4 }} onClick={() => (window.location.href = mainUrl)}>
                 대시보드로 이동
-              </Button>
+              </ActionButton>
             </Stack>
           </Fade>
         );
@@ -210,9 +214,9 @@ const Invitation: React.FC<InvitationProps> = ({ token }) => {
                 {timer}초 후 자동으로 로그인 페이지로 이동합니다.
               </Typography>
               <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
-                <Button variant="contained" size="large" sx={{ borderRadius: 2, px: 4 }} onClick={handleLoginRedirect}>
+                <ActionButton variant="contained" size="large" sx={{ borderRadius: 2, px: 4 }} onClick={handleLoginRedirect}>
                   지금 로그인
-                </Button>
+                </ActionButton>
               </Stack>
             </Stack>
           </Fade>
@@ -245,9 +249,9 @@ const Invitation: React.FC<InvitationProps> = ({ token }) => {
               >
                 {errorMessage}
               </Alert>
-              <Button variant="contained" size="large" sx={{ borderRadius: 2, px: 4 }} onClick={handleRetry}>
+              <ActionButton variant="contained" size="large" sx={{ borderRadius: 2, px: 4 }} onClick={handleRetry}>
                 다시 시도
-              </Button>
+              </ActionButton>
             </Stack>
           </Fade>
         );

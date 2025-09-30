@@ -1,7 +1,8 @@
 'use client';
 
 import { useAuthStore } from '@/store/auth.store';
-import { login } from '@api/login';
+import mutationKeys from '@/store/lib/mutation-key';
+import { login } from '@api/auth/login';
 import { BRAND_NAME } from '@common/variables';
 import CommonText from '@components/atom/CommonText';
 import ActionForm from '@components/molecular/ActionForm';
@@ -38,8 +39,8 @@ const Login: React.FC<LoginProps> = ({ searchParams }) => {
   const fetchUser = useAuthStore((state) => state.actions.fetchUser);
   const mainUrl = useAuthStore((state) => state.mainUrl);
   const { mutate: loginMutation } = useMutation({
+    mutationKey: mutationKeys.user.login(),
     mutationFn: (values: { email: string; password: string }) => login(values.email, values.password),
-    mutationKey: ['login'],
     onSuccess: async (response) => {
       formik.setSubmitting(false);
 
@@ -66,6 +67,12 @@ const Login: React.FC<LoginProps> = ({ searchParams }) => {
       const axiosError = error as AxiosError;
       const response = axiosError.response;
       const errorData = response?.data as ServerResponse<any>;
+
+      if (axiosError.message === 'Network Error') {
+        addNotice('서버가 응답하지 않습니다. 다시 시도해주세요.', 'error');
+        return;
+      }
+
       if (errorData.httpStatus !== 500) {
         addNotice(errorData.message, 'error');
       } else {
@@ -149,8 +156,8 @@ const Login: React.FC<LoginProps> = ({ searchParams }) => {
               }}
             />
           ))}
-          submitText="로그인"
-          socialLogin={[SocialProvider.Google]}
+          submitText="Login"
+          socialLogin={[SocialProvider.Google, SocialProvider.Kakao]}
           onSubmit={(e) => {
             e.preventDefault();
             formik.handleSubmit(e);

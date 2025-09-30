@@ -17,5 +17,7 @@ export const Default: Story = {
   args: {
     title: 'Title',
     description: 'Description',
+    checked: false,
+    onSubmit: () => {},
   },
 };

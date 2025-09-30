@@ -1,5 +1,6 @@
 import { useAuthStore } from '@/store/auth.store';
-import { getDashboardRecentSurveysServer } from '@api/get-dashboard-recent-surveys-server';
+import queryKeys from '@/store/lib/query-key';
+import { getDashboardRecentSurveysServer } from '@api/survey/get-dashboard-recent-surveys-server';
 import CommonText from '@components/atom/CommonText';
 import { DataGrid, GridColDef, GridRowsProp } from '@mui/x-data-grid';
 import { SurveyStatus } from '@share/enums/survey-status';
@@ -12,7 +13,7 @@ const RecentSurveyData: React.FC<RecentSurveyDataProps> = () => {
   const router = useAuthStore((state) => state.router)!;
   const user = useAuthStore((state) => state.user);
   const { data: recentSurveysData, isLoading: recentSurveysLoading } = useQuery({
-    queryKey: ['dashboard-recent-surveys'],
+    queryKey: queryKeys.dashboard.recentSurvey(),
     queryFn: getDashboardRecentSurveysServer,
   });
   const rows: GridRowsProp = useMemo<GridRowsProp>(() => {

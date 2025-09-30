@@ -1,35 +1,38 @@
 'use client';
 
 import { useAuthStore } from '@/store/auth.store';
-import { getUserSettings } from '@api/get-user-settings';
-import { updateUserSettings } from '@api/update-user-settings';
+import { useEventBus } from '@/store/event-bus.store';
+import { AppEventType } from '@/store/lib/app-event';
+import mutationKeys from '@/store/lib/mutation-key';
+import queryKeys from '@/store/lib/query-key';
+import { getUserSettings } from '@api/user/get-user-settings';
+import { updateUserSettings } from '@api/user/setting/update-user-settings';
 import CommonText from '@components/atom/CommonText';
 import SettingItem from '@components/molecular/SettingItem';
 import { useTheme } from '@context/ThemeContext';
 import { Check as CheckIcon, DarkMode as DarkModeIcon, LightMode as LightModeIcon, Settings as SettingsIcon } from '@mui/icons-material';
 import { Box, Chip, Container, ListItemIcon, ListItemText, Menu, MenuItem, Stack } from '@mui/material';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 
 interface SettingProps {}
 const Setting: React.FC<SettingProps> = () => {
-  const queryClient = useQueryClient();
+  const { mode, changeTheme } = useTheme();
+  const publish = useEventBus((s) => s.publish);
   const user = useAuthStore((state) => state.user);
   const fetchUser = useAuthStore((state) => state.actions.fetchUser);
-  const { mode, changeTheme } = useTheme();
   const [themeMenuAnchor, setThemeMenuAnchor] = useState<null | HTMLElement>(null);
-  // const [mailing, setMailing] = useState(false);
   const { data } = useQuery({
-    queryKey: ['get-user-settings'],
+    queryKey: queryKeys.user.settings(),
     queryFn: getUserSettings,
     enabled: !!user,
   });
   const { mutate: updateUserSettingsMutation } = useMutation({
-    mutationKey: ['user-settings'],
+    mutationKey: mutationKeys.user.settings(),
     mutationFn: ({ mailing }: { mailing: boolean }) => updateUserSettings(mailing),
     onSuccess: async () => {
       await fetchUser();
-      queryClient.invalidateQueries({ queryKey: ['get-user-settings'] });
+      publish({ type: AppEventType.USER_SETTINGS_UPDATED });
     },
   });
 

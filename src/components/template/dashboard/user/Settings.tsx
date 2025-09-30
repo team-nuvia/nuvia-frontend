@@ -1,6 +1,19 @@
 'use client';
 
-import { getUsersMe } from '@api/get-users-me';
+import { useAuthStore } from '@/store/auth.store';
+import { useEventBus } from '@/store/event-bus.store';
+import { AppEventType } from '@/store/lib/app-event';
+import mutationKeys from '@/store/lib/mutation-key';
+import queryKeys from '@/store/lib/query-key';
+import { logout } from '@api/auth/logout';
+import { changePassword, ChangePasswordData } from '@api/user/change-password';
+import { deleteAccount } from '@api/user/delete-account';
+import { getUsersMe } from '@api/user/get-users-me';
+import { updateNickname } from '@api/user/setting/update-nickname';
+import { suspendAccount } from '@api/user/suspend-account';
+import ActionButton from '@components/atom/ActionButton';
+import LimitTextField from '@components/atom/LimitTextField';
+import { GlobalDialogContext } from '@context/GlobalDialogContext';
 import {
   AccessTime as AccessTimeIcon,
   CalendarToday as CalendarIcon,
@@ -14,57 +27,40 @@ import {
   Security as SecurityIcon,
   Warning as WarningIcon,
 } from '@mui/icons-material';
-import {
-  Alert,
-  Avatar,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Divider,
-  Grid,
-  IconButton,
-  Paper,
-  Stack,
-  TextField,
-  Typography,
-} from '@mui/material';
+import { Alert, Avatar, Box, Card, CardContent, Divider, Grid, IconButton, Paper, Stack, TextField, Typography } from '@mui/material';
+import { SocialProvider } from '@share/enums/social-provider.enum';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { DateFormat } from '@util/dateFormat';
+import { AxiosError } from 'axios';
 import { useFormik } from 'formik';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import * as Yup from 'yup';
 
 interface UpdateUserInfoData {
   name: string;
 }
 
-interface ChangePasswordData {
-  currentPassword: string;
-  newPassword: string;
-  confirmPassword: string;
-}
-
 interface SettingProps {}
 
 const Settings: React.FC<SettingProps> = () => {
+  const publish = useEventBus((s) => s.publish);
+  const router = useAuthStore((state) => state.router)!;
+  const addNotice = useAuthStore((state) => state.addNotice)!;
+  const fetchUser = useAuthStore((state) => state.actions.fetchUser);
+  const { handleOpenDialog } = useContext(GlobalDialogContext);
   const [isEditingName, setIsEditingName] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
-  const [confirmDialog, setConfirmDialog] = useState<{
-    open: boolean;
-    type: 'suspend' | 'delete' | null;
-    title: string;
-    message: string;
-  }>({
-    open: false,
-    type: null,
-    title: '',
-    message: '',
-  });
+  // const [confirmDialog, setConfirmDialog] = useState<{
+  //   open: boolean;
+  //   type: 'suspend' | 'delete' | null;
+  //   title: string;
+  //   message: string;
+  // }>({
+  //   open: false,
+  //   type: null,
+  //   title: '',
+  //   message: '',
+  // });
 
   // 사용자 정보 조회
   const {
@@ -72,19 +68,19 @@ const Settings: React.FC<SettingProps> = () => {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['user'],
+    queryKey: queryKeys.user.me(),
     queryFn: () => getUsersMe().then((res) => res.payload),
   });
 
   // 사용자 기본 정보 수정 mutation
   const updateUserInfoMutation = useMutation({
-    mutationFn: async (data: UpdateUserInfoData) => {
-      // 실제 API 호출 코드는 여기에 구현
-      console.log('사용자 정보 수정:', data);
-      return data;
-    },
-    onSuccess: () => {
+    mutationKey: mutationKeys.user.updateUserInfo(),
+    mutationFn: ({ nickname }: { nickname: string }) => updateNickname(nickname),
+    onSuccess: async (data) => {
       setIsEditingName(false);
+      publish({ type: AppEventType.UPDATE_NICKNAME_UPDATED });
+      await fetchUser();
+      addNotice(data.message ?? '사용자 정보가 수정되었습니다.', 'success');
       // 성공 알림 표시
     },
     onError: (error) => {
@@ -95,65 +91,70 @@ const Settings: React.FC<SettingProps> = () => {
 
   // 비밀번호 변경 mutation
   const changePasswordMutation = useMutation({
-    mutationFn: async (data: ChangePasswordData) => {
-      // 실제 API 호출 코드는 여기에 구현
-      console.log('비밀번호 변경:', data);
-      return data;
-    },
-    onSuccess: () => {
+    mutationKey: mutationKeys.user.changePassword(),
+    mutationFn: async (data: ChangePasswordData) => changePassword(data),
+    onSuccess: (data) => {
+      addNotice(data.message ?? '비밀번호 변경되었습니다.', 'success');
       setIsChangingPassword(false);
       // 성공 알림 표시
     },
-    onError: (error) => {
-      console.error('비밀번호 변경 실패:', error);
+    onError: (error: AxiosError<ServerResponse<null>>) => {
+      console.error(error.response?.data?.message ?? '비밀번호 변경 실패:', error);
       // 에러 알림 표시
     },
   });
 
   // 계정 휴면 처리 mutation
   const suspendAccountMutation = useMutation({
-    mutationFn: async () => {
-      // 실제 API 호출 코드는 여기에 구현
-      console.log('계정 휴면 처리');
-      return true;
-    },
-    onSuccess: () => {
-      setConfirmDialog({ open: false, type: null, title: '', message: '' });
+    mutationKey: mutationKeys.user.suspendAccount(),
+    mutationFn: async () => suspendAccount(),
+    onSuccess: (data) => {
+      // handleCloseDialog();
       // 성공 알림 표시
+      addNotice(data.message ?? '계정 휴면 처리되었습니다.', 'success');
     },
-    onError: (error) => {
-      console.error('계정 휴면 처리 실패:', error);
+    onError: (error: AxiosError<ServerResponse<null>>) => {
+      console.error(error.response?.data?.message ?? '계정 휴면 처리 실패:', error);
       // 에러 알림 표시
     },
   });
 
   // 계정 탈퇴 mutation
   const deleteAccountMutation = useMutation({
-    mutationFn: async () => {
-      // 실제 API 호출 코드는 여기에 구현
-      console.log('계정 탈퇴');
-      return true;
-    },
-    onSuccess: () => {
-      setConfirmDialog({ open: false, type: null, title: '', message: '' });
+    mutationKey: mutationKeys.user.deleteAccount(),
+    mutationFn: async () => deleteAccount(),
+    onSuccess: async (data) => {
+      // setConfirmDialog({ open: false, type: null, title: '', message: '' });
       // 성공 알림 표시
+      addNotice(data.message ?? '통합 계정을 삭제했습니다.', 'success');
+      await logout();
+      handleOpenDialog({
+        title: '통합 계정을 삭제했습니다.',
+        content: '통합 계정을 삭제했습니다. 다시 로그인해주세요.',
+        type: 'info',
+        useConfirm: false,
+      });
+      router.push('/auth/login');
     },
-    onError: (error) => {
-      console.error('계정 탈퇴 실패:', error);
+    onError: (error: AxiosError<ServerResponse<null>>) => {
+      console.error(error.response?.data?.message ?? '계정 탈퇴 실패:', error);
       // 에러 알림 표시
     },
   });
-
   // 이름 수정 폼
-  const nameForm = useFormik({
+  const nicknameForm = useFormik({
     initialValues: {
-      name: user?.name || '',
+      nickname: user?.nickname || '',
     },
     validationSchema: Yup.object({
-      name: Yup.string().min(2, '이름은 최소 2자 이상이어야 합니다').max(20, '이름은 최대 20자까지 가능합니다').required('이름을 입력해주세요'),
+      nickname: Yup.string()
+        .min(2, '닉네임은 최소 2자 이상이어야 합니다')
+        .max(20, '닉네임은 최대 20자까지 가능합니다')
+        .matches(/^[a-zA-Z0-9]+$/, '닉네임은 영문 대소문자와 숫자만 가능합니다')
+        .required('닉네임을 입력해주세요'),
     }),
     onSubmit: (values) => {
-      updateUserInfoMutation.mutate(values);
+      updateUserInfoMutation.mutate({ nickname: values.nickname });
     },
   });
 
@@ -179,31 +180,58 @@ const Settings: React.FC<SettingProps> = () => {
     },
   });
 
-  const handleOpenDialog = (type: 'suspend' | 'delete') => {
-    if (type === 'suspend') {
-      setConfirmDialog({
-        open: true,
-        type: 'suspend',
-        title: '계정 휴면 처리',
-        message: '계정을 휴면 처리하시겠습니까? 휴면 처리된 계정은 로그인이 제한됩니다.',
-      });
-    } else {
-      setConfirmDialog({
-        open: true,
-        type: 'delete',
-        title: '계정 탈퇴',
-        message: '정말로 계정을 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.',
-      });
-    }
-  };
+  function handleOpenSuspendDialog() {
+    handleOpenDialog({
+      title: '계정 휴면 처리',
+      content: '계정을 휴면 처리하시겠습니까? 휴면 처리된 계정은 로그인이 제한됩니다.',
+      type: 'warning',
+      confirmText: '휴면 처리',
+      actionCallback: () => {
+        suspendAccountMutation.mutate();
+      },
+    });
+  }
 
-  const handleConfirmAction = () => {
-    if (confirmDialog.type === 'suspend') {
-      suspendAccountMutation.mutate();
-    } else if (confirmDialog.type === 'delete') {
-      deleteAccountMutation.mutate();
-    }
-  };
+  function handleOpenDeleteDialog() {
+    handleOpenDialog({
+      title: '계정 탈퇴',
+      content: '통합 계정이 모두 탈퇴 처리되며, 즉시 삭제됩니다. 이 작업은 되돌릴 수 없습니다. 계속 진행하시겠습니까?',
+      type: 'error',
+      confirmText: '탈퇴하기',
+      actionCallback: () => {
+        deleteAccountMutation.mutate();
+      },
+    });
+  }
+
+  // const handleOpenDialog = (type: 'suspend' | 'delete') => {
+  //   if (type === 'suspend') {
+  //     setConfirmDialog({
+  //       open: true,
+  //       type: 'suspend',
+  //       title: '계정 휴면 처리',
+  //       message: '계정을 휴면 처리하시겠습니까? 휴면 처리된 계정은 로그인이 제한됩니다.',
+  //     });
+  //   } else {
+  //     setConfirmDialog({
+  //       open: true,
+  //       type: 'delete',
+  //       title: '계정 탈퇴',
+  //       message: '정말로 계정을 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.',
+  //       actionCallback: () => {
+  //         deleteAccountMutation.mutate();
+  //       },
+  //     });
+  //   }
+  // };
+
+  // const handleConfirmAction = () => {
+  //   if (confirmDialog.type === 'suspend') {
+  //     suspendAccountMutation.mutate();
+  //   } else if (confirmDialog.type === 'delete') {
+  //     deleteAccountMutation.mutate();
+  //   }
+  // };
 
   if (isLoading) {
     return (
@@ -270,7 +298,7 @@ const Settings: React.FC<SettingProps> = () => {
                     최근 접속
                   </Typography>
                 </Box>
-                <Typography variant="body1">{DateFormat.toKST('YYYY-MM-dd HH:mm', user.lastLoginAt)}</Typography>
+                <Typography variant="body1">{DateFormat.toKST('YYYY-MM-dd HH:mm', user.lastAccessAt)}</Typography>
               </Paper>
             </Grid>
           </Grid>
@@ -280,7 +308,7 @@ const Settings: React.FC<SettingProps> = () => {
       {/* 이름 수정 */}
       <Card sx={{ mb: 3 }}>
         <CardContent>
-          <Typography variant="h6" gutterBottom>
+          <Typography variant="h6" sx={{ mb: 3 }}>
             기본 정보 수정
           </Typography>
 
@@ -288,41 +316,42 @@ const Settings: React.FC<SettingProps> = () => {
             <Box display="flex" alignItems="center" justifyContent="space-between">
               <Box>
                 <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                  이름
+                  닉네임
                 </Typography>
-                <Typography variant="body1">{user?.name}</Typography>
+                <Typography variant="body1">{user?.nickname}</Typography>
               </Box>
               <IconButton onClick={() => setIsEditingName(true)} color="primary">
                 <EditIcon />
               </IconButton>
             </Box>
           ) : (
-            <form onSubmit={nameForm.handleSubmit}>
-              <TextField
+            <form onSubmit={nicknameForm.handleSubmit}>
+              <LimitTextField
                 fullWidth
-                label="이름"
-                name="name"
-                value={nameForm.values.name}
-                onChange={nameForm.handleChange}
-                onBlur={nameForm.handleBlur}
-                error={nameForm.touched.name && Boolean(nameForm.errors.name)}
-                helperText={nameForm.touched.name && nameForm.errors.name}
+                maxLength={20}
+                label="닉네임"
+                name="nickname"
+                value={nicknameForm.values.nickname}
+                onChange={nicknameForm.handleChange}
+                onBlur={nicknameForm.handleBlur}
+                error={nicknameForm.touched.nickname && Boolean(nicknameForm.errors.nickname)}
+                helperText={nicknameForm.touched.nickname && nicknameForm.errors.nickname}
                 sx={{ mb: 2 }}
               />
               <Box display="flex" gap={1}>
-                <Button type="submit" variant="contained" startIcon={<SaveIcon />} disabled={updateUserInfoMutation.isPending}>
+                <ActionButton type="submit" variant="contained" startIcon={<SaveIcon />} disabled={updateUserInfoMutation.isPending}>
                   저장
-                </Button>
-                <Button
+                </ActionButton>
+                <ActionButton
                   variant="outlined"
                   startIcon={<CancelIcon />}
                   onClick={() => {
                     setIsEditingName(false);
-                    nameForm.resetForm();
+                    nicknameForm.resetForm();
                   }}
                 >
                   취소
-                </Button>
+                </ActionButton>
               </Box>
             </form>
           )}
@@ -330,83 +359,85 @@ const Settings: React.FC<SettingProps> = () => {
       </Card>
 
       {/* 비밀번호 변경 */}
-      <Card sx={{ mb: 3 }}>
-        <CardContent>
-          <Typography variant="h6" gutterBottom>
-            비밀번호 변경
-          </Typography>
+      {user.provider === SocialProvider.Local && (
+        <Card sx={{ mb: 3 }}>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              비밀번호 변경
+            </Typography>
 
-          {!isChangingPassword ? (
-            <Box display="flex" alignItems="center" justifyContent="space-between">
-              <Box>
-                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                  비밀번호
-                </Typography>
-                <Typography variant="body1">••••••••</Typography>
-              </Box>
-              <Button variant="outlined" startIcon={<SecurityIcon />} onClick={() => setIsChangingPassword(true)}>
-                변경
-              </Button>
-            </Box>
-          ) : (
-            <form onSubmit={passwordForm.handleSubmit}>
-              <Stack spacing={2}>
-                <TextField
-                  fullWidth
-                  type="password"
-                  label="현재 비밀번호"
-                  name="currentPassword"
-                  autoComplete="current-password"
-                  value={passwordForm.values.currentPassword}
-                  onChange={passwordForm.handleChange}
-                  onBlur={passwordForm.handleBlur}
-                  error={passwordForm.touched.currentPassword && Boolean(passwordForm.errors.currentPassword)}
-                  helperText={passwordForm.touched.currentPassword && passwordForm.errors.currentPassword}
-                />
-                <TextField
-                  fullWidth
-                  type="password"
-                  label="새 비밀번호"
-                  name="newPassword"
-                  autoComplete="new-password"
-                  value={passwordForm.values.newPassword}
-                  onChange={passwordForm.handleChange}
-                  onBlur={passwordForm.handleBlur}
-                  error={passwordForm.touched.newPassword && Boolean(passwordForm.errors.newPassword)}
-                  helperText={passwordForm.touched.newPassword && passwordForm.errors.newPassword}
-                />
-                <TextField
-                  fullWidth
-                  type="password"
-                  label="새 비밀번호 확인"
-                  name="confirmPassword"
-                  autoComplete="new-password"
-                  value={passwordForm.values.confirmPassword}
-                  onChange={passwordForm.handleChange}
-                  onBlur={passwordForm.handleBlur}
-                  error={passwordForm.touched.confirmPassword && Boolean(passwordForm.errors.confirmPassword)}
-                  helperText={passwordForm.touched.confirmPassword && passwordForm.errors.confirmPassword}
-                />
-                <Box display="flex" gap={1}>
-                  <Button type="submit" variant="contained" startIcon={<SaveIcon />} disabled={changePasswordMutation.isPending}>
-                    변경
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    startIcon={<CancelIcon />}
-                    onClick={() => {
-                      setIsChangingPassword(false);
-                      passwordForm.resetForm();
-                    }}
-                  >
-                    취소
-                  </Button>
+            {!isChangingPassword ? (
+              <Box display="flex" alignItems="center" justifyContent="space-between">
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                    비밀번호
+                  </Typography>
+                  <Typography variant="body1">••••••••</Typography>
                 </Box>
-              </Stack>
-            </form>
-          )}
-        </CardContent>
-      </Card>
+                <ActionButton variant="outlined" startIcon={<SecurityIcon />} onClick={() => setIsChangingPassword(true)}>
+                  변경
+                </ActionButton>
+              </Box>
+            ) : (
+              <form onSubmit={passwordForm.handleSubmit}>
+                <Stack spacing={2}>
+                  <TextField
+                    fullWidth
+                    type="password"
+                    label="현재 비밀번호"
+                    name="currentPassword"
+                    autoComplete="current-password"
+                    value={passwordForm.values.currentPassword}
+                    onChange={passwordForm.handleChange}
+                    onBlur={passwordForm.handleBlur}
+                    error={passwordForm.touched.currentPassword && Boolean(passwordForm.errors.currentPassword)}
+                    helperText={passwordForm.touched.currentPassword && passwordForm.errors.currentPassword}
+                  />
+                  <TextField
+                    fullWidth
+                    type="password"
+                    label="새 비밀번호"
+                    name="newPassword"
+                    autoComplete="new-password"
+                    value={passwordForm.values.newPassword}
+                    onChange={passwordForm.handleChange}
+                    onBlur={passwordForm.handleBlur}
+                    error={passwordForm.touched.newPassword && Boolean(passwordForm.errors.newPassword)}
+                    helperText={passwordForm.touched.newPassword && passwordForm.errors.newPassword}
+                  />
+                  <TextField
+                    fullWidth
+                    type="password"
+                    label="새 비밀번호 확인"
+                    name="confirmPassword"
+                    autoComplete="new-password"
+                    value={passwordForm.values.confirmPassword}
+                    onChange={passwordForm.handleChange}
+                    onBlur={passwordForm.handleBlur}
+                    error={passwordForm.touched.confirmPassword && Boolean(passwordForm.errors.confirmPassword)}
+                    helperText={passwordForm.touched.confirmPassword && passwordForm.errors.confirmPassword}
+                  />
+                  <Box display="flex" gap={1}>
+                    <ActionButton type="submit" variant="contained" startIcon={<SaveIcon />} disabled={changePasswordMutation.isPending}>
+                      변경
+                    </ActionButton>
+                    <ActionButton
+                      variant="outlined"
+                      startIcon={<CancelIcon />}
+                      onClick={() => {
+                        setIsChangingPassword(false);
+                        passwordForm.resetForm();
+                      }}
+                    >
+                      취소
+                    </ActionButton>
+                  </Box>
+                </Stack>
+              </form>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Danger Zone */}
       <Card sx={{ border: '2px solid', borderColor: 'error.main' }}>
@@ -430,9 +461,9 @@ const Settings: React.FC<SettingProps> = () => {
                   계정을 일시적으로 비활성화합니다.
                 </Typography>
               </Box>
-              <Button variant="outlined" color="warning" startIcon={<PauseIcon />} onClick={() => handleOpenDialog('suspend')}>
+              <ActionButton variant="outlined" color="warning" startIcon={<PauseIcon />} onClick={handleOpenSuspendDialog}>
                 휴면 처리
-              </Button>
+              </ActionButton>
             </Box>
 
             <Divider />
@@ -444,15 +475,15 @@ const Settings: React.FC<SettingProps> = () => {
                   계정과 모든 데이터를 영구적으로 삭제합니다.
                 </Typography>
               </Box>
-              <Button variant="outlined" color="error" startIcon={<DeleteIcon />} onClick={() => handleOpenDialog('delete')}>
+              <ActionButton variant="outlined" color="error" startIcon={<DeleteIcon />} onClick={handleOpenDeleteDialog}>
                 탈퇴하기
-              </Button>
+              </ActionButton>
             </Box>
           </Stack>
         </CardContent>
       </Card>
 
-      {/* 확인 다이얼로그 */}
+      {/* 확인 다이얼로그
       <Dialog open={confirmDialog.open} onClose={() => setConfirmDialog({ open: false, type: null, title: '', message: '' })} maxWidth="sm" fullWidth>
         <DialogTitle>
           <Box display="flex" alignItems="center">
@@ -474,7 +505,7 @@ const Settings: React.FC<SettingProps> = () => {
             확인
           </Button>
         </DialogActions>
-      </Dialog>
+      </Dialog> */}
     </Box>
   );
 };

@@ -41,10 +41,10 @@ const Header: React.FC<HeaderProps> = () => {
               label: 'Nuvia란?',
               to: '/about',
             },
-            {
-              label: '커뮤니티',
-              to: '/community',
-            },
+            // {
+            //   label: '커뮤니티',
+            //   to: '/community',
+            // },
           ]
         : [
             {
@@ -183,7 +183,7 @@ const Header: React.FC<HeaderProps> = () => {
                     }
                   >
                     <CommonText thickness="bold" fontSize={16} color="primary.main">
-                      {user.name}
+                      {user.nickname}
                     </CommonText>
                   </ActionButton>
                 </Tooltip>

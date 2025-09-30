@@ -1,6 +1,7 @@
-import { getUserAccesses, UserAccess } from '@api/get-user-accesses';
+import mutationKeys from '@/store/lib/mutation-key';
+import { getUserAccesses, UserAccess } from '@api/user/get-user-accesses';
 import { Card, Container, Stack, Typography } from '@mui/material';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { DateFormat } from '@util/dateFormat';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -9,7 +10,7 @@ const LatestActive: React.FC<LatestActiveProps> = () => {
   const [page, setPage] = useState(1);
   const [accessLogs, setAccessLogs] = useState<UserAccess[]>([]);
   const { mutate: notifications, data: notificationsData } = useMutation({
-    mutationKey: ['latest-active'],
+    mutationKey: mutationKeys.user.latestActive(),
     mutationFn: () => getUserAccesses({ page, limit: 5 }),
     onSuccess: (data) => {
       setAccessLogs((prev) => prev.concat(data?.payload?.data ?? []));
@@ -41,7 +42,7 @@ const LatestActive: React.FC<LatestActiveProps> = () => {
         <Typography variant="h6" fontWeight="bold" mb={3}>
           최근 활동
         </Typography>
-        {accessLogs.length !== 5 && (
+        {accessLogs.length > 5 && (
           <Typography variant="body2" color="primary" sx={{ cursor: 'pointer' }} onClick={initializePage}>
             초기화
           </Typography>

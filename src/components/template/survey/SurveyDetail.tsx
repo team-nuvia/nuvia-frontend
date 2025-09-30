@@ -2,9 +2,10 @@
 
 import NotFound from '@/app/(survey-view)/survey/view/[hash]/not-found';
 import { GetSurveyDetailResponse } from '@/models/GetSurveyDetailResponse';
-import { refreshJws } from '@api/refresh-jws';
-import { startAnswer } from '@api/start-answer';
-import { validateFirstSurveyAnswer } from '@api/validate-first-answer';
+import mutationKeys from '@/store/lib/mutation-key';
+import { refreshJws } from '@api/auth/refresh-jws';
+import { startAnswer } from '@api/survey/start-answer';
+import { validateFirstSurveyAnswer } from '@api/survey/validate-first-answer';
 import ActionButton from '@components/atom/ActionButton';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import LoadingContext from '@context/LoadingContext';
@@ -16,8 +17,8 @@ import { AxiosError } from 'axios';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useContext, useLayoutEffect, useMemo, useState } from 'react';
-import ExpiredAnswer from './ExpiredAnswer';
 import ResponseSurvey from '../public/ResponseSurvey';
+import ExpiredAnswer from './ExpiredAnswer';
 
 export default function SurveyDetail({ survey }: { survey: GetSurveyDetailResponse }) {
   const theme = useTheme();
@@ -28,6 +29,7 @@ export default function SurveyDetail({ survey }: { survey: GetSurveyDetailRespon
   const [isExpired, setIsExpired] = useState(false);
   const [requireRefreshJws, setRequireRefreshJws] = useState(false);
   const { mutate: validateFirstAnswerMutation, error: validateFirstAnswerError } = useMutation({
+    mutationKey: mutationKeys.survey.validateFirstAnswer(),
     mutationFn: () => validateFirstSurveyAnswer(survey.id as number),
     onSuccess: (data) => {
       if (data.ok) {
@@ -74,6 +76,7 @@ export default function SurveyDetail({ survey }: { survey: GetSurveyDetailRespon
     },
   });
   const { mutate: refreshJwsMutation, error: refreshJwsError } = useMutation({
+    mutationKey: mutationKeys.auth.refreshJws(),
     mutationFn: () => refreshJws(survey.id as number),
     onSuccess: () => {
       validateFirstAnswerMutation();
@@ -88,6 +91,7 @@ export default function SurveyDetail({ survey }: { survey: GetSurveyDetailRespon
     },
   });
   const { mutate: startAnswerMutation } = useMutation<ServerResponse<null>>({
+    mutationKey: mutationKeys.survey.startAnswer(),
     mutationFn: () => startAnswer({ surveyId: survey.id as number }),
     onSuccess: () => {
       validateFirstAnswerMutation();

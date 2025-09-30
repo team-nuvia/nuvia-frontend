@@ -1,5 +1,6 @@
 import { useAuthStore } from '@/store/auth.store';
-import { inviteUsers } from '@api/invite-users';
+import mutationKeys from '@/store/lib/mutation-key';
+import { inviteUsers } from '@api/subscription/invite-users';
 import ActionButton from '@components/atom/ActionButton';
 import { Add } from '@mui/icons-material';
 import { Chip, Stack, TextField, Typography } from '@mui/material';
@@ -13,6 +14,7 @@ export default function InviteDialog({ subscriptionId }: { subscriptionId: numbe
   const addNotice = useAuthStore((state) => state.addNotice)!;
   const [errorEmails, setErrorEmails] = useState<string[]>([]);
   const { mutate: inviteUsersMutate } = useMutation({
+    mutationKey: mutationKeys.subscription.inviteUsers(),
     mutationFn: () => inviteUsers(subscriptionId, emails),
     onSuccess: (data) => {
       addNotice(data?.message ?? '초대 이메일이 발송되었습니다.', 'success');

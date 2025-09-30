@@ -1,36 +1,31 @@
 import { useAuthStore } from '@/store/auth.store';
-import { getUserOrganizations } from '@api/get-user-organizations';
-import { updateUserOrganization } from '@api/update-user-organization';
+import { useEventBus } from '@/store/event-bus.store';
+import { AppEventType } from '@/store/lib/app-event';
+import queryKeys from '@/store/lib/query-key';
+import { getUserOrganizations } from '@api/user/get-user-organizations';
+import { updateUserOrganization } from '@api/user/update-user-organization';
 import { GlobalDialogContext } from '@context/GlobalDialogContext';
-import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import { MenuItem, Select, Stack } from '@mui/material';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { usePathname } from 'next/navigation';
 import { useContext } from 'react';
 
 const UserOrganizationSelect: React.FC = () => {
   const pathname = usePathname();
+  const publish = useEventBus((s) => s.publish);
   const { handleOpenDialog } = useContext(GlobalDialogContext);
-  const queryClient = useQueryClient();
-  const user = useAuthStore((state) => state.user);
   const fetchUser = useAuthStore((state) => state.actions.fetchUser);
-  const { addNotice } = useContext(GlobalSnackbarContext);
   const { data } = useQuery({
-    queryKey: ['user-organizations', user],
+    queryKey: queryKeys.organization.list(),
     queryFn: getUserOrganizations,
   });
   const { mutate: updateUserOrganizationMutation } = useMutation({
     mutationFn: ({ organizationId }: { organizationId: number }) => {
       return updateUserOrganization(organizationId);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user-organizations', user] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-metadata'] });
-      queryClient.invalidateQueries({ queryKey: ['daily-response-count'] });
-      queryClient.invalidateQueries({ queryKey: ['surveyList'] });
-      queryClient.invalidateQueries({ queryKey: ['surveyMetadata'] });
-
-      fetchUser();
+    onSuccess: async () => {
+      await fetchUser();
+      publish({ type: AppEventType.ORGANIZATION_UPDATED });
     },
   });
 
@@ -52,7 +47,6 @@ const UserOrganizationSelect: React.FC = () => {
                   title: '사이트를 새로고침하시겠습니까?',
                   content: '변경사항이 저장되지 않을 수 있습니다.',
                   confirmText: '새로고침',
-                  cancelText: '취소',
                   useConfirm: true,
                   actionCallback: () => {
                     window.location.reload();
