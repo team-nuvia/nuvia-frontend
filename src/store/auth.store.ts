@@ -10,6 +10,7 @@ import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.share
 import { VariantType } from 'notistack';
 import { create } from 'zustand';
 import { combine } from 'zustand/middleware';
+import { GUEST_PATHS, isGuestPath, isMemberPath, MEMBER_PATHS } from '@util/guard';
 
 interface AuthStore {
   user: GetMeResponse | null;
@@ -26,19 +27,6 @@ interface AuthStore {
   // fetchUser: () => Promise<void>;
   // updateUser: () => Promise<void>;
 }
-
-const PUBLIC_PATHS = [
-  '/',
-  '/invitation',
-  '/howtouse',
-  '/pricing',
-  '/privacy-policy',
-  '/terms-of-service',
-  '/about',
-  //
-];
-const GUEST_PATHS = ['/auth/login', '/auth/signup', '/auth/forgot-password'];
-const MEMBER_PATHS = ['/dashboard'];
 
 const initialState: AuthStore = {
   user: null,
@@ -63,12 +51,12 @@ export const useAuthStore = create(
             const user = get().user;
             const addNotice = get().addNotice!;
             if (user) {
-              if (GUEST_PATHS.some((guest) => path.startsWith(guest))) {
+              if (isGuestPath(path)) {
                 addNotice('접근 불가한 페이지입니다.', 'warning');
                 return;
               }
             } else {
-              if (MEMBER_PATHS.some((member) => path.startsWith(member))) {
+              if (isMemberPath(path)) {
                 console.log('여기 아님?', get().addNotice);
                 addNotice('로그인이 필요한 페이지입니다.', 'warning');
                 return;

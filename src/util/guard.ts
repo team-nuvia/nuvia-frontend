@@ -16,7 +16,6 @@ export function isPublicPath(pathname: string) {
 }
 
 export function isGuestPath(pathname: string) {
-  console.log('🚀 ~ isGuestPath ~ pathname:', pathname);
   return pathname && (pathname === '/' || GUEST_PATHS.some((guestPath) => guestPath === pathname || pathname.startsWith(guestPath)));
 }
 
