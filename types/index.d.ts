@@ -1,3 +1,4 @@
+import { ButtonProps } from '@mui/material';
 import '@mui/material/styles';
 import { SurveyStatus } from '@share/enums/survey-status';
 import { AllQuestion } from '@share/interface/iquestion';
@@ -5,6 +6,11 @@ import { AllQuestion } from '@share/interface/iquestion';
 export declare global {
   interface Payload<T> {
     payload: T | null;
+  }
+
+  interface ActionButtonProps extends ButtonProps {
+    label?: string;
+    isLoading?: boolean;
   }
 
   interface QuestionInitialValues {
@@ -128,12 +134,14 @@ declare module '@mui/material/styles' {
   interface Palette {
     black: Palette['primary'];
     white: Palette['primary'];
+    kakao: Palette['primary'];
     // parent: Palette['primary'];
   }
 
   interface PaletteOptions {
     black?: PaletteOptions['primary'];
     white?: PaletteOptions['primary'];
+    kakao?: PaletteOptions['primary'];
     // parent?: PaletteOptions['primary'];
   }
 }
@@ -150,6 +158,7 @@ declare module '@mui/material/Button' {
   declare interface ButtonPropsColorOverrides {
     black: true;
     white: true;
+    kakao: true;
     // parent: true;
   }
 
@@ -162,6 +171,7 @@ declare module '@mui/material/CircularProgress' {
   declare interface CircularProgressPropsColorOverrides {
     black: true;
     white: true;
+    kakao: true;
   }
 }
 
@@ -179,5 +189,6 @@ declare module '@mui/material/Chip' {
   declare interface ChipPropsColorOverrides {
     black: true;
     white: true;
+    kakao: true;
   }
 }

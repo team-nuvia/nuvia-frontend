@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuthStore } from '@/store/auth.store';
+import mutationKeys from '@/store/lib/mutation-key';
 import { signup } from '@api/user/signup';
 import { BRAND_NAME } from '@common/variables';
 import CommonText from '@components/atom/CommonText';
@@ -20,6 +21,7 @@ const Signup: React.FC<SignupProps> = () => {
   const router = useAuthStore((state) => state.router)!;
   const addNotice = useAuthStore((state) => state.addNotice)!;
   const { mutate: signupMutation } = useMutation({
+    mutationKey: mutationKeys.user.signup(),
     mutationFn: signup,
     onSuccess: () => {
       formik.setSubmitting(false);

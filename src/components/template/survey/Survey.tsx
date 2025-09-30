@@ -4,10 +4,13 @@ import { CreateSurveyPayload } from '@/models/CreateSurveyPayload';
 import { GetSurveyDetailResponse } from '@/models/GetSurveyDetailResponse';
 import { UpdateSurveyPayload } from '@/models/UpdateSurveyPayload';
 import { useAuthStore } from '@/store/auth.store';
+import mutationKeys from '@/store/lib/mutation-key';
+import queryKeys from '@/store/lib/query-key';
 import { createSurvey } from '@api/survey/create-survey';
 import { getCategories } from '@api/survey/get-categories';
 import { getSurveyDetail } from '@api/survey/get-survey-detail';
 import { updateSurvey } from '@api/survey/update-survey';
+import ActionButton from '@components/atom/ActionButton';
 import Loading from '@components/atom/Loading';
 import { AddQuestionSheet } from '@components/molecular/AddQuestionSheet';
 import Preview from '@components/organism/Preview';
@@ -15,7 +18,7 @@ import QuestionCard from '@components/organism/QuestionCard';
 import { GlobalDialogContext } from '@context/GlobalDialogContext';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import SaveIcon from '@mui/icons-material/Save';
-import { Box, Button, CircularProgress, Container, Grid, Stack, useMediaQuery } from '@mui/material';
+import { Box, CircularProgress, Container, Grid, Stack, useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { DataType } from '@share/enums/data-type';
 import { QuestionType } from '@share/enums/question-type';
@@ -86,16 +89,16 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { data: categories, isLoading: isCategoriesLoading } = useQuery<ServerResponse<ICategory[]>>({
-    queryKey: ['categories'],
+    queryKey: queryKeys.category.list(),
     queryFn: () => getCategories(),
   });
   const { data: surveyData, isLoading: isSurveyLoading } = useQuery<ServerResponse<GetSurveyDetailResponse>>({
-    queryKey: ['survey', id],
+    queryKey: queryKeys.survey.detail(+id!),
     queryFn: () => getSurveyDetail(id as string),
     enabled: !!id,
   });
   const { mutate: createSurveyMutate } = useMutation({
-    mutationKey: ['createSurvey'],
+    mutationKey: mutationKeys.survey.create(),
     mutationFn: ({ surveyData }: { surveyData: CreateSurveyPayload }) => createSurvey(surveyData),
     onSuccess: (data) => {
       if (data.ok) {
@@ -462,7 +465,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
                 boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
               }}
             >
-              <Button
+              <ActionButton
                 variant="outlined"
                 startIcon={<AddCircleOutlineIcon />}
                 onClick={() => handleAddQuestion(QuestionType.ShortText)}
@@ -480,10 +483,10 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
                 }}
               >
                 질문 추가
-              </Button>
+              </ActionButton>
 
               <Stack direction="row" spacing={2} alignItems="center">
-                <Button
+                <ActionButton
                   variant="text"
                   onClick={() => console.log('임시 저장 클릭')}
                   disabled={isSubmitting}
@@ -499,9 +502,9 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
                   }}
                 >
                   임시 저장
-                </Button>
+                </ActionButton>
 
-                <Button
+                <ActionButton
                   variant="outlined"
                   startIcon={<AddCircleOutlineIcon />}
                   onClick={handlePreview}
@@ -519,9 +522,9 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
                   }}
                 >
                   미리보기
-                </Button>
+                </ActionButton>
 
-                <Button
+                <ActionButton
                   type="submit"
                   variant="contained"
                   startIcon={isSubmitting ? null : <SaveIcon />}
@@ -544,7 +547,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
                   }}
                 >
                   {isSubmitting ? <CircularProgress size={20} color="inherit" /> : SUBMIT_BUTTON_TEXT}
-                </Button>
+                </ActionButton>
               </Stack>
             </Box>
           </Grid>

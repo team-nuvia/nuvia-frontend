@@ -64,6 +64,15 @@ const darkMainColor = {
   },
 };
 
+const commonColor = {
+  kakao: {
+    main: '#fee500',
+    light: '#fff9c4',
+    dark: '#fbc02d',
+    contrastText: '#181600',
+  },
+};
+
 const MuiTypography: Components<Omit<Theme, 'components'>>['MuiTypography'] = {
   defaultProps: {
     component: 'div',
@@ -249,6 +258,7 @@ const lightTheme = createTheme({
   components,
   palette: {
     mode: 'light',
+    ...commonColor,
     ...lightMainColor,
     background: {
       default: '#F1F1F1',
@@ -284,6 +294,7 @@ const darkTheme = createTheme({
   components,
   palette: {
     mode: 'dark',
+    ...commonColor,
     ...darkMainColor,
     background: {
       default: '#121212',

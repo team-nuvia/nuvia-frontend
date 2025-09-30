@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuthStore } from '@/store/auth.store';
+import queryKeys from '@/store/lib/query-key';
 import { getSurveyList } from '@api/survey/get-survey-list';
 import { getSurveyMetadata } from '@api/survey/get-survey-metadata';
 import ActionButton from '@components/atom/ActionButton';
@@ -8,7 +9,7 @@ import SurveyListItemCard from '@components/molecular/SurveyListItemCard';
 import SurveyBinDialog from '@components/organism/SurveyBinDialog';
 import { GlobalDialogContext } from '@context/GlobalDialogContext';
 import { Add, Delete } from '@mui/icons-material';
-import { Box, Button, Card, CardContent, Container, Fab, Grid, Stack, Tab, Tabs, Tooltip, Typography } from '@mui/material';
+import { Box, Card, CardContent, Container, Fab, Grid, Stack, Tab, Tabs, Tooltip, Typography } from '@mui/material';
 import { MetadataStatusType } from '@share/enums/metadata-status-type';
 import { SurveyStatus, SurveyStatusList } from '@share/enums/survey-status';
 import { UserRole } from '@share/enums/user-role';
@@ -29,7 +30,7 @@ export default function SurveyList() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>(SurveyStatusList.join(','));
   const { data, isLoading } = useQuery({
-    queryKey: ['surveyList'],
+    queryKey: queryKeys.survey.list(),
     queryFn: () =>
       getSurveyList({
         page: 1,
@@ -39,7 +40,7 @@ export default function SurveyList() {
       }),
   });
   const { data: surveyMetadata } = useQuery({
-    queryKey: ['surveyMetadata'],
+    queryKey: queryKeys.survey.metadata(),
     queryFn: () => getSurveyMetadata(MetadataStatusType.SurveyList),
   });
 
@@ -49,9 +50,9 @@ export default function SurveyList() {
     }
   }, [data, isLoading]);
 
-  useEffect(() => {
-    queryClient.invalidateQueries({ queryKey: ['surveyList'] });
-  }, [selectedTab]);
+  // useEffect(() => {
+  //   queryClient.invalidateQueries({ queryKey: queryKeys.survey.list() });
+  // }, [selectedTab]);
 
   const handleRedirectCreate = () => {
     router.push('/dashboard/survey/create');
@@ -201,7 +202,7 @@ export default function SurveyList() {
                   {searchQuery || !isFilterStatus ? '다른 검색어나 필터를 시도해보세요' : '첫 번째 설문을 만들어보세요'}
                 </Typography>
                 {!searchQuery && isAllFilterStatus && (
-                  <Button
+                  <ActionButton
                     variant="contained"
                     startIcon={<Add />}
                     onMouseEnter={() => {
@@ -210,7 +211,7 @@ export default function SurveyList() {
                     onClick={handleRedirectCreate}
                   >
                     설문 만들기
-                  </Button>
+                  </ActionButton>
                 )}
               </>
             )}

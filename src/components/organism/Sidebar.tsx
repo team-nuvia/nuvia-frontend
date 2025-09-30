@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuthStore } from '@/store/auth.store';
+import queryKeys from '@/store/lib/query-key';
 import { getUserOrganizations } from '@api/user/get-user-organizations';
 import SidebarMenuList from '@components/molecular/SidebarMenuList';
 import { GlobalDialogContext } from '@context/GlobalDialogContext';
@@ -9,6 +10,7 @@ import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import GroupOutlinedIcon from '@mui/icons-material/GroupOutlined';
 import MenuOpenIcon from '@mui/icons-material/MenuOpen';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
+import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard';
 import { Divider, IconButton, Stack, Tooltip } from '@mui/material';
 import { SubscriptionTargetType } from '@share/enums/subscription-target-type';
 import { UserRole } from '@share/enums/user-role';
@@ -24,7 +26,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
   const user = useAuthStore((state) => state.user);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { data } = useQuery({
-    queryKey: ['user-organizations'],
+    queryKey: queryKeys.organization.list(),
     queryFn: getUserOrganizations,
     enabled: !!user,
   });
@@ -60,7 +62,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
   }
 
   const menus = useMemo(() => {
-    const teamMenu = {
+    const teamMenu: MenuModel = {
       label: '팀 관리',
       name: 'teams',
       startIcon: <GroupOutlinedIcon />,
@@ -68,13 +70,20 @@ const Sidebar: React.FC<SidebarProps> = () => {
       children: teamFeatures,
     };
 
-    const menus = [];
-    menus.push({
-      label: '설문 관리',
-      name: 'survey',
-      to: '/dashboard/survey',
-      startIcon: <DescriptionOutlinedIcon />,
-    });
+    const menus: MenuModel[] = [
+      {
+        label: '대시보드',
+        name: 'dashboard',
+        to: '/dashboard',
+        startIcon: <SpaceDashboardIcon />,
+      },
+      {
+        label: '설문 관리',
+        name: 'survey',
+        to: '/dashboard/survey',
+        startIcon: <DescriptionOutlinedIcon />,
+      },
+    ];
     if (currentOrganization?.target === SubscriptionTargetType.Organization) {
       menus.push(teamMenu);
     }
@@ -138,7 +147,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
         <UserCard
           name={user?.currentOrganization?.name ?? ''}
           caption={LocalizationManager.translate(user?.role ?? UserRole.Viewer)}
-          content={user?.name ?? ''}
+          content={user?.nickname ?? ''}
           nameSize={16}
           profileImage={user?.profileImageUrl ?? ''}
         />

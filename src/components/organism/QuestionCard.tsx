@@ -4,7 +4,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditSquareIcon from '@mui/icons-material/EditSquare';
 import {
   Box,
-  Button,
   Chip,
   FormControl,
   FormControlLabel,
@@ -187,9 +186,9 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                 </Grid>
               );
             })}
-            <Button onClick={() => handleAddOption(index)} sx={{ mt: 1 }}>
+            <ActionButton onClick={() => handleAddOption(index)} sx={{ mt: 1 }}>
               옵션 추가
-            </Button>
+            </ActionButton>
             {/* {questionOptions?.length === 0 && questionTouched && (
               <Box sx={{ color: 'error.main', fontSize: '0.75rem', mb: 1 }}>최소 1개의 옵션이 필요합니다.</Box>
             )} */}

@@ -1,9 +1,12 @@
 'use client';
 
 import { useAuthStore } from '@/store/auth.store';
+import mutationKeys from '@/store/lib/mutation-key';
+import queryKeys from '@/store/lib/query-key';
 import { getOrganizationRoles } from '@api/subscription/get-organization-roles';
-import { getUserOrganizations } from '@api/user/get-user-organizations';
 import { updateOrganizationRole } from '@api/subscription/update-organization-role';
+import { getUserOrganizations } from '@api/user/get-user-organizations';
+import ActionButton from '@components/atom/ActionButton';
 import CommonText from '@components/atom/CommonText';
 import Loading from '@components/atom/Loading';
 import InviteDialog from '@components/template/teams/InviteDialog';
@@ -13,7 +16,7 @@ import CancelIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
-import { Box, Button, Card, MenuItem, Paper, Select, SelectChangeEvent, Stack, Tab, Tabs, Typography } from '@mui/material';
+import { Box, Card, MenuItem, Paper, Select, SelectChangeEvent, Stack, Tab, Tabs, Typography } from '@mui/material';
 import {
   DataGrid,
   GridActionsCellItem,
@@ -65,7 +68,7 @@ const Teams = () => {
   const updateUser = useAuthStore((state) => state.actions.updateUser);
   const { handleOpenDialog } = useContext(GlobalDialogContext);
   const { data: organizationData, isLoading: isOrganizationLoading } = useQuery({
-    queryKey: ['user-organizations'],
+    queryKey: queryKeys.organization.list(),
     queryFn: getUserOrganizations,
   });
   const currentOrganization = organizationData?.payload?.currentOrganization;
@@ -89,11 +92,12 @@ const Teams = () => {
     isRefetching: isOrganizationRolesRefetching,
     refetch: refetchOrganizationRoles,
   } = useQuery({
-    queryKey: ['organization-roles', currentOrganization?.id],
+    queryKey: queryKeys.organization.role(currentOrganization?.id),
     queryFn: () => getOrganizationRoles(currentOrganization!.id),
     enabled: !!currentOrganization?.id,
   });
   const { mutate: updateOrganizationRoleMutate } = useMutation({
+    mutationKey: mutationKeys.subscription.updateOrganizationRole(),
     mutationFn: ({
       subscriptionId,
       organizationRoleId,
@@ -550,7 +554,7 @@ const Teams = () => {
         </Stack>
 
         {roleAtLeast(UserRole.Admin, user?.role) && (
-          <Button
+          <ActionButton
             variant="contained"
             startIcon={<Add />}
             onClick={isOrganization ? handleOpenInviteDialog : handleOpenPlanUpgradeModal}
@@ -558,7 +562,7 @@ const Teams = () => {
             sx={{ px: 3 }}
           >
             {isOrganization && teamMembers.length >= (currentOrganization?.plan === PlanNameType.Premium ? 30 : 10) ? '초대 한도 도달' : '팀원 초대'}
-          </Button>
+          </ActionButton>
         )}
       </Stack>
 

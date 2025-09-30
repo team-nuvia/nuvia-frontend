@@ -1,11 +1,13 @@
 import { useAuthStore } from '@/store/auth.store';
 import { API_URL } from '@common/variables';
 import ActionButton from '@components/atom/ActionButton';
+import GoogleLoginButton from '@components/atom/GoogleLoginButton';
+import KakaoLoginButton from '@components/atom/KakaoLoginButton';
 import { Stack } from '@mui/material';
 import { SocialProvider } from '@share/enums/social-provider.enum';
 import { detectBrowser } from '@util/detectBrowser';
 import { detectUserDevice } from '@util/detectUserDevice';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 
 interface ActionFormProps {
   title: React.ReactNode;
@@ -25,6 +27,69 @@ const ActionForm: React.FC<ActionFormProps> = ({ title, onSubmit, submitText, sl
     if (nq) {
       window.location.search = nq;
       localStorage.removeItem('nq');
+    }
+  }, []);
+
+  const getLoginButton = useCallback((provider: SocialProvider) => {
+    switch (provider) {
+      case SocialProvider.Google:
+        return (
+          <GoogleLoginButton
+            key={provider}
+            size="xlarge"
+            variant="contained"
+            fullWidth
+            type="button"
+            onClick={() => {
+              const url = new URL(`${API_URL}/auth/login/${provider}`);
+              url.searchParams.set('accessDevice', detectUserDevice());
+              url.searchParams.set('accessBrowser', detectBrowser());
+              url.searchParams.set('accessUserAgent', navigator.userAgent);
+              window.location.href = url.toString();
+              localStorage.setItem('nq', window.location.search);
+            }}
+          />
+        );
+
+      case SocialProvider.Kakao:
+        return (
+          <KakaoLoginButton
+            key={provider}
+            size="xlarge"
+            variant="contained"
+            fullWidth
+            type="button"
+            onClick={() => {
+              const url = new URL(`${API_URL}/auth/login/${provider}`);
+              url.searchParams.set('accessDevice', detectUserDevice());
+              url.searchParams.set('accessBrowser', detectBrowser());
+              url.searchParams.set('accessUserAgent', navigator.userAgent);
+              window.location.href = url.toString();
+              localStorage.setItem('nq', window.location.search);
+            }}
+          />
+        );
+
+      default:
+        return (
+          <ActionButton
+            key={provider}
+            size="xlarge"
+            variant="contained"
+            fullWidth
+            type="button"
+            onClick={() => {
+              const url = new URL(`${API_URL}/auth/login/${provider}`);
+              url.searchParams.set('accessDevice', detectUserDevice());
+              url.searchParams.set('accessBrowser', detectBrowser());
+              url.searchParams.set('accessUserAgent', navigator.userAgent);
+              window.location.href = url.toString();
+              localStorage.setItem('nq', window.location.search);
+            }}
+          >
+            {provider.toUpperCase()}
+          </ActionButton>
+        );
     }
   }, []);
 
@@ -49,27 +114,9 @@ const ActionForm: React.FC<ActionFormProps> = ({ title, onSubmit, submitText, sl
         <ActionButton size="xlarge" variant="contained" fullWidth type="submit" isLoading={isLoading}>
           {submitText}
         </ActionButton>
-        {socialLogin?.map((provider) => (
-          <ActionButton
-            key={provider}
-            size="xlarge"
-            variant="contained"
-            fullWidth
-            type="button"
-            onClick={() => {
-              const url = new URL(`${API_URL}/auth/login/${provider}`);
-              url.searchParams.set('accessDevice', detectUserDevice());
-              url.searchParams.set('accessBrowser', detectBrowser());
-              url.searchParams.set('accessUserAgent', navigator.userAgent);
-              window.location.href = url.toString();
-              localStorage.setItem('nq', window.location.search);
-            }}
-          >
-            {provider.toUpperCase()}
-          </ActionButton>
-        ))}
+        {socialLogin?.map((provider) => getLoginButton(provider))}
         {signupPath && (
-          <ActionButton size="xlarge" variant="text" fullWidth type="button" onClick={() => router.push(signupPath)}>
+          <ActionButton size="xlarge" fullWidth type="button" onClick={() => router.push(signupPath)}>
             {signupText}
           </ActionButton>
         )}
