@@ -42,7 +42,7 @@ const LatestActive: React.FC<LatestActiveProps> = () => {
         <Typography variant="h6" fontWeight="bold" mb={3}>
           최근 활동
         </Typography>
-        {accessLogs.length !== 5 && (
+        {accessLogs.length > 5 && (
           <Typography variant="body2" color="primary" sx={{ cursor: 'pointer' }} onClick={initializePage}>
             초기화
           </Typography>

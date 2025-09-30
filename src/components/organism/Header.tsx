@@ -41,10 +41,10 @@ const Header: React.FC<HeaderProps> = () => {
               label: 'Nuvia란?',
               to: '/about',
             },
-            {
-              label: '커뮤니티',
-              to: '/community',
-            },
+            // {
+            //   label: '커뮤니티',
+            //   to: '/community',
+            // },
           ]
         : [
             {

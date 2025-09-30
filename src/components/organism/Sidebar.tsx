@@ -10,6 +10,7 @@ import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import GroupOutlinedIcon from '@mui/icons-material/GroupOutlined';
 import MenuOpenIcon from '@mui/icons-material/MenuOpen';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
+import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard';
 import { Divider, IconButton, Stack, Tooltip } from '@mui/material';
 import { SubscriptionTargetType } from '@share/enums/subscription-target-type';
 import { UserRole } from '@share/enums/user-role';
@@ -61,7 +62,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
   }
 
   const menus = useMemo(() => {
-    const teamMenu = {
+    const teamMenu: MenuModel = {
       label: '팀 관리',
       name: 'teams',
       startIcon: <GroupOutlinedIcon />,
@@ -69,13 +70,20 @@ const Sidebar: React.FC<SidebarProps> = () => {
       children: teamFeatures,
     };
 
-    const menus = [];
-    menus.push({
-      label: '설문 관리',
-      name: 'survey',
-      to: '/dashboard/survey',
-      startIcon: <DescriptionOutlinedIcon />,
-    });
+    const menus: MenuModel[] = [
+      {
+        label: '대시보드',
+        name: 'dashboard',
+        to: '/dashboard',
+        startIcon: <SpaceDashboardIcon />,
+      },
+      {
+        label: '설문 관리',
+        name: 'survey',
+        to: '/dashboard/survey',
+        startIcon: <DescriptionOutlinedIcon />,
+      },
+    ];
     if (currentOrganization?.target === SubscriptionTargetType.Organization) {
       menus.push(teamMenu);
     }
