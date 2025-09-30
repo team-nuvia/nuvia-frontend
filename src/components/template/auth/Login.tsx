@@ -13,6 +13,7 @@ import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { useFormik } from 'formik';
 import NextLink from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 import * as yup from 'yup';
 
@@ -28,11 +29,16 @@ interface SearchParams {
 }
 
 interface LoginProps {
-  searchParams: SearchParams;
+  // searchParams: SearchParams;
 }
-const Login: React.FC<LoginProps> = ({ searchParams }) => {
-  const { action, token, redirect } = searchParams;
+const Login: React.FC<LoginProps> = (/* { searchParams } */) => {
+  // const { action, token, redirect } = searchParams;
   const theme = useTheme();
+  const searchParams = useSearchParams();
+  const action = searchParams.get('action');
+  const token = searchParams.get('token');
+  const redirect = searchParams.get('redirect');
+  const reason = searchParams.get('reason');
   const router = useAuthStore((state) => state.router)!;
   const addNotice = useAuthStore((state) => state.addNotice)!;
   const getUser = useAuthStore((state) => state.actions.getUser);
@@ -95,16 +101,23 @@ const Login: React.FC<LoginProps> = ({ searchParams }) => {
 
   useEffect(() => {
     const nq = localStorage.getItem('nq');
-    const url = new URLSearchParams(window.location.search.slice(1));
-    const reason = url.get('reason');
+    const url = new URLSearchParams({
+      redirect: redirect || '',
+      action: action || '',
+      reason: reason || '',
+    });
+    // const reason = url.get('reason');
     if (nq) {
       window.location.search = nq;
+      router.push('?' + nq);
       localStorage.removeItem('nq');
     }
-    if (reason) {
+    if (reason && addNotice) {
       addNotice(reason, 'warning');
+      url.delete('reason');
+      router.push('?' + url.toString());
     }
-  }, []);
+  }, [reason, addNotice]);
 
   useEffect(() => {
     router?.prefetch(mainUrl);
