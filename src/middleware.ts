@@ -8,16 +8,22 @@ async function setCookies(result: AxiosResponse) {
   const cookieList = result.headers['set-cookie'] ?? [];
   for (const cookie of cookieList) {
     const [main, ...cookieRows] = cookie.split(';').map((keyValue) => keyValue.trim().split('='));
+    console.log('🚀 ~ setCookies ~ cookie:', cookie);
     const parsedCookie = Object.fromEntries(cookieRows);
     const cookieStore = await cookies();
-    cookieStore.set({
+    console.log('🚀 ~ setCookies ~ cookieStore:', cookieStore);
+    const cookieData = {
       name: main[0],
       value: main[1],
       path: parsedCookie.Path,
+      secure: parsedCookie.Secure,
       expires: new Date(parsedCookie.Expires).getTime(),
       sameSite: parsedCookie.SameSite,
       httpOnly: 'HttpOnly' in parsedCookie,
-    });
+      domain: parsedCookie.Domain,
+    };
+    console.log('🚀 ~ setCookies ~ cookieData:', cookieData);
+    cookieStore.set(cookieData);
   }
 }
 
@@ -108,18 +114,24 @@ export async function middleware(req: NextRequest, res: NextResponse) {
 
     return NextResponse.next();
   } else {
-    // 리프레시
     try {
       await getRefreshToken(req);
     } catch (error) {
       if (error instanceof Error && error.message === 'SERVER_ERROR') {
+        // 서버 연결 실패 시 로그인 페이지로 리다이렉트
         if (!url.pathname.startsWith('/auth/login')) {
           url.search = `redirect=${encodeURIComponent(redirect)}&action=view&reason=server_error`;
         }
         url.pathname = '/auth/login';
-        return forceLogout(url);
+        return NextResponse.redirect(url);
       }
-      throw error;
+
+      if (!url.pathname.startsWith('/auth/login')) {
+        url.search = `redirect=${encodeURIComponent(redirect)}&action=view`;
+      }
+      url.pathname = '/auth/login';
+      return await forceLogout(url);
+      // return NextResponse.redirect(url);
     }
   }
 
@@ -146,7 +158,7 @@ export async function middleware(req: NextRequest, res: NextResponse) {
       return NextResponse.redirect(url);
     }
   } catch (error: any) {
-    verifiedSessionStatus = error.response.status;
+    verifiedSessionStatus = error.response?.status;
   }
 
   if (verifiedSessionStatus !== null) {
