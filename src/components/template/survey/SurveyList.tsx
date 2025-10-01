@@ -173,7 +173,7 @@ export default function SurveyList() {
       </Card> */}
 
       {/* 탭 */}
-      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
+      <Stack direction="row" justifyContent={{ xs: 'center', md: 'space-between' }} alignItems="center" flexWrap="wrap" gap={2} sx={{ mb: 3 }}>
         <Tabs value={selectedTab} onChange={(_, newValue) => setSelectedTab(newValue)}>
           <Tab label="전체" />
           {Object.values(SurveyStatus).map((status) => (

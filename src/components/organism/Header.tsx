@@ -1,6 +1,8 @@
 'use client';
 
 import { useAuthStore } from '@/store/auth.store';
+import mutationKeys from '@/store/lib/mutation-key';
+import { logout } from '@api/auth/logout';
 import { BRAND_NAME } from '@common/variables';
 import ActionButton from '@components/atom/ActionButton';
 import CommonText from '@components/atom/CommonText';
@@ -9,12 +11,17 @@ import Notification from '@components/molecular/Notification';
 import UserOrganizationSelect from '@components/molecular/UserOrganizationSelect';
 import { useScroll } from '@hooks/useScroll';
 import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded';
-import { Avatar, Menu, MenuItem, Stack, Toolbar, Tooltip, Typography, useTheme } from '@mui/material';
-import { useEffect, useRef, useState } from 'react';
+import MenuOutlinedIcon from '@mui/icons-material/MenuOutlined';
+import { Avatar, IconButton, Menu, MenuItem, Stack, Toolbar, Tooltip, Typography, useTheme } from '@mui/material';
+import { useMutation } from '@tanstack/react-query';
+import { detectUserDevice, DeviceType } from '@util/detectUserDevice';
+import { usePathname } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
 
 interface HeaderProps {}
 const Header: React.FC<HeaderProps> = () => {
   const theme = useTheme();
+  const pathname = usePathname();
   const { y } = useScroll();
   const [shadow, setShadow] = useState(false);
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
@@ -36,19 +43,36 @@ const Header: React.FC<HeaderProps> = () => {
     },
   ]);
   const [menus, setMenus] = useState<MenuOption[]>([{ label: 'Login', to: '/auth/login' }]);
+  const [anchorElMenu, setAnchorElMenu] = useState<null | HTMLElement>(null);
+  const isMobile = detectUserDevice() === DeviceType.Mobile;
+  const { mutate: logoutMutation } = useMutation({
+    mutationKey: mutationKeys.user.logout(),
+    mutationFn: logout,
+    onSuccess: () => {
+      router.push(`/auth/login?redirect=${encodeURIComponent(pathname)}&action=view`);
+    },
+  });
 
   useEffect(() => {
     setCommonMenus(
       user
         ? [
-            {
-              label: 'Nuvia란?',
-              to: '/about',
-            },
+            // {
+            //   label: 'Nuvia란?',
+            //   to: '/about',
+            // },
             // {
             //   label: '커뮤니티',
             //   to: '/community',
             // },
+            {
+              label: '대시보드',
+              to: '/dashboard',
+            },
+            {
+              label: '가격',
+              to: '/pricing',
+            },
           ]
         : [
             // {
@@ -68,15 +92,15 @@ const Header: React.FC<HeaderProps> = () => {
     setMenus(
       user
         ? [
-            { label: 'Profile', to: '/dashboard/user' },
+            { label: '나의 프로필', to: '/dashboard/user' },
             {
-              label: 'Logout',
+              label: '로그아웃',
               request: async () => {
-                await clearUser();
+                logoutMutation();
               },
             },
           ]
-        : [{ label: 'Login', to: '/auth/login' }],
+        : [{ label: '로그인', to: '/auth/login' }],
     );
   }, [user]);
 
@@ -95,6 +119,19 @@ const Header: React.FC<HeaderProps> = () => {
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
   };
+
+  const concatMenus = useMemo(() => {
+    const allMenus = [...commonMenus, ...menus].reduce((acc: MenuOption[], menu) => {
+      if (acc.some((m) => m.label === menu.label)) {
+        return acc;
+      }
+      return [...acc, menu];
+    }, []);
+    if (isMobile) {
+      return allMenus;
+    }
+    return menus;
+  }, [commonMenus, menus, isMobile]);
 
   return (
     <Stack
@@ -132,48 +169,52 @@ const Header: React.FC<HeaderProps> = () => {
               secondaryColor={theme.palette.secondary.main}
               showVersion
             />
-            <Stack direction="row" gap={0.5} justifyContent="flex-start" alignItems="center">
-              {commonMenus.map((menu) => (
-                <MenuItem
-                  key={menu.label}
-                  onClick={() => {
-                    handleCloseUserMenu();
-                    if (menu.request) {
-                      if (menu.to) router.push(menu.to);
-                      menu.request();
-                    } else {
-                      if (menu.to) router.push(menu.to);
-                    }
-                  }}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    px: 1.5,
-                    py: 1,
-                    minHeight: '1rem',
-                    minWidth: '1rem',
-                    borderRadius: '0.5rem',
-                    '&:hover': {
-                      bgcolor: 'transparent',
-                    },
-                  }}
-                >
-                  <Typography sx={{ textAlign: 'center' }}>{menu.label}</Typography>
-                </MenuItem>
-              ))}
-            </Stack>
+            {!isMobile && (
+              <Stack direction="row" gap={0.5} justifyContent="flex-start" alignItems="center">
+                {commonMenus.map((menu) => (
+                  <MenuItem
+                    key={menu.label}
+                    onClick={() => {
+                      handleCloseUserMenu();
+                      if (menu.request) {
+                        if (menu.to) router.push(menu.to);
+                        menu.request();
+                      } else {
+                        if (menu.to) router.push(menu.to);
+                      }
+                    }}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      px: 1.5,
+                      py: 1,
+                      minHeight: '1rem',
+                      minWidth: '1rem',
+                      borderRadius: '0.5rem',
+                      '&:hover': {
+                        bgcolor: 'transparent',
+                      },
+                    }}
+                  >
+                    <Typography sx={{ textAlign: 'center' }}>{menu.label}</Typography>
+                  </MenuItem>
+                ))}
+              </Stack>
+            )}
           </Stack>
 
           <Stack direction="row" alignItems="center" gap={2}>
-            {user && (
-              <Stack direction="row" alignItems="center" gap={2}>
-                {/* 조직 선택 */}
+            <Stack direction="row" alignItems="center" gap={2}>
+              {!isMobile && (
+                // {/* 조직 선택 */}
                 <UserOrganizationSelect />
+              )}
 
-                {/* 알림 아이콘 */}
-                <Notification />
+              {/* 알림 아이콘 */}
+              <Notification />
 
+              {user ? (
                 <Tooltip title="사용자 메뉴">
                   <ActionButton
                     onClick={handleOpenUserMenu}
@@ -192,8 +233,16 @@ const Header: React.FC<HeaderProps> = () => {
                     </CommonText>
                   </ActionButton>
                 </Tooltip>
-              </Stack>
-            )}
+              ) : (
+                isMobile && (
+                  <Tooltip title="사용자 메뉴">
+                    <IconButton onClick={handleOpenUserMenu} size="small" color="primary">
+                      <MenuOutlinedIcon />
+                    </IconButton>
+                  </Tooltip>
+                )
+              )}
+            </Stack>
 
             <Menu
               anchorEl={anchorElUser}
@@ -209,7 +258,7 @@ const Header: React.FC<HeaderProps> = () => {
               open={Boolean(anchorElUser)}
               onClose={handleCloseUserMenu}
             >
-              {menus.map((menu) => (
+              {concatMenus.map((menu) => (
                 <MenuItem
                   key={menu.label}
                   onClick={() => {

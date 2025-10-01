@@ -11,10 +11,11 @@ import GroupOutlinedIcon from '@mui/icons-material/GroupOutlined';
 import MenuOpenIcon from '@mui/icons-material/MenuOpen';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard';
-import { Divider, IconButton, Stack, Tooltip } from '@mui/material';
+import { Box, Divider, IconButton, Stack, Tooltip } from '@mui/material';
 import { SubscriptionTargetType } from '@share/enums/subscription-target-type';
 import { UserRole } from '@share/enums/user-role';
 import { useQuery } from '@tanstack/react-query';
+import { detectUserDevice, DeviceType } from '@util/detectUserDevice';
 import { LocalizationManager } from '@util/LocalizationManager';
 import { roleAtLeast } from '@util/roleAtLeast';
 import { useContext, useMemo, useState } from 'react';
@@ -23,8 +24,9 @@ import UserCard from './UserCard';
 
 interface SidebarProps {}
 const Sidebar: React.FC<SidebarProps> = () => {
+  const isMobile = detectUserDevice() === DeviceType.Mobile;
   const user = useAuthStore((state) => state.user);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(isMobile);
   const { data } = useQuery({
     queryKey: queryKeys.organization.list(),
     queryFn: getUserOrganizations,
@@ -106,58 +108,61 @@ const Sidebar: React.FC<SidebarProps> = () => {
   }
 
   return (
-    <Stack
-      width="100%"
-      minWidth={isCollapsed ? 80 : 250}
-      maxWidth={isCollapsed ? 80 : 250}
-      height="100%"
-      bgcolor="background.paper"
-      gap={5}
-      sx={{
-        py: 5,
-        borderRightWidth: 1,
-        borderRightColor: (theme) => theme.palette.divider,
-        borderRightStyle: 'solid',
-        transition: 'all 0.3s ease',
-        position: 'relative',
-        overflowX: 'hidden',
-      }}
-    >
-      <Stack px={2}>
-        <Stack direction="row" justifyContent={isCollapsed ? 'center' : 'flex-end'} alignItems="center" flexWrap="wrap" gap={2} mb={2}>
-          {/* 접기/펼치기 토글 버튼 */}
-          <Tooltip title={isCollapsed ? '사이드바 펼치기' : '사이드바 접기'} placement="right" arrow>
-            <IconButton
-              onClick={toggleCollapse}
-              size="small"
-              sx={{
-                p: 0.5,
-                color: 'text.secondary',
-                '&:hover': {
-                  backgroundColor: 'action.hover',
-                },
-              }}
-            >
-              {isCollapsed ? <MenuOpenIcon sx={{ rotate: '180deg' }} /> : <MenuOpenIcon />}
-            </IconButton>
-          </Tooltip>
+    <Box sx={{ width: '100%', maxWidth: isMobile ? 80 : isCollapsed ? 80 : 250, transition: 'all 0.3s ease' }}>
+      <Stack
+        width="100%"
+        minWidth={isCollapsed ? 80 : 250}
+        maxWidth={isCollapsed ? 80 : 250}
+        height="100%"
+        bgcolor="background.paper"
+        gap={5}
+        sx={{
+          py: 5,
+          borderRightWidth: 1,
+          borderRightColor: (theme) => theme.palette.divider,
+          borderRightStyle: 'solid',
+          transition: 'all 0.3s ease',
+          position: 'relative',
+          overflowX: 'hidden',
+          zIndex: 999,
+        }}
+      >
+        <Stack px={2}>
+          <Stack direction="row" justifyContent={isCollapsed ? 'center' : 'flex-end'} alignItems="center" flexWrap="wrap" gap={2} mb={2}>
+            {/* 접기/펼치기 토글 버튼 */}
+            <Tooltip title={isCollapsed ? '사이드바 펼치기' : '사이드바 접기'} placement="right" arrow>
+              <IconButton
+                onClick={toggleCollapse}
+                size="small"
+                sx={{
+                  p: 0.5,
+                  color: 'text.secondary',
+                  '&:hover': {
+                    backgroundColor: 'action.hover',
+                  },
+                }}
+              >
+                {isCollapsed ? <MenuOpenIcon sx={{ rotate: '180deg' }} /> : <MenuOpenIcon />}
+              </IconButton>
+            </Tooltip>
+          </Stack>
+
+          {/* 사용자 카드 - 접힌 상태에서는 아이콘만 */}
+          <UserCard
+            name={user?.currentOrganization?.name ?? ''}
+            caption={LocalizationManager.translate(user?.role ?? UserRole.Viewer)}
+            content={user?.nickname ?? ''}
+            nameSize={16}
+            profileImage={user?.profileImageUrl ?? ''}
+          />
         </Stack>
 
-        {/* 사용자 카드 - 접힌 상태에서는 아이콘만 */}
-        <UserCard
-          name={user?.currentOrganization?.name ?? ''}
-          caption={LocalizationManager.translate(user?.role ?? UserRole.Viewer)}
-          content={user?.nickname ?? ''}
-          nameSize={16}
-          profileImage={user?.profileImageUrl ?? ''}
-        />
+        <Divider />
+
+        {/* 메뉴 리스트 - 접힌 상태에서는 아이콘만 */}
+        <SidebarMenuList menus={menus} isCollapsed={isCollapsed} />
       </Stack>
-
-      <Divider />
-
-      {/* 메뉴 리스트 - 접힌 상태에서는 아이콘만 */}
-      <SidebarMenuList menus={menus} isCollapsed={isCollapsed} />
-    </Stack>
+    </Box>
   );
 };
 

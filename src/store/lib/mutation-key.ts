@@ -10,6 +10,7 @@ const mutationKeys = {
     getCsrfToken: () => ['auth', 'getCsrfToken'] as const,
   },
   user: {
+    logout: () => ['user', 'logout'] as const,
     login: () => ['user', 'login'] as const,
     settings: () => ['user', 'settings'] as const,
     forgotPassword: () => ['user', 'forgotPassword'] as const,
