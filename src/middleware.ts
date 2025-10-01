@@ -87,12 +87,15 @@ async function getRefreshToken(req: NextRequest) {
 
 export async function middleware(req: NextRequest, res: NextResponse) {
   const { pathname } = req.nextUrl;
+  console.log('🚀 ~ middleware ~ pathname:', pathname);
   const url = req.nextUrl.clone();
   const cookieStore = await cookies();
 
   // 세션 쿠키(예: 'session' 또는 'access_token') 존재 여부만 빠르게 체크
   const session = cookieStore.get('session')?.value;
+  console.log('🚀 ~ middleware ~ session:', session);
   const refreshToken = cookieStore.get('refresh_token')?.value;
+  console.log('🚀 ~ middleware ~ refreshToken:', refreshToken);
   const redirect = url.pathname;
 
   if (!session && !refreshToken) {
