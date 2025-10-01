@@ -41,7 +41,7 @@ const Login: React.FC<LoginProps> = (/* { searchParams } */) => {
   const reason = searchParams.get('reason');
   const router = useAuthStore((state) => state.router)!;
   const addNotice = useAuthStore((state) => state.addNotice)!;
-  const getUser = useAuthStore((state) => state.actions.getUser);
+  const user = useAuthStore((state) => state.user);
   const fetchUser = useAuthStore((state) => state.actions.fetchUser);
   const mainUrl = useAuthStore((state) => state.mainUrl);
   const { mutate: loginMutation } = useMutation({
@@ -51,18 +51,6 @@ const Login: React.FC<LoginProps> = (/* { searchParams } */) => {
       formik.setSubmitting(false);
 
       await fetchUser();
-      const user = getUser();
-      if (user) {
-        if (action === 'invitation' && redirect && token) {
-          router.push(`${redirect}?q=${token}`);
-        } else if (action === 'view' && redirect) {
-          router.push(redirect);
-        } else {
-          router.push(mainUrl);
-        }
-      } else {
-        router.push('/auth/login');
-      }
 
       localStorage.removeItem('nq');
 
@@ -98,6 +86,21 @@ const Login: React.FC<LoginProps> = (/* { searchParams } */) => {
       loginMutation(values);
     },
   });
+
+  useEffect(() => {
+    if (formik.isSubmitting) return;
+    if (formik.status === 'success') {
+      if (user) {
+        if (action === 'invitation' && redirect && token) {
+          router.push(`${redirect}?q=${token}`);
+        } else if (action === 'view' && redirect) {
+          router.push(redirect);
+        } else {
+          router.push(mainUrl);
+        }
+      }
+    }
+  }, [user, action, redirect, token, mainUrl, router, formik.isSubmitting, formik.status]);
 
   useEffect(() => {
     const nq = localStorage.getItem('nq');

@@ -7,6 +7,7 @@ const mutationKeys = {
   },
   auth: {
     refreshJws: () => ['auth', 'refreshJws'] as const,
+    getCsrfToken: () => ['auth', 'getCsrfToken'] as const,
   },
   user: {
     login: () => ['user', 'login'] as const,

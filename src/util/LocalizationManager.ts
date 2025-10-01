@@ -1,6 +1,7 @@
 import { MetadataStatusType } from '@share/enums/metadata-status-type';
 import { NotificationActionStatus } from '@share/enums/notification-action-status';
 import { OrganizationRoleStatusType } from '@share/enums/organization-role-status-type';
+import { PlanNameType } from '@share/enums/plan-name-type.enum';
 import { SurveyStatus } from '@share/enums/survey-status';
 import { UserRole } from '@share/enums/user-role';
 
@@ -19,6 +20,9 @@ export const TRANSLATE_TOKEN = {
   [MetadataStatusType.SurveyList]: '설문 목록',
   ['notification.' + NotificationActionStatus.Joined]: '초대됨',
   ['notification.' + NotificationActionStatus.Rejected]: '거절',
+  [PlanNameType.Free]: '무료',
+  [PlanNameType.Basic]: '기본',
+  [PlanNameType.Premium]: '프리미엄',
 } as const;
 export type TRANSLATE_TOKEN = (typeof TRANSLATE_TOKEN)[keyof typeof TRANSLATE_TOKEN];
 

@@ -10,7 +10,7 @@ import UserOrganizationSelect from '@components/molecular/UserOrganizationSelect
 import { useScroll } from '@hooks/useScroll';
 import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded';
 import { Avatar, Menu, MenuItem, Stack, Toolbar, Tooltip, Typography, useTheme } from '@mui/material';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface HeaderProps {}
 const Header: React.FC<HeaderProps> = () => {
@@ -22,9 +22,13 @@ const Header: React.FC<HeaderProps> = () => {
   const router = useAuthStore((state) => state.router)!;
   const clearUser = useAuthStore((state) => state.actions.clearUser);
   const [commonMenus, setCommonMenus] = useState<MenuOption[]>([
+    // {
+    //   label: 'Nuvia란?',
+    //   to: '/about',
+    // },
     {
-      label: 'Nuvia란?',
-      to: '/about',
+      label: '가격',
+      to: '/pricing',
     },
     {
       label: '로그인',
@@ -47,9 +51,13 @@ const Header: React.FC<HeaderProps> = () => {
             // },
           ]
         : [
+            // {
+            //   label: 'Nuvia란?',
+            //   to: '/about',
+            // },
             {
-              label: 'Nuvia란?',
-              to: '/about',
+              label: '가격',
+              to: '/pricing',
             },
             {
               label: '로그인',
@@ -89,19 +97,16 @@ const Header: React.FC<HeaderProps> = () => {
   };
 
   return (
-    <Stack>
-      {shadow && <Toolbar />}
-      <Stack
-        direction="row"
-        alignItems="center"
-        justifyContent="center"
-        sx={{
-          position: shadow ? 'fixed' : 'static',
-          width: '100%',
-          top: 0,
-          zIndex: 1000,
-        }}
-      >
+    <Stack
+      sx={{
+        position: 'sticky',
+        width: '100%',
+        top: shadow ? 4 : 0,
+        zIndex: 1000,
+      }}
+    >
+      {/* <Toolbar /> */}
+      <Stack direction="row" alignItems="center" justifyContent="center">
         <Toolbar
           sx={{
             display: 'flex',
@@ -111,12 +116,11 @@ const Header: React.FC<HeaderProps> = () => {
             gap: 2,
             transition: '0.3s ease-in-out',
             backgroundColor: theme.palette.background.paper,
-            borderRadius: '0.5rem',
+            borderRadius: shadow ? '0.5rem' : 0,
             boxShadow: shadow ? '0 0.3rem 1rem -0.5rem #56565656, 0 0.3rem 1rem -0.3rem #56565656' : 'none',
-            maxWidth: shadow ? '98%' : '100%',
+            maxWidth: shadow ? '99.5%' : '100%',
             py: 1,
             px: 2,
-            my: shadow ? 1 : 0,
           }}
         >
           <Stack direction="row" alignItems="center" gap={3.5}>
@@ -126,6 +130,7 @@ const Header: React.FC<HeaderProps> = () => {
               height={45}
               primaryColor={theme.palette.primary.main}
               secondaryColor={theme.palette.secondary.main}
+              showVersion
             />
             <Stack direction="row" gap={0.5} justifyContent="flex-start" alignItems="center">
               {commonMenus.map((menu) => (

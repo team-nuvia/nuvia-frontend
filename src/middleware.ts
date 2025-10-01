@@ -24,6 +24,13 @@ async function setCookies(result: AxiosResponse) {
   }
 }
 
+async function clearCookie() {
+  const cookieStore = await cookies();
+  cookieStore.delete('session');
+  cookieStore.delete('access_token');
+  cookieStore.delete('refresh_token');
+}
+
 async function forceLogout(url: URL) {
   try {
     const result = await axios.post(`${API_URL}/auth/logout`, undefined, {
@@ -37,8 +44,8 @@ async function forceLogout(url: URL) {
     }
     url.pathname = '/auth/login';
     return NextResponse.redirect(url);
-  } catch (error) {
-    console.log('🚀 ~ forceLogout ~ error:', error);
+  } catch (error: any) {
+    console.log('🚀 ~ forceLogout ~ error:', error.message);
     const cookieStore = await cookies();
     cookieStore.delete('session');
     cookieStore.delete('access_token');
@@ -60,8 +67,8 @@ async function verifySession(req: NextRequest, res: NextResponse, url: URL): Pro
       },
     });
     return response.data.payload;
-  } catch (error) {
-    console.log('🚀 ~ verifySession ~ error:', error);
+  } catch (error: any) {
+    console.log('🚀 ~ verifySession ~ error:', error.message);
     if (error instanceof Error && error.message?.includes('Network Error')) {
       return 'SERVER_ERROR';
     }
@@ -80,8 +87,8 @@ async function getRefreshToken(req: NextRequest) {
     });
     await setCookies(response);
     return response.data.payload;
-  } catch (error) {
-    console.log('🚀 ~ getRefreshToken ~ error:', error);
+  } catch (error: any) {
+    console.log('🚀 ~ getRefreshToken ~ error:', error.message);
     if (error instanceof Error && error.message?.includes('Network Error')) {
       throw new Error('SERVER_ERROR');
     }
@@ -124,6 +131,7 @@ export async function middleware(req: NextRequest, res: NextResponse) {
         url.search = `redirect=${encodeURIComponent(redirect)}&action=view&reason=server_error`;
       }
       url.pathname = '/auth/login';
+      await clearCookie();
       return NextResponse.redirect(url);
     }
 
@@ -137,21 +145,22 @@ export async function middleware(req: NextRequest, res: NextResponse) {
       return NextResponse.redirect(url);
     }
   } catch (error: any) {
-    console.log('🚀 ~ middleware ~ error:', error);
+    console.log('🚀 ~ middleware ~ error:', error.message);
     verifiedSessionStatus = error.response?.status;
   }
 
   if (verifiedSessionStatus !== null) {
     try {
       await getRefreshToken(req);
-    } catch (error) {
-      console.log('🚀 ~ middleware ~ error:', error);
+    } catch (error: any) {
+      console.log('🚀 ~ middleware ~ error:', error.message);
       if (error instanceof Error && error.message === 'SERVER_ERROR') {
         // 서버 연결 실패 시 로그인 페이지로 리다이렉트
         if (!url.pathname.startsWith('/auth/login')) {
           url.search = `redirect=${encodeURIComponent(redirect)}&action=view&reason=server_error`;
         }
         url.pathname = '/auth/login';
+        await clearCookie();
         return NextResponse.redirect(url);
       }
 

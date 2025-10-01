@@ -20,11 +20,11 @@ export default function FeaturesSection() {
     },
     {
       icon: <LockOpen sx={{ fontSize: 40 }} />,
-      title: '무장벽 참여 시스템',
-      description: '회원가입, 로그인 없이 누구나 쉽게 참여할 수 있는 설문 환경을 제공해요',
-      details: ['비회원 즉시 참여', '소셜 로그인 옵션', '익명 응답 보장'],
+      title: '조직 협업 설문 제작',
+      description: '여러 명이 한 조직 단위로 설문을 함께 생성하고 실시간으로 수정할 수 있어요',
+      details: ['조직별 설문 관리', '공동 편집 및 실시간 동기화', '권한 기반 접근 제어'],
       color: theme.palette.success.main,
-      badge: '인기',
+      badge: '협업',
     },
     {
       icon: <Timer sx={{ fontSize: 40 }} />,

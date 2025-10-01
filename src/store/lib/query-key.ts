@@ -31,6 +31,9 @@ const queryKeys = {
   graph: {
     dailyResponseCount: () => ['daily-response-count'] as const,
   },
+  plan: {
+    list: () => ['plan', 'list'] as const,
+  },
 };
 
 export default queryKeys;

@@ -39,7 +39,7 @@ export function useScroll(options: UseScrollOptions = {}): ScrollState {
   const recalc = () => {
     if (typeof window === 'undefined') return;
 
-    const el = targetRef?.current;
+    const el = targetRef?.current || document.getElementById('wrap');
     if (el) {
       sizeRef.current.scrollW = el.scrollWidth;
       sizeRef.current.scrollH = el.scrollHeight;
@@ -57,7 +57,7 @@ export function useScroll(options: UseScrollOptions = {}): ScrollState {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    const el = targetRef?.current;
+    const el = targetRef?.current || document.getElementById('wrap');
     const scrollTarget: HTMLElement | Window = el ?? window;
 
     const measure = () => {

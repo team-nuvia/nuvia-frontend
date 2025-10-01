@@ -94,11 +94,11 @@ export default function SolutionSection() {
           >
             <CheckCircle sx={{ color: theme.palette.success.main }} />
             <Typography variant="body1" sx={{ fontWeight: 600 }}>
-              평균 응답률 85% 달성
+              누구나 쉽게 설문 제작 가능
             </Typography>
             <CheckCircle sx={{ color: theme.palette.success.main }} />
             <Typography variant="body1" sx={{ fontWeight: 600 }}>
-              제작 시간 90% 단축
+              설문 제작 소요 시간 90% 절감
             </Typography>
           </Box>
         </Box>
@@ -111,7 +111,7 @@ export default function SolutionSection() {
                   height: '100%',
                   p: 4,
                   borderRadius: 4,
-                  background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, #f8fafc 100%)`,
+                  background: `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.background.paper} 100%)`,
                   border: `2px solid transparent`,
                   backgroundClip: 'padding-box',
                   position: 'relative',

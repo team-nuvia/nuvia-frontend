@@ -1,6 +1,10 @@
-import { snapApi } from "@/api";
+import { snapApi } from '@/api';
 
-export const sendPasswordResetEmail = async (email: string) => {
-  const response = await snapApi.post('/auth/send-password-reset-email', { email });
+interface SendPasswordResetTokenData {
+  token: string;
+}
+
+export const sendPasswordResetEmail = async (email: string, csrfToken: string): Promise<ServerResponse<SendPasswordResetTokenData>> => {
+  const response = await snapApi.post('/auth/reset-password/send', { email, token: csrfToken });
   return response.data;
 };

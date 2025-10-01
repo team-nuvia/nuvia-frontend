@@ -11,26 +11,26 @@ export default function ProblemSection() {
 
   const problems = [
     {
-      icon: <AccessTime sx={{ fontSize: 32, color: theme.palette.error.main }} />,
-      title: '설문 제작에 30분 이상 소요',
-      description: '복잡한 인터페이스로 인한 시간 낭비',
+      icon: <AccessTime sx={{ fontSize: 32, color: theme.palette.primary.main }} />,
+      title: '설문 제작, 무료로 간편하게',
+      description: '누비아에서는 별도의 비용 없이 쉽고 빠르게 설문을 만들 수 있습니다.',
     },
     {
-      icon: <ErrorOutline sx={{ fontSize: 32, color: theme.palette.error.main }} />,
-      title: '응답률 평균 15% 미만',
-      description: '번거로운 가입 절차로 인한 이탈',
+      icon: <ErrorOutline sx={{ fontSize: 32, color: theme.palette.primary.main }} />,
+      title: '강력한 데이터 분석',
+      description: '설문 결과를 자동으로 시각화하고, 인사이트를 쉽게 확인할 수 있습니다.',
     },
     {
-      icon: <TrendingDown sx={{ fontSize: 32, color: theme.palette.error.main }} />,
-      title: '데이터 분석의 어려움',
-      description: '결과 해석을 위한 추가 작업 필요',
+      icon: <TrendingDown sx={{ fontSize: 32, color: theme.palette.primary.main }} />,
+      title: '복잡한 과정 없이 바로 시작',
+      description: '회원가입만 하면 즉시 설문 생성과 데이터 분석이 가능합니다.',
     },
   ];
 
   return (
     <Box
       sx={{
-        background: `linear-gradient(135deg, ${theme.palette.background.default} 0%, #e2e8f0 100%)`,
+        background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.background.default} 100%)`,
         py: { xs: 10, md: 16 },
         position: 'relative',
         overflow: 'hidden',
@@ -122,7 +122,7 @@ export default function ProblemSection() {
                     p: 4,
                     height: '100%',
                     textAlign: 'center',
-                    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                    backgroundColor: theme.palette.background.paper + '72',
                     backdropFilter: 'blur(10px)',
                     border: `1px solid ${theme.palette.divider}`,
                     borderRadius: 3,

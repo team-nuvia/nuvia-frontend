@@ -65,12 +65,12 @@ export const AxiosProvider = ({ children }: { children: React.ReactNode }) => {
         }
 
         if (error.response) {
-          if (!error.response.data || error.response.status === 404) {
+          if (!error.response.data || error.response.message === 'NotFoundUserExceptionDto') {
             return processLogout(error);
           }
 
           if (error.response.status === 401) {
-            // console.log('🔥 401이잖아?', error.response.data);
+            console.log('🔥 401이잖아?', error.response.data);
 
             if (['ExpiredTokenExceptionDto', 'UnauthorizedException'].includes(error.response.data.name)) {
               if (maxRetryCount.current < MAX_RETRY_COUNT) {
