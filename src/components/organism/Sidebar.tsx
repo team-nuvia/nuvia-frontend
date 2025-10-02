@@ -11,20 +11,21 @@ import GroupOutlinedIcon from '@mui/icons-material/GroupOutlined';
 import MenuOpenIcon from '@mui/icons-material/MenuOpen';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard';
-import { Box, Divider, IconButton, Stack, Tooltip } from '@mui/material';
+import { Box, Divider, IconButton, Stack, Tooltip, useMediaQuery, useTheme } from '@mui/material';
 import { SubscriptionTargetType } from '@share/enums/subscription-target-type';
 import { UserRole } from '@share/enums/user-role';
 import { useQuery } from '@tanstack/react-query';
-import { detectUserDevice, DeviceType } from '@util/detectUserDevice';
 import { LocalizationManager } from '@util/LocalizationManager';
 import { roleAtLeast } from '@util/roleAtLeast';
 import { useContext, useMemo, useState } from 'react';
 import InviteDialog from '../template/teams/InviteDialog';
+import SidebarMobile from './SidebarMobile';
 import UserCard from './UserCard';
 
 interface SidebarProps {}
 const Sidebar: React.FC<SidebarProps> = () => {
-  const isMobile = detectUserDevice() === DeviceType.Mobile;
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const user = useAuthStore((state) => state.user);
   const [isCollapsed, setIsCollapsed] = useState(isMobile);
   const { data } = useQuery({
@@ -107,15 +108,19 @@ const Sidebar: React.FC<SidebarProps> = () => {
     return null;
   }
 
+  if (isMobile) {
+    return <SidebarMobile menus={menus} />;
+  }
+
   return (
-    <Box sx={{ width: '100%', maxWidth: isMobile ? 80 : isCollapsed ? 80 : 250, transition: 'all 0.3s ease' }}>
+    <Box sx={{ width: '100%', maxWidth: isCollapsed ? 80 : 250, transition: 'all 0.3s ease' }}>
       <Stack
         width="100%"
         minWidth={isCollapsed ? 80 : 250}
         maxWidth={isCollapsed ? 80 : 250}
         height="100%"
         bgcolor="background.paper"
-        gap={5}
+        gap={3}
         sx={{
           py: 5,
           borderRightWidth: 1,

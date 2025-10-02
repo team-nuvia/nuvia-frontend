@@ -12,9 +12,8 @@ import UserOrganizationSelect from '@components/molecular/UserOrganizationSelect
 import { useScroll } from '@hooks/useScroll';
 import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded';
 import MenuOutlinedIcon from '@mui/icons-material/MenuOutlined';
-import { Avatar, IconButton, Menu, MenuItem, Stack, Toolbar, Tooltip, Typography, useTheme } from '@mui/material';
+import { Avatar, IconButton, Menu, MenuItem, Stack, Toolbar, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useMutation } from '@tanstack/react-query';
-import { detectUserDevice, DeviceType } from '@util/detectUserDevice';
 import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -27,7 +26,9 @@ const Header: React.FC<HeaderProps> = () => {
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
   const user = useAuthStore((state) => state.user);
   const router = useAuthStore((state) => state.router)!;
-  const clearUser = useAuthStore((state) => state.actions.clearUser);
+  const addNotice = useAuthStore((state) => state.addNotice)!;
+  const setUser = useAuthStore((state) => state.actions.setUser);
+  const setMainUrl = useAuthStore((state) => state.actions.setMainUrl);
   const [commonMenus, setCommonMenus] = useState<MenuOption[]>([
     // {
     //   label: 'Nuvia란?',
@@ -43,15 +44,30 @@ const Header: React.FC<HeaderProps> = () => {
     },
   ]);
   const [menus, setMenus] = useState<MenuOption[]>([{ label: 'Login', to: '/auth/login' }]);
-  const [anchorElMenu, setAnchorElMenu] = useState<null | HTMLElement>(null);
-  const isMobile = detectUserDevice() === DeviceType.Mobile;
-  const { mutate: logoutMutation } = useMutation({
+
+  // MUI의 useMediaQuery 훅을 사용하여 모바일 여부를 판별합니다.
+  // theme.breakpoints.down('sm')는 MUI의 기본 모바일 브레이크포인트입니다.
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const { mutate: logoutMutation, isSuccess } = useMutation({
     mutationKey: mutationKeys.user.logout(),
     mutationFn: logout,
     onSuccess: () => {
-      router.push(`/auth/login?redirect=${encodeURIComponent(pathname)}&action=view`);
+      console.debug('여기!');
+      setUser(null);
+      setMainUrl('/');
     },
   });
+
+  useEffect(() => {
+    if (isSuccess) {
+      console.debug('저기!');
+      if (!pathname.startsWith('/auth/login')) {
+        router?.push(`/auth/login?redirect=${encodeURIComponent(pathname)}&action=view`);
+      }
+      addNotice!('로그아웃 되었습니다.', 'success');
+    }
+  }, [isSuccess, addNotice, pathname, router]);
 
   useEffect(() => {
     setCommonMenus(

@@ -22,6 +22,7 @@ export const TRANSLATE_TOKEN = {
   ['notification.' + NotificationActionStatus.Rejected]: '거절',
   [PlanNameType.Free]: '무료',
   [PlanNameType.Basic]: '기본',
+  [PlanNameType.Pro]: '프로',
   [PlanNameType.Premium]: '프리미엄',
 } as const;
 export type TRANSLATE_TOKEN = (typeof TRANSLATE_TOKEN)[keyof typeof TRANSLATE_TOKEN];

@@ -3,6 +3,7 @@
 import { useAuthStore } from '@/store/auth.store';
 import mutationKeys from '@/store/lib/mutation-key';
 import { login } from '@api/auth/login';
+import { getUsersMe } from '@api/user/get-users-me';
 import { BRAND_NAME } from '@common/variables';
 import CommonText from '@components/atom/CommonText';
 import ActionForm from '@components/molecular/ActionForm';
@@ -42,15 +43,25 @@ const Login: React.FC<LoginProps> = (/* { searchParams } */) => {
   const router = useAuthStore((state) => state.router)!;
   const addNotice = useAuthStore((state) => state.addNotice)!;
   const user = useAuthStore((state) => state.user);
-  const fetchUser = useAuthStore((state) => state.actions.fetchUser);
+  const setUser = useAuthStore((state) => state.actions.setUser);
+  const setMainUrl = useAuthStore((state) => state.actions.setMainUrl);
   const mainUrl = useAuthStore((state) => state.mainUrl);
+  const { mutate: getUsersMeMutation } = useMutation({
+    mutationKey: mutationKeys.user.me(),
+    mutationFn: getUsersMe,
+    onSuccess: (response) => {
+      setUser(response.payload);
+      setMainUrl('/dashboard');
+    },
+  });
+  // TODO: 로그아웃 수정 중 (에러 남)
   const { mutate: loginMutation } = useMutation({
     mutationKey: mutationKeys.user.login(),
     mutationFn: (values: { email: string; password: string }) => login(values.email, values.password),
     onSuccess: async (response) => {
       formik.setSubmitting(false);
 
-      await fetchUser();
+      getUsersMeMutation();
 
       localStorage.removeItem('nq');
 

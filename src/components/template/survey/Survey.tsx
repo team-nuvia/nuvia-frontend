@@ -87,7 +87,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
   const SUBMIT_BUTTON_TEXT = id ? '설문 수정' : '설문 저장';
   const [isPreview, setIsPreview] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { data: categories, isLoading: isCategoriesLoading } = useQuery<ServerResponse<ICategory[]>>({
     queryKey: queryKeys.category.list(),
     queryFn: () => getCategories(),

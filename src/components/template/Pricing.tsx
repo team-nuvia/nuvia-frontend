@@ -167,6 +167,7 @@ const Pricing: React.FC<PricingProps> = () => {
             <Grid size={{ xs: 12, md: 12 / plans.length }} key={plan.id}>
               <Card
                 sx={{
+                  overflow: 'visible',
                   height: '100%',
                   position: 'relative',
                   border: plan.name === PlanNameType.Basic ? `2px solid ${theme.palette.primary.main}` : `1px solid ${theme.palette.divider}`,
@@ -183,7 +184,7 @@ const Pricing: React.FC<PricingProps> = () => {
                   <Box
                     sx={{
                       position: 'absolute',
-                      top: -12,
+                      top: -16.5,
                       left: '50%',
                       transform: 'translateX(-50%)',
                       zIndex: 1,

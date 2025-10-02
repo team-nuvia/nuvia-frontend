@@ -12,6 +12,7 @@ const mutationKeys = {
   user: {
     logout: () => ['user', 'logout'] as const,
     login: () => ['user', 'login'] as const,
+    me: () => ['user', 'me'] as const,
     settings: () => ['user', 'settings'] as const,
     forgotPassword: () => ['user', 'forgotPassword'] as const,
     resetPassword: () => ['user', 'resetPassword'] as const,
