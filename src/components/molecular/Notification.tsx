@@ -38,6 +38,7 @@ const Notification = () => {
   const { data: notifications } = useQuery({
     queryKey: queryKeys.notification.list(),
     queryFn: () => getNotifications({ page, limit, search }),
+    enabled: !!user,
   });
   const { mutate: acceptInvitationMutate } = useMutation({
     mutationFn: ({ subscriptionId, notificationId }: { subscriptionId: number; notificationId: number }) =>

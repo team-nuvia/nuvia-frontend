@@ -35,7 +35,7 @@ const Header: React.FC<HeaderProps> = () => {
     //   to: '/about',
     // },
     {
-      label: '가격',
+      label: '구독하기',
       to: '/pricing',
     },
     {
@@ -49,25 +49,18 @@ const Header: React.FC<HeaderProps> = () => {
   // theme.breakpoints.down('sm')는 MUI의 기본 모바일 브레이크포인트입니다.
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const { mutate: logoutMutation, isSuccess } = useMutation({
+  const { mutate: logoutMutation } = useMutation({
     mutationKey: mutationKeys.user.logout(),
     mutationFn: logout,
     onSuccess: () => {
-      console.debug('여기!');
       setUser(null);
       setMainUrl('/');
-    },
-  });
-
-  useEffect(() => {
-    if (isSuccess) {
-      console.debug('저기!');
       if (!pathname.startsWith('/auth/login')) {
         router?.push(`/auth/login?redirect=${encodeURIComponent(pathname)}&action=view`);
       }
       addNotice!('로그아웃 되었습니다.', 'success');
-    }
-  }, [isSuccess, addNotice, pathname, router]);
+    },
+  });
 
   useEffect(() => {
     setCommonMenus(
@@ -86,7 +79,7 @@ const Header: React.FC<HeaderProps> = () => {
               to: '/dashboard',
             },
             {
-              label: '가격',
+              label: '구독하기',
               to: '/pricing',
             },
           ]
@@ -96,7 +89,7 @@ const Header: React.FC<HeaderProps> = () => {
             //   to: '/about',
             // },
             {
-              label: '가격',
+              label: '구독하기',
               to: '/pricing',
             },
             {

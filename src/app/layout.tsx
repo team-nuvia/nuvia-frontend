@@ -14,6 +14,13 @@ import { ThemeProvider } from '@context/ThemeContext';
 import { CssBaseline, InitColorSchemeScript } from '@mui/material';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import type { Metadata, Viewport } from 'next';
+import { Noto_Sans_KR } from 'next/font/google';
+
+const notoSansKR = Noto_Sans_KR({
+  weight: ['100', '300', '400', '500', '700', '900'],
+  subsets: ['latin'],
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: `${BRAND_NAME} - 빠르고 간편한 설문 플랫폼`,
@@ -46,7 +53,7 @@ export default async function RootLayout({
   const user = await getUserInformation();
   return (
     <html lang="ko" suppressHydrationWarning>
-      <body>
+      <body className={notoSansKR.className}>
         <InitColorSchemeScript defaultMode="system" attribute="class" modeStorageKey="theme-mode" />
         <AppRouterCacheProvider>
           <ThemeProvider>

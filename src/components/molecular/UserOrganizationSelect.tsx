@@ -14,10 +14,12 @@ const UserOrganizationSelect: React.FC = () => {
   const pathname = usePathname();
   const publish = useEventBus((s) => s.publish);
   const { handleOpenDialog } = useContext(GlobalDialogContext);
+  const user = useAuthStore((state) => state.user);
   const fetchUser = useAuthStore((state) => state.actions.fetchUser);
   const { data } = useQuery({
     queryKey: queryKeys.organization.list(),
     queryFn: getUserOrganizations,
+    enabled: !!user,
   });
   const { mutate: updateUserOrganizationMutation } = useMutation({
     mutationFn: ({ organizationId }: { organizationId: number }) => {

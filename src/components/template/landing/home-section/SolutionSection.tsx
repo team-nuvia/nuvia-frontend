@@ -46,7 +46,7 @@ export default function SolutionSection() {
               fontSize: '0.9rem',
               fontWeight: 600,
               backgroundColor: theme.palette.primary.main,
-              color: 'white',
+              color: theme.palette.white.main,
             }}
           />
 
@@ -154,7 +154,7 @@ export default function SolutionSection() {
                     sx={{
                       mb: 2,
                       backgroundColor: theme.palette.success.light,
-                      color: 'white',
+                      color: theme.palette.white.main,
                       fontWeight: 600,
                     }}
                   />

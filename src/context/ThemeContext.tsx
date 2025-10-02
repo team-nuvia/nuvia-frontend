@@ -27,9 +27,10 @@ export const useTheme = () => {
 
 // 시스템 테마 감지 함수
 const getSystemTheme = (): 'light' | 'dark' => {
-  if (typeof window !== 'undefined' && window.matchMedia) {
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
+  // TODO: 시스템 무시하고 light로 적용
+  // if (typeof window !== 'undefined' && window.matchMedia) {
+  //   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  // }
   return 'light';
 };
 
@@ -65,7 +66,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     setMode(storedMode);
     setTheme(effectiveTheme === 'dark' ? darkTheme : lightTheme);
     if (user) {
-      localStorage.setItem(`theme-mode:${user.id}`, storedMode);
+      localStorage.setItem(`theme-mode`, storedMode);
     }
   }, [user]);
 
@@ -78,7 +79,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
         const effectiveTheme = e.matches ? 'dark' : 'light';
         setTheme(effectiveTheme === 'dark' ? darkTheme : lightTheme);
         if (user) {
-          localStorage.setItem(`theme-mode:${user.id}`, effectiveTheme);
+          localStorage.setItem(`theme-mode`, effectiveTheme);
         }
       };
 
@@ -93,7 +94,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     // 로컬스토리지에 저장
     if (typeof window !== 'undefined') {
       if (user) {
-        localStorage.setItem(`theme-mode:${user.id}`, newMode);
+        localStorage.setItem(`theme-mode`, newMode);
       }
     }
 

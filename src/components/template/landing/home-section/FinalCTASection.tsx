@@ -57,7 +57,8 @@ export const FinalCTASection = () => {
                 lineHeight: 1.1,
                 letterSpacing: '-0.02em',
                 mb: 2,
-                textShadow: isDark ? '0 2px 18px rgba(0,0,0,0.6), 0 1px 0 rgba(0,0,0,0.3)' : '0 2px 12px rgba(0,0,0,0.18)',
+                color: isDark ? theme.palette.black.main : theme.palette.white.main,
+                // textShadow: isDark ? '0 2px 18px rgba(0,0,0,0.6), 0 1px 0 rgba(0,0,0,0.3)' : '0 2px 12px rgba(0,0,0,0.18)',
               }}
             >
               설문조사, 이제 더 간단하게
@@ -73,7 +74,8 @@ export const FinalCTASection = () => {
                 fontSize: { xs: '1.125rem', md: '1.25rem' },
                 lineHeight: 1.6,
                 fontWeight: 400,
-                textShadow: isDark ? '0 1px 12px rgba(0,0,0,0.5)' : '0 1px 8px rgba(0,0,0,0.10)',
+                color: isDark ? theme.palette.black.main : theme.palette.white.main,
+                // textShadow: isDark ? '0 1px 12px rgba(0,0,0,0.5)' : '0 1px 8px rgba(0,0,0,0.10)',
               }}
             >
               복잡한 설정 없이 몇 분 만에 전문적인 설문을 만들고, 실시간으로 응답을 확인하세요.
@@ -90,7 +92,8 @@ export const FinalCTASection = () => {
                 opacity: isDark ? 0.9 : 0.8,
                 fontSize: '0.875rem',
                 mt: 2,
-                textShadow: isDark ? '0 1px 10px rgba(0,0,0,0.45)' : undefined,
+                color: isDark ? theme.palette.black.main : theme.palette.white.main,
+                // textShadow: isDark ? '0 1px 10px rgba(0,0,0,0.45)' : undefined,
               }}
             >
               무료로 시작 • 신용카드 불필요 • 언제든 취소 가능

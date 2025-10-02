@@ -4,7 +4,7 @@ import { GetPlansModel } from '@/models/GetPlansModel';
 import queryKeys from '@/store/lib/query-key';
 import { getPlans } from '@api/plan/get-plans';
 import { Check, Star } from '@mui/icons-material';
-import { Box, Button, Card, CardContent, Chip, Container, Grid, Typography, useTheme } from '@mui/material';
+import { Box, Button, Card, CardContent, Chip, Container, Grid, Stack, Typography, useTheme } from '@mui/material';
 import { PlanNameType } from '@share/enums/plan-name-type.enum';
 import { useQuery } from '@tanstack/react-query';
 import { LocalizationManager } from '@util/LocalizationManager';
@@ -71,7 +71,7 @@ const Pricing: React.FC<PricingProps> = () => {
 
   const formatPrice = (price: number) => {
     if (price === 0) return '무료';
-    return `₩${price.toLocaleString()}`;
+    return `₩${Math.floor(price).toLocaleString()}`;
   };
 
   const getPeriodText = (period: 'monthly' | 'yearly') => {
@@ -179,6 +179,7 @@ const Pricing: React.FC<PricingProps> = () => {
                   },
                 }}
               >
+                {/* TODO: 서버에서 구독 데이터 집계 후 인기 판별 데이터 내려주기 */}
                 {/* 인기 배지 */}
                 {plan.name === PlanNameType.Basic && (
                   <Box
@@ -191,11 +192,11 @@ const Pricing: React.FC<PricingProps> = () => {
                     }}
                   >
                     <Chip
-                      icon={<Star sx={{ fontSize: 16 }} />}
+                      icon={<Star sx={{ fontSize: 16 }} color="warning" />}
                       label="가장 인기"
                       sx={{
                         bgcolor: theme.palette.primary.main,
-                        color: 'white',
+                        color: theme.palette.white.main,
                         fontWeight: 600,
                         px: 2,
                       }}
@@ -216,19 +217,46 @@ const Pricing: React.FC<PricingProps> = () => {
 
                   {/* 가격 */}
                   <Box textAlign="center" mb={4}>
+                    {billingPeriod === 'yearly' && plan.price !== 0 && (
+                      <Stack direction="row" alignItems="center" justifyContent="center" gap={1} mb={1}>
+                        <Stack direction="row" alignItems="center" justifyContent="center" gap={1} position="relative" borderRadius="100%">
+                          <Box
+                            position="absolute"
+                            width={60}
+                            height={1}
+                            top="100%"
+                            left="50%"
+                            sx={{
+                              transform: 'translate(-50%, -50%) rotate(-12deg)',
+                              borderTopStyle: 'solid',
+                              borderTopWidth: 2,
+                              borderTopColor: theme.palette.error.main,
+                            }}
+                          />
+                          <Typography variant="caption" fontWeight={700} sx={{ color: theme.palette.black.light }}>
+                            {formatPrice(plan.price * 12)}
+                          </Typography>
+                        </Stack>
+                        <Typography variant="caption" fontWeight={700} sx={{ color: theme.palette.error.light }}>
+                          -20%
+                        </Typography>
+                      </Stack>
+                    )}
+
                     <Typography
-                      variant="h3"
+                      variant="h4"
                       fontWeight={700}
                       sx={{
                         color: plan.name === PlanNameType.Free ? theme.palette.success.main : theme.palette.primary.main,
                         mb: 1,
                       }}
                     >
-                      {formatPrice(plan.price)}
+                      {/* TODO: 서버에서 연간 할인 적용 및 discount 적용 */}
+                      {formatPrice(billingPeriod === 'monthly' ? plan.price : plan.price * 12 * 0.8)}
                     </Typography>
                     {plan.name !== PlanNameType.Free && (
                       <Typography variant="body2" color="text.secondary">
-                        {getPeriodText(plan.period)}
+                        {getPeriodText(billingPeriod === 'monthly' ? plan.period : 'yearly')}
                       </Typography>
                     )}
                   </Box>
@@ -290,9 +318,9 @@ const Pricing: React.FC<PricingProps> = () => {
 
         {/* 하단 안내 문구 */}
         <Box textAlign="center" mt={8}>
-          <Typography variant="body2" color="text.secondary" mb={2}>
+          {/* <Typography variant="body2" color="text.secondary" mb={2}>
             모든 플랜에는 14일 무료 체험이 포함됩니다
-          </Typography>
+          </Typography> */}
           <Typography variant="body2" color="text.secondary">
             추가 질문이 있으시면{' '}
             <Typography

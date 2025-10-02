@@ -1,5 +1,6 @@
 import NuviaLogo from '@/assets/NuviaLogo';
 import { VERSION } from '@common/variables';
+import CommonText from '@components/atom/CommonText';
 import LinkText from '@components/atom/LinkText';
 import { Stack, SvgIcon, Typography } from '@mui/material';
 import { useMemo } from 'react';
@@ -17,9 +18,10 @@ const BrandHead: React.FC<BrandHeadProps> = ({ title, width, height, primaryColo
   const memoizeRoute = useMemo(() => {
     if (noRoute) {
       return (
-        <Typography
+        <CommonText
           variant="h5"
           thickness="bold"
+          gutterBottom
           color="text.primary"
           fontFamily="Noto Sans KR"
           sx={{
@@ -30,8 +32,8 @@ const BrandHead: React.FC<BrandHeadProps> = ({ title, width, height, primaryColo
             WebkitTextFillColor: 'transparent',
           }}
         >
-          {title}
-        </Typography>
+          {title}2
+        </CommonText>
       );
     }
     return (

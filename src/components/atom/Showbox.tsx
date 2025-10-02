@@ -15,7 +15,7 @@ const Showbox = ({
   ...props
 }: ShowboxProps & StackProps) => {
   const { ref, inView } = useInView({
-    threshold: 0.5,
+    threshold: 0.3,
     triggerOnce: true,
   });
 
