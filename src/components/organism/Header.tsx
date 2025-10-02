@@ -176,7 +176,6 @@ const Header: React.FC<HeaderProps> = () => {
               height={45}
               primaryColor={theme.palette.primary.main}
               secondaryColor={theme.palette.secondary.main}
-              showVersion
             />
             {!isMobile && (
               <Stack direction="row" gap={0.5} justifyContent="flex-start" alignItems="center">

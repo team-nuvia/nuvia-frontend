@@ -1,8 +1,7 @@
 import NuviaLogo from '@/assets/NuviaLogo';
-import { VERSION } from '@common/variables';
 import CommonText from '@components/atom/CommonText';
 import LinkText from '@components/atom/LinkText';
-import { Stack, SvgIcon, Typography } from '@mui/material';
+import { Stack, SvgIcon } from '@mui/material';
 import { useMemo } from 'react';
 
 interface BrandHeadProps {
@@ -12,9 +11,8 @@ interface BrandHeadProps {
   primaryColor: string;
   secondaryColor: string;
   noRoute?: boolean;
-  showVersion?: boolean;
 }
-const BrandHead: React.FC<BrandHeadProps> = ({ title, width, height, primaryColor, secondaryColor, noRoute = false, showVersion = false }) => {
+const BrandHead: React.FC<BrandHeadProps> = ({ title, width, height, primaryColor, secondaryColor, noRoute = false }) => {
   const memoizeRoute = useMemo(() => {
     if (noRoute) {
       return (
@@ -32,7 +30,7 @@ const BrandHead: React.FC<BrandHeadProps> = ({ title, width, height, primaryColo
             WebkitTextFillColor: 'transparent',
           }}
         >
-          {title}2
+          {title}
         </CommonText>
       );
     }
@@ -69,11 +67,6 @@ const BrandHead: React.FC<BrandHeadProps> = ({ title, width, height, primaryColo
       </SvgIcon>
       <Stack direction="row" alignItems="flex-end" gap={1}>
         {memoizeRoute}
-        {showVersion && VERSION.match(/alpha|beta/g) && (
-          <Typography color="text.secondary" fontSize="0.65rem">
-            {VERSION}
-          </Typography>
-        )}
       </Stack>
     </Stack>
   );
