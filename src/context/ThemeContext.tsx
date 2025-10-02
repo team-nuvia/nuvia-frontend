@@ -31,7 +31,7 @@ const getSystemTheme = (): 'light' | 'dark' => {
   // if (typeof window !== 'undefined' && window.matchMedia) {
   //   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   // }
-  return 'dark';
+  return 'light';
 };
 
 // 로컬스토리지에서 테마 설정 가져오기
