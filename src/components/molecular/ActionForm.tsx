@@ -30,63 +30,30 @@ const ActionForm: React.FC<ActionFormProps> = ({ title, onSubmit, submitText, sl
     }
   }, []);
 
+  const handleClick = useCallback(
+    (provider: SocialProvider) => {
+      const url = new URL(`${API_URL}/auth/login/${provider}`);
+      url.searchParams.set('accessDevice', detectUserDevice());
+      url.searchParams.set('accessBrowser', detectBrowser());
+      url.searchParams.set('accessUserAgent', navigator.userAgent);
+      url.searchParams.set('accessUserAgent', navigator.userAgent);
+      window.location.href = url.toString();
+      localStorage.setItem('nq', window.location.search);
+    },
+    [router],
+  );
+
   const getLoginButton = useCallback((provider: SocialProvider) => {
     switch (provider) {
       case SocialProvider.Google:
-        return (
-          <GoogleLoginButton
-            key={provider}
-            size="xlarge"
-            variant="contained"
-            fullWidth
-            type="button"
-            onClick={() => {
-              const url = new URL(`${API_URL}/auth/login/${provider}`);
-              url.searchParams.set('accessDevice', detectUserDevice());
-              url.searchParams.set('accessBrowser', detectBrowser());
-              url.searchParams.set('accessUserAgent', navigator.userAgent);
-              window.location.href = url.toString();
-              localStorage.setItem('nq', window.location.search);
-            }}
-          />
-        );
+        return <GoogleLoginButton key={provider} size="xlarge" variant="contained" fullWidth type="button" onClick={() => handleClick(provider)} />;
 
       case SocialProvider.Kakao:
-        return (
-          <KakaoLoginButton
-            key={provider}
-            size="xlarge"
-            variant="contained"
-            fullWidth
-            type="button"
-            onClick={() => {
-              const url = new URL(`${API_URL}/auth/login/${provider}`);
-              url.searchParams.set('accessDevice', detectUserDevice());
-              url.searchParams.set('accessBrowser', detectBrowser());
-              url.searchParams.set('accessUserAgent', navigator.userAgent);
-              window.location.href = url.toString();
-              localStorage.setItem('nq', window.location.search);
-            }}
-          />
-        );
+        return <KakaoLoginButton key={provider} size="xlarge" variant="contained" fullWidth type="button" onClick={() => handleClick(provider)} />;
 
       default:
         return (
-          <ActionButton
-            key={provider}
-            size="xlarge"
-            variant="contained"
-            fullWidth
-            type="button"
-            onClick={() => {
-              const url = new URL(`${API_URL}/auth/login/${provider}`);
-              url.searchParams.set('accessDevice', detectUserDevice());
-              url.searchParams.set('accessBrowser', detectBrowser());
-              url.searchParams.set('accessUserAgent', navigator.userAgent);
-              window.location.href = url.toString();
-              localStorage.setItem('nq', window.location.search);
-            }}
-          >
+          <ActionButton key={provider} size="xlarge" variant="contained" fullWidth type="button" onClick={() => handleClick(provider)}>
             {provider.toUpperCase()}
           </ActionButton>
         );

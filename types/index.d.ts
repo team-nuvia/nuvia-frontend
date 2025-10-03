@@ -35,6 +35,7 @@ export declare global {
     label: string;
     to?: string;
     request?: () => Promise<void> | void;
+    prefetch?: string;
   }
 
   type PromiseServerResponse<T> = Promise<ServerResponse<T> | void>;

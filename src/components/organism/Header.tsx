@@ -53,12 +53,13 @@ const Header: React.FC<HeaderProps> = () => {
     mutationKey: mutationKeys.user.logout(),
     mutationFn: logout,
     onSuccess: () => {
+      console.log('logout??');
       setUser(null);
       setMainUrl('/');
+      addNotice!('로그아웃 되었습니다.', 'success');
       if (!pathname.startsWith('/auth/login')) {
         router?.push(`/auth/login?redirect=${encodeURIComponent(pathname)}&action=view`);
       }
-      addNotice!('로그아웃 되었습니다.', 'success');
     },
   });
 
@@ -107,6 +108,7 @@ const Header: React.FC<HeaderProps> = () => {
               request: async () => {
                 logoutMutation();
               },
+              prefetch: '/auth/login',
             },
           ]
         : [{ label: '로그인', to: '/auth/login' }],
@@ -269,6 +271,12 @@ const Header: React.FC<HeaderProps> = () => {
               {concatMenus.map((menu) => (
                 <MenuItem
                   key={menu.label}
+                  {...(menu.prefetch && {
+                    onMouseEnter: () => {
+                      console.log('prefetch?');
+                      router.prefetch(menu.prefetch!);
+                    },
+                  })}
                   onClick={() => {
                     handleCloseUserMenu();
                     if (menu.request) {

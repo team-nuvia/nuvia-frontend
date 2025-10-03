@@ -33,6 +33,10 @@ const UserOrganizationSelect: React.FC = () => {
 
   const { currentOrganization, organizations } = data?.payload ?? { currentOrganization: null, organizations: [] };
 
+  if (!user) {
+    return null;
+  }
+
   return (
     <Stack direction="row" alignItems="center" gap={1}>
       {currentOrganization && (
