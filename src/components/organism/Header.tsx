@@ -49,17 +49,12 @@ const Header: React.FC<HeaderProps> = () => {
   // theme.breakpoints.down('sm')는 MUI의 기본 모바일 브레이크포인트입니다.
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const { mutate: logoutMutation } = useMutation({
+  const { mutate: logoutMutation, isSuccess } = useMutation({
     mutationKey: mutationKeys.user.logout(),
     mutationFn: logout,
     onSuccess: () => {
-      console.log('logout??');
       setUser(null);
       setMainUrl('/');
-      addNotice!('로그아웃 되었습니다.', 'success');
-      if (!pathname.startsWith('/auth/login')) {
-        router?.push(`/auth/login?redirect=${encodeURIComponent(pathname)}&action=view`);
-      }
     },
   });
 
@@ -114,6 +109,17 @@ const Header: React.FC<HeaderProps> = () => {
         : [{ label: '로그인', to: '/auth/login' }],
     );
   }, [user]);
+
+  useEffect(() => {
+    if (isSuccess) {
+      if (!user) {
+        addNotice!('로그아웃 되었습니다.', 'success');
+        if (!pathname.startsWith('/auth/login')) {
+          router?.push(`/auth/login?redirect=${encodeURIComponent(pathname)}&action=view`);
+        }
+      }
+    }
+  }, [isSuccess, user, router, pathname]);
 
   useEffect(() => {
     if (y > 61) {
@@ -273,7 +279,6 @@ const Header: React.FC<HeaderProps> = () => {
                   key={menu.label}
                   {...(menu.prefetch && {
                     onMouseEnter: () => {
-                      console.log('prefetch?');
                       router.prefetch(menu.prefetch!);
                     },
                   })}
