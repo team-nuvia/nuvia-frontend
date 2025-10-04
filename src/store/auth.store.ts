@@ -1,16 +1,15 @@
 'use client';
 
 import { GetMeResponse } from '@/models/GetMeResponse';
-import { getUsersMe } from '@api/user/get-users-me';
 import { getVerify } from '@api/auth/get-verify';
 import { getVerifySession } from '@api/auth/get-verify-session';
 import { logout } from '@api/auth/logout';
-import { AxiosError } from 'axios';
+import { getUsersMe } from '@api/user/get-users-me';
+import { isGuestPath, isMemberPath } from '@util/guard';
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import { VariantType } from 'notistack';
 import { create } from 'zustand';
 import { combine } from 'zustand/middleware';
-import { GUEST_PATHS, isGuestPath, isMemberPath, MEMBER_PATHS } from '@util/guard';
 
 interface AuthStore {
   user: GetMeResponse | null;
@@ -18,14 +17,6 @@ interface AuthStore {
   mainUrl: string;
   router: AppRouterInstance | null;
   addNotice: ((message: string, variant?: VariantType) => void) | null;
-  // setUser: (user: GetMeResponse | null) => void;
-  // setIsUserLoading: (isUserLoading: boolean) => void;
-  // setMainUrl: (mainUrl: string) => void;
-  // clearUser: () => Promise<void>;
-  // verify: () => Promise<void>;
-  // verifySession: () => Promise<void>;
-  // fetchUser: () => Promise<void>;
-  // updateUser: () => Promise<void>;
 }
 
 const initialState: AuthStore = {
@@ -57,7 +48,6 @@ export const useAuthStore = create(
               }
             } else {
               if (isMemberPath(path)) {
-                console.log('여기 아님?', get().addNotice);
                 addNotice('로그인이 필요한 페이지입니다.', 'warning');
                 return;
               }

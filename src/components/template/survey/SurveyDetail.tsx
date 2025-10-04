@@ -13,16 +13,14 @@ import { PlayArrow, QuestionMark, Timer } from '@mui/icons-material';
 import { Box, Card, Chip, Container, Typography, useTheme } from '@mui/material';
 import { QuestionType } from '@share/enums/question-type';
 import { useMutation } from '@tanstack/react-query';
-import { AxiosError } from 'axios';
+import { AxiosError, CanceledError } from 'axios';
 import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
 import { useContext, useLayoutEffect, useMemo, useState } from 'react';
 import ResponseSurvey from '../public/ResponseSurvey';
 import ExpiredAnswer from './ExpiredAnswer';
 
 export default function SurveyDetail({ survey }: { survey: GetSurveyDetailResponse }) {
   const theme = useTheme();
-  const router = useRouter();
   const { addNotice } = useContext(GlobalSnackbarContext);
   const { endLoading, startLoading } = useContext(LoadingContext);
   const [isFirstAnswer, setIsFirstAnswer] = useState<boolean | null>(null);
@@ -40,6 +38,9 @@ export default function SurveyDetail({ survey }: { survey: GetSurveyDetailRespon
       }
     },
     onError: (error: AxiosError<ServerResponse<void>>) => {
+      if (error instanceof CanceledError) {
+        return;
+      }
       if (error.response?.status === 400) {
         switch (error.response?.data.name) {
           // jws 잘못된 토큰 (처음부터 시작)
@@ -82,6 +83,9 @@ export default function SurveyDetail({ survey }: { survey: GetSurveyDetailRespon
       validateFirstAnswerMutation();
     },
     onError: (error: AxiosError<ServerResponse<void>>) => {
+      if (error instanceof CanceledError) {
+        return;
+      }
       if (error.response?.status === 404) {
         addNotice('존재하지 않는 설문입니다.', 'error');
       } else {

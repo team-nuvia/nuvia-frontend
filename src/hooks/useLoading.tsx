@@ -24,19 +24,19 @@ export const useLoading = () => {
     endLoading();
   }, [isMounted, isUserLoading]);
 
-  useEffect(() => {
-    if (!router) return;
+  // useEffect(() => {
+  //   if (!router) return;
 
-    if (user) {
-      if (isGuestPath(pathname)) {
-        endLoading();
-        router.push('/dashboard');
-      }
-    } else {
-      if (isMemberPath(pathname)) {
-        endLoading();
-        router.push('/auth/login');
-      }
-    }
-  }, [pathname, user, router]);
+  //   if (user) {
+  //     if (isGuestPath(pathname)) {
+  //       endLoading();
+  //       router.push('/dashboard');
+  //     }
+  //   } else {
+  //     if (isMemberPath(pathname)) {
+  //       endLoading();
+  //       router.push('/auth/login');
+  //     }
+  //   }
+  // }, [pathname, user, router]);
 };

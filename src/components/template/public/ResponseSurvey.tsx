@@ -11,25 +11,11 @@ import ResponseCard from '@components/organism/ResponseCard';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import { ArrowBack, ArrowForward, Category, CheckCircle, Person, ThumbUp } from '@mui/icons-material';
 import SaveIcon from '@mui/icons-material/Save';
-import {
-  Alert,
-  Box,
-  Card,
-  CardContent,
-  Chip,
-  CircularProgress,
-  Container,
-  Divider,
-  Fade,
-  Grid,
-  Paper,
-  Stack,
-  Typography,
-  useMediaQuery,
-} from '@mui/material';
+import { Alert, Box, Card, CardContent, Chip, CircularProgress, Container, Divider, Fade, Grid, Paper, Stack, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { TimeIcon } from '@mui/x-date-pickers/icons';
 import { AnswerStatus } from '@share/enums/answer-status';
+import { DataType } from '@share/enums/data-type';
 import { QuestionType } from '@share/enums/question-type';
 import { useMutation } from '@tanstack/react-query';
 import { DateFormat } from '@util/dateFormat';
@@ -40,29 +26,29 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import * as Yup from 'yup';
 
-// --- Start Answer Schema ---
-const AnswerStartSchema = Yup.object().shape({
-  userAgent: Yup.string(),
-  startAt: Yup.date().nullable(),
-});
-const startAnswerInitialValues: StartAnswerInitialValues = {
-  userAgent: '',
-  startAt: new Date(),
-};
+// // --- Start Answer Schema ---
+// const AnswerStartSchema = Yup.object().shape({
+//   userAgent: Yup.string(),
+//   startAt: Yup.date().nullable(),
+// });
+// const startAnswerInitialValues: StartAnswerInitialValues = {
+//   userAgent: '',
+//   startAt: new Date(),
+// };
 
-// --- In progress Answer Schema ---
-const AnswerInProgressSchema = Yup.object().shape({
-  answers: Yup.array().of(
-    Yup.object().shape({
-      questionId: Yup.number().required('질문 ID는 필수입니다.'),
-      optionIds: Yup.array().of(Yup.number()).nullable(),
-      value: Yup.string().nullable(),
-    }),
-  ),
-});
-const answerInitialValues: AnswerInitialValues = {
-  answers: [],
-};
+// // --- In progress Answer Schema ---
+// const AnswerInProgressSchema = Yup.object().shape({
+//   answers: Yup.array().of(
+//     Yup.object().shape({
+//       questionId: Yup.number().required('질문 ID는 필수입니다.'),
+//       optionIds: Yup.array().of(Yup.number()).nullable(),
+//       value: Yup.string().nullable(),
+//     }),
+//   ),
+// });
+// const answerInitialValues: AnswerInitialValues = {
+//   answers: [],
+// };
 
 interface ResponseSurveyProps {
   isDemo?: boolean;
@@ -72,7 +58,6 @@ interface ResponseSurveyProps {
 const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false }) => {
   // --- STATE ---
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const user = useAuthStore((state) => state.user);
   const router = useAuthStore((state) => state.router)!;
   const { addNotice } = useContext(GlobalSnackbarContext);
@@ -156,6 +141,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
   }, [questions, currentStep]);
 
   function handleOptionChange<T extends string>(questionIdx: number, optionIdx: number | null, value: T | null) {
+    if (value === undefined) return;
     setErrors((errors) => {
       const newErrors = { ...errors };
       delete newErrors[questionIdx];
@@ -226,11 +212,15 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
         const value = Array.from(values)
           .map(({ value }) => value)
           .filter((value) => !isNil(value) && value);
-        if (value[0]) {
+        const valueFirst = value[0];
+        if (valueFirst) {
+          if (rest.dataType === DataType.Image) {
+            console.log('🚀 ~ handleSaveAnswer ~ valueFirst:', valueFirst);
+          }
           acc.push({
             questionId: rest.id ?? 0,
             optionIds: null, // Remove client-side IDs
-            value: '' + value[0],
+            value: valueFirst,
           });
         }
         return acc;

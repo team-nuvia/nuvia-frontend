@@ -172,7 +172,6 @@ const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey }) => {
   };
 
   const handleOpenStatusMenu = (event: React.MouseEvent<HTMLElement>) => {
-    console.log('handleOpenStatusMenu');
     setSubAnchorEl(event.currentTarget);
   };
 

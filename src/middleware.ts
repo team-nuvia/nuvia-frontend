@@ -58,7 +58,7 @@ async function forceLogout(url: URL) {
   }
 }
 
-async function verifySession(req: NextRequest, res: NextResponse, url: URL): Promise<string | null> {
+async function verifySession(req: NextRequest, res: NextResponse, url: URL): Promise<{ verified: boolean } | string | null> {
   try {
     const response = await axios.post(`${API_URL}/auth/session`, undefined, {
       headers: {
@@ -138,8 +138,7 @@ export async function middleware(req: NextRequest, res: NextResponse) {
     if (verifiedSession === null) {
       return forceLogout(url);
     }
-
-    if (verifiedSession && (isGuestPath(pathname) || pathname === '/')) {
+    if ((verifiedSession as { verified: boolean }).verified && (isGuestPath(pathname) || pathname === '/')) {
       url.pathname = '/dashboard';
       url.search = '';
       return NextResponse.redirect(url);
