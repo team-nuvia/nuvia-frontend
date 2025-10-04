@@ -11,7 +11,22 @@ import ResponseCard from '@components/organism/ResponseCard';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import { ArrowBack, ArrowForward, Category, CheckCircle, Person, ThumbUp } from '@mui/icons-material';
 import SaveIcon from '@mui/icons-material/Save';
-import { Alert, Box, Card, CardContent, Chip, CircularProgress, Container, Divider, Fade, Grid, Paper, Stack, Typography } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Card,
+  CardContent,
+  Chip,
+  CircularProgress,
+  Container,
+  Divider,
+  Fade,
+  Grid,
+  Paper,
+  Stack,
+  Typography,
+  useMediaQuery,
+} from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { TimeIcon } from '@mui/x-date-pickers/icons';
 import { AnswerStatus } from '@share/enums/answer-status';
@@ -57,6 +72,7 @@ interface ResponseSurveyProps {
 const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false }) => {
   // --- STATE ---
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const user = useAuthStore((state) => state.user);
   const router = useAuthStore((state) => state.router)!;
   const { addNotice } = useContext(GlobalSnackbarContext);
@@ -506,7 +522,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
                 exit={{ opacity: 0, x: direction === 'next' ? -100 : 100 }}
                 transition={{ duration: 0.3 }}
               >
-                <Card sx={{ mb: 4 }}>
+                <Card>
                   <CardContent sx={{ p: 4 }}>
                     <ResponseCard
                       key={currentQuestion.id || 'idx' + currentQuestion.idx}
@@ -537,41 +553,31 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
         </Grid>
 
         <Grid size={{ xs: 12 }}>
+          <Stack direction="row" gap={1} justifyContent="center" alignItems="center" my={2}>
+            {survey.questions.map((_, index) => (
+              <Box
+                key={index}
+                sx={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  backgroundColor: index <= currentStep ? 'primary.main' : 'action.disabled',
+                  transition: 'all 0.3s',
+                }}
+              />
+            ))}
+          </Stack>
+        </Grid>
+
+        <Grid size={{ xs: 12 }}>
           {/* 네비게이션 버튼 */}
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
-            <ActionButton variant="outlined" startIcon={<ArrowBack />} onClick={handlePrevious} disabled={currentStep === 0} sx={{ minWidth: 120 }}>
+          <Stack direction="row" gap={1} justifyContent="space-between" alignItems="center">
+            <ActionButton variant="outlined" startIcon={<ArrowBack />} onClick={handlePrevious} disabled={currentStep === 0}>
               이전
             </ActionButton>
 
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              {survey.questions.map((_, index) => (
-                <Box
-                  key={index}
-                  sx={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: '50%',
-                    backgroundColor: index <= currentStep ? 'primary.main' : 'action.disabled',
-                    transition: 'all 0.3s',
-                  }}
-                />
-              ))}
-            </Box>
-
             <Stack direction="row" gap={1}>
-              <ActionButton
-                type="button"
-                variant="contained"
-                startIcon={<SaveIcon />}
-                onClick={isDemo ? () => {} : handleSaveAnswer}
-                sx={{ minWidth: 120 }}
-              >
+              <ActionButton type="button" variant="contained" startIcon={<SaveIcon />} onClick={isDemo ? () => {} : handleSaveAnswer}>
                 임시 저장
               </ActionButton>
 
@@ -581,17 +587,16 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
                   startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
                   type="submit"
                   disabled={isSubmitting || !isAllAnswered}
-                  sx={{ minWidth: 120 }}
                 >
                   {isSubmitting ? '제출 중...' : '제출하기'}
                 </ActionButton>
               ) : (
-                <ActionButton type="button" variant="contained" endIcon={<ArrowForward />} onClick={handleNext} sx={{ minWidth: 120 }}>
+                <ActionButton type="button" variant="contained" endIcon={<ArrowForward />} onClick={handleNext}>
                   다음
                 </ActionButton>
               )}
             </Stack>
-          </Box>
+          </Stack>
         </Grid>
       </Grid>
       {/* 하단 정보 */}

@@ -115,6 +115,7 @@ const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey }) => {
 
   const handleDelete = () => {
     handleOpenDialog({
+      type: 'error',
       title: '설문 삭제',
       content: '삭제된 설문은 관리자 권한부터 복구 가능합니다. 삭제하시겠습니까?',
       actionCallback: confirmDelete,
@@ -125,6 +126,7 @@ const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey }) => {
 
   const handleShare = () => {
     handleOpenDialog({
+      type: 'info',
       title: '설문 공유',
       content: (
         <>
@@ -351,7 +353,7 @@ const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey }) => {
           <Edit sx={{ mr: 2 }} />
           편집
         </MenuItem>
-        {survey.status === SurveyStatus.Active && (
+        {survey.status === SurveyStatus.Active && survey.isPublic && (
           <MenuItem onClick={handleShare}>
             <Share sx={{ mr: 2 }} />
             공유

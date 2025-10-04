@@ -122,7 +122,7 @@ const Header: React.FC<HeaderProps> = () => {
   }, [isSuccess, user, router, pathname]);
 
   useEffect(() => {
-    if (y > 61) {
+    if (y > 30) {
       setShadow(true);
     } else {
       setShadow(false);
