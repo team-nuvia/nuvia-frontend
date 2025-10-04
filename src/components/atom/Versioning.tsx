@@ -1,15 +1,16 @@
 'use client';
 
 import { VERSION } from '@common/variables';
-import { Typography } from '@mui/material';
+import { SxProps, Theme, Typography, TypographyProps, useTheme } from '@mui/material';
 
-interface VersioningProps {}
-const Versioning: React.FC<VersioningProps> = () => {
+interface VersioningProps extends TypographyProps {}
+const Versioning: React.FC<VersioningProps> = (props) => {
+  const theme = useTheme();
   return (
     <Typography
       textAlign="right"
       fontSize="0.65rem"
-      sx={(theme) => ({
+      sx={{
         position: 'absolute',
         top: 67,
         left: 8,
@@ -29,7 +30,8 @@ const Versioning: React.FC<VersioningProps> = () => {
         textShadow: theme.palette.mode === 'dark' ? '0 1px 2px rgba(0,0,0,0.4)' : '0 1px 2px rgba(255,255,255,0.2)',
         userSelect: 'none',
         pointerEvents: 'none',
-      })}
+        ...props?.sx,
+      }}
     >
       V.{VERSION}
     </Typography>

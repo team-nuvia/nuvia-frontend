@@ -1,6 +1,6 @@
+import KakaoIcon from '@assets/KakaoIcon';
 import { SvgIcon, Typography } from '@mui/material';
 import ActionButton from './ActionButton';
-import KakaoIcon from '@assets/KakaoIcon';
 
 interface KakaoLoginButtonProps extends ActionButtonProps {}
 const KakaoLoginButton: React.FC<KakaoLoginButtonProps> = (props) => {

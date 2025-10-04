@@ -12,10 +12,10 @@ import { IconButton, List, ListItem, ListItemText, Stack, Tooltip, Typography } 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { DateFormat } from '@util/dateFormat';
 import { LocalizationManager } from '@util/LocalizationManager';
+import { AxiosError } from 'axios';
 import { useContext } from 'react';
 
 export default function SurveyBinDialog() {
-  const queryClient = useQueryClient();
   const publish = useEventBus((s) => s.publish);
   const { handleOpenDialog } = useContext(GlobalDialogContext);
   const { addNotice } = useContext(GlobalSnackbarContext);
@@ -29,18 +29,23 @@ export default function SurveyBinDialog() {
       addNotice('설문이 복원되었습니다', 'success');
       publish({ type: AppEventType.SURVEY_BIN_RESTORED });
     },
-    onError: () => {
-      addNotice('설문 복원에 실패했습니다', 'error');
+    onError: (error: AxiosError<ServerResponse<null>>) => {
+      addNotice((error.response?.data?.reason as string) || error.response?.data?.message || '설문 복원에 실패했습니다', 'error');
     },
   });
   const { mutate: restoreAllSurveyMutate } = useMutation({
     mutationFn: () => restoreAllSurvey(),
-    onSuccess: () => {
-      addNotice('모든 설문이 복원되었습니다', 'success');
+    onSuccess: (data) => {
+      addNotice(data?.message || '모든 설문이 복원되었습니다', 'success');
       publish({ type: AppEventType.SURVEY_BIN_RESTORED });
     },
-    onError: () => {
-      addNotice('모든 설문 복원에 실패했습니다', 'error');
+    onError: (error: AxiosError<ServerResponse<null>>) => {
+      addNotice(
+        error.response?.data?.message
+          ? `${error.response?.data?.message}${error.response?.data?.reason ? ` (${error.response?.data?.reason}개)` : ''}`
+          : '모든 설문 복원에 실패했습니다',
+        'error',
+      );
     },
   });
 
@@ -51,6 +56,7 @@ export default function SurveyBinDialog() {
       actionCallback: () => {
         restoreAllSurveyMutate();
       },
+      type: 'error',
     });
   };
 
@@ -61,6 +67,7 @@ export default function SurveyBinDialog() {
       actionCallback: () => {
         restoreSurveyMutate({ surveyId: id.toString() });
       },
+      type: 'error',
     });
   };
 

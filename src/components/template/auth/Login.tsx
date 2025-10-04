@@ -46,7 +46,7 @@ const Login: React.FC<LoginProps> = (/* { searchParams } */) => {
   const setUser = useAuthStore((state) => state.actions.setUser);
   const setMainUrl = useAuthStore((state) => state.actions.setMainUrl);
   const mainUrl = useAuthStore((state) => state.mainUrl);
-  const { mutate: getUsersMeMutation } = useMutation({
+  const { mutate: getUsersMeMutation, isSuccess: isGetUsersMeSuccess } = useMutation({
     mutationKey: mutationKeys.user.me(),
     mutationFn: getUsersMe,
     onSuccess: (response) => {
@@ -55,7 +55,7 @@ const Login: React.FC<LoginProps> = (/* { searchParams } */) => {
     },
   });
   // TODO: 로그아웃 수정 중 (에러 남)
-  const { mutate: loginMutation } = useMutation({
+  const { mutate: loginMutation, isSuccess } = useMutation({
     mutationKey: mutationKeys.user.login(),
     mutationFn: (values: { email: string; password: string }) => login(values.email, values.password),
     onSuccess: async (response) => {
@@ -99,19 +99,17 @@ const Login: React.FC<LoginProps> = (/* { searchParams } */) => {
   });
 
   useEffect(() => {
-    if (formik.isSubmitting) return;
-    if (formik.status === 'success') {
-      if (user) {
-        if (action === 'invitation' && redirect && token) {
-          router.push(`${redirect}?q=${token}`);
-        } else if (action === 'view' && redirect) {
-          router.push(redirect);
-        } else {
-          router.push(mainUrl);
-        }
+    if (!isSuccess || !isGetUsersMeSuccess) return;
+    if (user) {
+      if (action === 'invitation' && redirect && token) {
+        router.push(`${redirect}?q=${token}`);
+      } else if (action === 'view' && redirect) {
+        router.push(redirect);
+      } else {
+        router.push(mainUrl);
       }
     }
-  }, [user, action, redirect, token, mainUrl, router, formik.isSubmitting, formik.status]);
+  }, [isSuccess, isGetUsersMeSuccess]);
 
   useEffect(() => {
     const nq = localStorage.getItem('nq');

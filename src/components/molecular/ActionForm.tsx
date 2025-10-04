@@ -36,7 +36,11 @@ const ActionForm: React.FC<ActionFormProps> = ({ title, onSubmit, submitText, sl
       url.searchParams.set('accessDevice', detectUserDevice());
       url.searchParams.set('accessBrowser', detectBrowser());
       url.searchParams.set('accessUserAgent', navigator.userAgent);
-      url.searchParams.set('accessUserAgent', navigator.userAgent);
+      if (window.location.search) {
+        new URLSearchParams(window.location.search).forEach((value, key) => {
+          url.searchParams.set(key, value);
+        });
+      }
       window.location.href = url.toString();
       localStorage.setItem('nq', window.location.search);
     },

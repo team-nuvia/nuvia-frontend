@@ -93,7 +93,6 @@ export default async function RootLayout({
                         <LoadingProvider>
                           <AuthenticationProvider initialize={true} user={user}>
                             {children}
-                            <Versioning />
                           </AuthenticationProvider>
                         </LoadingProvider>
                       </GlobalDialogProvider>

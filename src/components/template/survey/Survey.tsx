@@ -32,6 +32,8 @@ import { FormikErrors, useFormik } from 'formik';
 import { useCallback, useContext, useEffect, useState } from 'react';
 import * as Yup from 'yup';
 import SurveyInformation from './SurveyInformation';
+import { useEventBus } from '@/store/event-bus.store';
+import { AppEventType } from '@/store/lib/app-event';
 
 // --- VALIDATION SCHEMA ---
 const SurveySchema = Yup.object().shape({
@@ -82,7 +84,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
   const router = useAuthStore((state) => state.router)!;
   const addNotice = useAuthStore((state) => state.addNotice)!;
   const { handleOpenDialog } = useContext(GlobalDialogContext);
-
+  const publish = useEventBus((s) => s.publish);
   /* state */
   const SUBMIT_BUTTON_TEXT = id ? '설문 수정' : '설문 저장';
   const [isPreview, setIsPreview] = useState(false);
@@ -97,16 +99,16 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
     queryFn: () => getSurveyDetail(id as string),
     enabled: !!id,
   });
-  const { mutate: createSurveyMutate } = useMutation({
+  const { mutate: tempSaveSurveyMutate } = useMutation({
     mutationKey: mutationKeys.survey.create(),
     mutationFn: ({ surveyData }: { surveyData: CreateSurveyPayload }) => createSurvey(surveyData),
     onSuccess: (data) => {
       if (data.ok) {
-        addNotice((data.reason as string) || data.message, 'success');
+        addNotice(data.message, 'success');
         // Reset form
-        router.push('/dashboard/survey');
+        router.push(`?edit=${data.payload!.id}`, { scroll: false });
       } else {
-        addNotice((data.reason as string) || data.message, 'error');
+        addNotice(data.message, 'error');
       }
       setIsSubmitting(false);
     },
@@ -116,11 +118,47 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
       if (axiosError?.response?.data?.reason === 'expiresAt') {
         addNotice('만료 일시는 최소 다음날부터 가능합니다.', 'error');
       } else {
-        addNotice(
-          ((axiosError?.response?.data?.reason as string) || axiosError?.response?.data?.message) ??
-            '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
-          'error',
-        );
+        if (axiosError?.response?.data?.reason === 'questions') {
+          addNotice('최소 1개의 질문이 필요합니다.', 'error');
+        } else {
+          addNotice(
+            ((axiosError?.response?.data?.reason as string) || axiosError?.response?.data?.message) ??
+              '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+            'error',
+          );
+        }
+      }
+      setIsSubmitting(false);
+    },
+  });
+  const { mutate: createSurveyMutate } = useMutation({
+    mutationKey: mutationKeys.survey.create(),
+    mutationFn: ({ surveyData }: { surveyData: CreateSurveyPayload }) => createSurvey(surveyData),
+    onSuccess: (data) => {
+      if (data.ok) {
+        addNotice((data.reason as string) || data.message, 'success');
+        // Reset form
+        router.push('/dashboard/survey');
+        publish({ type: AppEventType.SURVEY_UPDATED });
+      } else {
+        addNotice((data.reason as string) || data.message, 'error');
+      }
+      setIsSubmitting(false);
+    },
+    onError: (error) => {
+      const axiosError = error as AxiosError<ServerResponse<any>>;
+      if (axiosError?.response?.data?.reason === 'expiresAt') {
+        addNotice('만료 일시는 최소 다음날부터 가능합니다.', 'error');
+      } else {
+        if (axiosError?.response?.data?.reason === 'questions') {
+          addNotice('최소 1개의 질문이 필요합니다.', 'error');
+        } else {
+          addNotice(
+            ((axiosError?.response?.data?.reason as string) || axiosError?.response?.data?.message) ??
+              '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+            'error',
+          );
+        }
       }
       setIsSubmitting(false);
     },
@@ -253,6 +291,41 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
     }
   }
 
+  async function handleSaveTemporarySurvey(values: QuestionInitialValues) {
+    const surveyData = validateAndReturnSurveyData(values);
+
+    if (!surveyData) return;
+
+    tempSaveSurveyMutate({ surveyData: surveyData as unknown as CreateSurveyPayload });
+  }
+
+  async function handleUpdateTemporarySurvey(id: string, values: QuestionInitialValues) {
+    const surveyData = validateAndReturnSurveyData(values);
+
+    if (!surveyData) return;
+
+    try {
+      // Using a placeholder API endpoint
+      const response = await updateSurvey(id, surveyData as UpdateSurveyPayload);
+
+      if (response.ok) {
+        addNotice(response.reason || response.message, 'success');
+      } else {
+        addNotice(response.reason || response.message, 'error');
+      }
+    } catch (err: any) {
+      const axiosError = err as AxiosError<ServerResponse<any>>;
+      // console.error(axiosError);
+      addNotice(
+        ((axiosError?.response?.data?.reason as string) || axiosError?.response?.data?.message) ??
+          '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+        'error',
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   async function handleSaveSurvey(values: QuestionInitialValues) {
     const surveyData = validateAndReturnSurveyData(values);
 
@@ -274,6 +347,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
       if (response.ok) {
         addNotice(response.reason || response.message, 'success');
         router.push('/dashboard/survey');
+        publish({ type: AppEventType.SURVEY_UPDATED });
       } else {
         addNotice(response.reason || response.message, 'error');
       }
@@ -324,9 +398,9 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
         const nextQuestions = [...nextValues.questions];
         nextQuestions.splice(questionIndex, 1);
         nextValues.questions = nextQuestions;
+        addNotice('질문이 삭제되었습니다.', 'success');
         return nextValues;
       });
-      addNotice('질문이 삭제되었습니다.', 'success');
     }
 
     handleOpenDialog({
@@ -334,6 +408,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
       content: '삭제된 질문은 복구 불가합니다. 삭제하시겠습니까?',
       actionCallback: confirmRemoveQuestion,
       useConfirm: true,
+      type: 'error',
     });
   }, []);
 
@@ -392,9 +467,12 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
         if (question.questionOptions?.length === 0) {
           question.questionOptions = [{ id: null, label: '', sequence: 0, idx: Date.now() }];
         }
+        /* TODO: 추후 타입 변경할 지 고려 */
+        /* 선택 질문은 무조건 Text 데이터 타입 */
       } else {
         question.questionOptions = [];
       }
+      question.dataType = DataType.Text;
       // if (question[field as keyof IQuestion]) {
       //   // question[field] = value;
       // }
@@ -402,6 +480,14 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
       return nextValues;
     });
   }, []);
+
+  const handleTemporarySave = useCallback(() => {
+    if (id) {
+      handleUpdateTemporarySurvey(id, formik.values);
+    } else {
+      handleSaveTemporarySurvey(formik.values);
+    }
+  }, [id, formik.values]);
 
   if (!user || user.role === UserRole.Viewer) {
     return <Loading />;
@@ -488,7 +574,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
               <Stack direction="row" spacing={2} alignItems="center">
                 <ActionButton
                   variant="text"
-                  onClick={() => console.log('임시 저장 클릭')}
+                  onClick={handleTemporarySave}
                   disabled={isSubmitting}
                   sx={{
                     borderRadius: 2.5,
