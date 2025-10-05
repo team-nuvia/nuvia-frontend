@@ -17,14 +17,13 @@ import { TimeIcon } from '@mui/x-date-pickers/icons';
 import { AnswerStatus } from '@share/enums/answer-status';
 import { DataType } from '@share/enums/data-type';
 import { QuestionType } from '@share/enums/question-type';
-import { useMutation } from '@tanstack/react-query';
+import { UseMutateFunction, useMutation } from '@tanstack/react-query';
 import { DateFormat } from '@util/dateFormat';
 import { isEmpty } from '@util/isEmpty';
 import { isNil } from '@util/isNil';
 import { AxiosError } from 'axios';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useContext, useEffect, useMemo, useState } from 'react';
-import * as Yup from 'yup';
 
 // // --- Start Answer Schema ---
 // const AnswerStartSchema = Yup.object().shape({
@@ -53,9 +52,10 @@ import * as Yup from 'yup';
 interface ResponseSurveyProps {
   isDemo?: boolean;
   survey: PreviewPayload;
+  refreshJwsMutation?: UseMutateFunction<any, AxiosError<ServerResponse<void>, any>, void, unknown>;
 }
 // --- COMPONENT ---
-const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false }) => {
+const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false, refreshJwsMutation }) => {
   // --- STATE ---
   const theme = useTheme();
   const user = useAuthStore((state) => state.user);
@@ -72,6 +72,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
     mutationKey: mutationKeys.survey.createAnswer(),
     mutationFn: ({ surveyId, answerData }: { surveyId: number; answerData: AnswerPayload }) => createAnswer(surveyId, answerData),
     onSuccess: (response) => {
+      refreshJwsMutation?.();
       // console.log('🚀 ~ ResponseSurvey ~ response:', response);
       if (response.httpStatus === 201) {
         addNotice(response.message, 'success');
@@ -150,12 +151,14 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
     setQuestions((questions) => {
       return questions.map((q) => {
         if (q.idx === questionIdx) {
+          const origin = q.questionAnswers?.get(optionIdx ? optionIdx : 1);
           if (q.questionType === QuestionType.SingleChoice) {
             if (value && !isNaN(+value)) {
               q.questionAnswers?.clear();
               q.questionAnswers?.set(1, {
                 optionId: +value,
                 value: null,
+                referenceBuffer: origin?.referenceBuffer ?? null,
               });
             }
           } else if (q.questionType === QuestionType.MultipleChoice) {
@@ -168,6 +171,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
                 q.questionAnswers?.set(optionIdx as number, {
                   optionId: optionIdx,
                   value: null,
+                  referenceBuffer: origin?.referenceBuffer ?? null,
                 });
               }
             }
@@ -176,6 +180,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
               q.questionAnswers?.set(1, {
                 optionId: null,
                 value: value,
+                referenceBuffer: origin?.referenceBuffer ?? null,
               });
             } else {
               q.questionAnswers?.delete(1);
@@ -214,9 +219,9 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
           .filter((value) => !isNil(value) && value);
         const valueFirst = value[0];
         if (valueFirst) {
-          if (rest.dataType === DataType.Image) {
-            console.log('🚀 ~ handleSaveAnswer ~ valueFirst:', valueFirst);
-          }
+          // if (rest.dataType === DataType.Image) {
+          //   console.log('🚀 ~ handleSaveAnswer ~ valueFirst:', valueFirst);
+          // }
           acc.push({
             questionId: rest.id ?? 0,
             optionIds: null, // Remove client-side IDs

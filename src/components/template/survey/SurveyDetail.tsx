@@ -154,10 +154,11 @@ export default function SurveyDetail({ survey }: { survey: GetSurveyDetailRespon
         }
       } else {
         questionAnswers?.forEach((answer) => {
-          if (answer.value && answer.value !== 'undefined') {
+          if ((answer.value && answer.value !== 'undefined') || answer.referenceBuffer) {
             questionAnswersMap.set(1, {
               optionId: null,
               value: answer.value,
+              referenceBuffer: answer.referenceBuffer,
             });
           }
         });
@@ -299,5 +300,5 @@ export default function SurveyDetail({ survey }: { survey: GetSurveyDetailRespon
     );
   }
 
-  return <ResponseSurvey survey={surveyDataWithAnswers} />;
+  return <ResponseSurvey survey={surveyDataWithAnswers} refreshJwsMutation={refreshJwsMutation} />;
 }

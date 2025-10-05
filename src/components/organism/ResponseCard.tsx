@@ -1,21 +1,8 @@
+import { QuestionAnswerFileNestedResponseDto } from '@/models/HashQuestionAnswerResponse';
 import ActionButton from '@components/atom/ActionButton';
 import CommonText from '@components/atom/CommonText';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import {
-  Box,
-  Checkbox,
-  Chip,
-  FormControl,
-  FormControlLabel,
-  FormGroup,
-  Grid,
-  Input,
-  Radio,
-  RadioGroup,
-  Rating,
-  Stack,
-  TextField,
-} from '@mui/material';
+import { Box, Checkbox, Chip, FormControl, FormControlLabel, FormGroup, Grid, Radio, RadioGroup, Rating, Stack, TextField } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
@@ -50,7 +37,7 @@ interface ResponseCardProps {
   questionType: QuestionType;
   dataType: DataType;
   isRequired: boolean;
-  answers: Map<number, { optionId: number | null; value: string | number | null }>;
+  answers: Map<number, { optionId: number | null; value: string | number | null; referenceBuffer: QuestionAnswerFileNestedResponseDto | null }>;
   questionOptions?: IQuestionOption[];
   handleOptionChange: (questionId: number, optionId: number, value: any) => void;
   // handleOptionClear: () => void;
@@ -96,11 +83,36 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
     }
   }, [dataType]);
 
+  function bufferToBase64ImageUrl(bufferData: any, mimeType: string = 'image/jpeg'): string {
+    const uint8Array = new Uint8Array(bufferData.data || bufferData);
+
+    // Base64 인코딩
+    let binary = '';
+    uint8Array.forEach((byte) => {
+      binary += String.fromCharCode(byte);
+    });
+    const base64 = btoa(binary);
+
+    return `data:${mimeType};base64,${base64}`;
+  }
+
   useEffect(() => {
     const file = answers.get(1)?.value as unknown as File;
+    const referenceBuffer = answers.get(1)?.referenceBuffer as unknown as QuestionAnswerFileNestedResponseDto;
+
     if (DataType.Image !== dataType && DataType.File !== dataType && DataType.Video !== dataType) {
       return;
     }
+
+    console.log('🚀 ~ ResponseCard ~ answers.get(1):', answers.get(1));
+    console.log('🚀 ~ ResponseCard ~ referenceBuffer:', referenceBuffer);
+    if (referenceBuffer) {
+      const imageUrl = bufferToBase64ImageUrl(referenceBuffer.buffer.data, referenceBuffer.mimetype);
+      console.log('🚀 ~ ResponseCard ~ imageUrl:', imageUrl);
+      setPreviewImage(imageUrl);
+      return;
+    }
+
     if (!file || !(file instanceof File)) return;
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -108,7 +120,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
       setPreviewImage(reader.result as string);
     };
     reader.onerror = (error) => console.error(error);
-  }, [answers.get(1)?.value]);
+  }, [answers.get(1)?.value, answers.get(1)?.referenceBuffer]);
 
   const dynamicField = (dataType: DataType, answers: Map<number, any>) => {
     if (dataType === DataType.Rating) {
@@ -238,7 +250,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
             height="auto"
             sx={{ backgroundColor: 'grey' }}
           >
-            {answers?.get(1)?.value && previewImage && (
+            {(answers?.get(1)?.value || previewImage) && (
               /* 이미지 사이징 자동화?? */
               <Image
                 src={previewImage ?? ''}
