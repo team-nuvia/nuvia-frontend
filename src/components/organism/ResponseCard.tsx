@@ -1,4 +1,3 @@
-import { QuestionAnswerFileNestedResponseDto } from '@share/interface/ianswer-nested';
 import ActionButton from '@components/atom/ActionButton';
 import CommonText from '@components/atom/CommonText';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
@@ -8,6 +7,7 @@ import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { DataType } from '@share/enums/data-type';
 import { QuestionType } from '@share/enums/question-type';
+import { IAnswerResponse } from '@share/interface/ianswer-nested';
 import { IQuestionOption } from '@share/interface/iquestion';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
@@ -37,7 +37,7 @@ interface ResponseCardProps {
   questionType: QuestionType;
   dataType: DataType;
   isRequired: boolean;
-  answers: Map<number, { optionId: number | null; value: string | number | null; referenceBuffer: QuestionAnswerFileNestedResponseDto | null }>;
+  answers: Map<number, { optionId: number | null; value: string | number | null; referenceBuffer: IAnswerResponse | null }>;
   questionOptions?: IQuestionOption[];
   handleOptionChange: (questionId: number, optionId: number, value: any) => void;
   // handleOptionClear: () => void;
@@ -98,7 +98,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
 
   useEffect(() => {
     const file = answers.get(1)?.value as unknown as File;
-    const referenceBuffer = answers.get(1)?.referenceBuffer as unknown as QuestionAnswerFileNestedResponseDto;
+    const referenceBuffer = answers.get(1)?.referenceBuffer as unknown as IAnswerResponse;
 
     if (DataType.Image !== dataType && DataType.File !== dataType && DataType.Video !== dataType) {
       return;

@@ -1,7 +1,7 @@
+import { IAnswerResponse } from '@share/interface/ianswer-nested';
 import { ICategory } from '@share/interface/icategory';
 import { AllQuestion } from '@share/interface/iquestion';
 import { ISurvey } from '@share/interface/isurvey';
-import { QuestionAnswerFileNestedResponseDto } from '../../share/interface/ianswer-nested';
 
 // export interface QuestionOptionDetailNestedResponseDto {
 //   id: number;
@@ -53,7 +53,7 @@ export interface GetSurveyDetailResponse extends Omit<ISurvey, 'id' | 'questions
     questionId: number;
     questionOptionId: number | null;
     value: string | null;
-    referenceBuffer: QuestionAnswerFileNestedResponseDto | null;
+    referenceBuffer: IAnswerResponse | null;
   }[];
   viewCount: number;
   author: {
