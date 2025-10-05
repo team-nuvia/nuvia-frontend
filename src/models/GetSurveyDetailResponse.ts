@@ -1,7 +1,7 @@
 import { ICategory } from '@share/interface/icategory';
 import { AllQuestion } from '@share/interface/iquestion';
 import { ISurvey } from '@share/interface/isurvey';
-import { QuestionAnswerFileNestedResponseDto } from './HashQuestionAnswerResponse';
+import { QuestionAnswerFileNestedResponseDto } from '../../share/interface/ianswer-nested';
 
 // export interface QuestionOptionDetailNestedResponseDto {
 //   id: number;

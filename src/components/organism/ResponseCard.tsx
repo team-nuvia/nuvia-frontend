@@ -1,4 +1,4 @@
-import { QuestionAnswerFileNestedResponseDto } from '@/models/HashQuestionAnswerResponse';
+import { QuestionAnswerFileNestedResponseDto } from '@share/interface/ianswer-nested';
 import ActionButton from '@components/atom/ActionButton';
 import CommonText from '@components/atom/CommonText';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
@@ -65,8 +65,8 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
         return 'file';
       case DataType.File:
         return 'file';
-      case DataType.Location:
-        return 'text';
+      // case DataType.Location:
+      //   return 'text';
       case DataType.Rating:
         return 'number';
       case DataType.Date:
@@ -305,15 +305,15 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
         />
       );
     }
-    if (dataType === DataType.Location) {
-      /* 설문 응답할 때 처리 */
-      // return (
-      //   <CommonText variant="caption" color="error">
-      //     설문응답 시 표시됩니다.
-      //   </CommonText>
-      // );
-      return;
-    }
+    // if (dataType === DataType.Location) {
+    //   /* 설문 응답할 때 처리 */
+    //   // return (
+    //   //   <CommonText variant="caption" color="error">
+    //   //     설문응답 시 표시됩니다.
+    //   //   </CommonText>
+    //   // );
+    //   return;
+    // }
     return (
       <TextField
         fullWidth

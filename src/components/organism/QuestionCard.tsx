@@ -28,7 +28,7 @@ const DATA_TYPE_MAP = {
   [DataType.Image]: '이미지',
   [DataType.Video]: '비디오',
   [DataType.File]: '파일',
-  [DataType.Location]: '위치',
+  // [DataType.Location]: '위치',
   [DataType.Rating]: '평점',
   [DataType.Date]: '날짜',
   [DataType.DateTime]: '날짜/시간',
@@ -80,8 +80,8 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
         return 'file';
       case DataType.File:
         return 'file';
-      case DataType.Location:
-        return 'text';
+      // case DataType.Location:
+      //   return 'text';
       case DataType.Rating:
         return 'number';
       case DataType.Date:
