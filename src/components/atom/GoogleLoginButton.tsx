@@ -1,5 +1,5 @@
 import GoogleIcon from '@assets/GoogleIcon';
-import { Stack, SvgIcon, Typography } from '@mui/material';
+import { SvgIcon, Typography } from '@mui/material';
 import ActionButton from './ActionButton';
 
 interface GoogleLoginButtonProps extends ActionButtonProps {}
@@ -7,7 +7,7 @@ const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = (props) => {
   return (
     <ActionButton
       fullWidth
-      color="inherit"
+      color="white"
       startIcon={
         <SvgIcon>
           <GoogleIcon />

@@ -24,7 +24,7 @@ export const getSurveyDetailView = async (hashedUniqueKey: string) => {
     headers: {
       'Content-Type': 'application/json',
       // Authorization: `Bearer ${accessToken}`,
-      cookie: header,
+      cookie: (await cookies()).toString(),
     },
     timeout: 1 * 60 * 1000,
   });

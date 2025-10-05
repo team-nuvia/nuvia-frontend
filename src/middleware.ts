@@ -1,11 +1,11 @@
-import axios, { AxiosResponse } from 'axios';
+// import axios, { AxiosResponse } from 'axios';
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { API_URL } from '@common/variables';
 import { isGuestPath, isMemberPath } from '@util/guard';
 
-async function setCookies(result: AxiosResponse) {
-  const cookieList = result.headers['set-cookie'] ?? [];
+async function setCookies(result: Response) {
+  const cookieList = result.headers.get('set-cookie') ?? [];
   for (const cookie of cookieList) {
     const [main, ...cookieRows] = cookie.split(';').map((keyValue) => keyValue.trim().split('='));
     const parsedCookie = Object.fromEntries(cookieRows);
@@ -33,7 +33,8 @@ async function clearCookie() {
 
 async function forceLogout(url: URL) {
   try {
-    const result = await axios.post(`${API_URL}/auth/logout`, undefined, {
+    const result = await fetch(`${API_URL}/auth/logout`, {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -58,15 +59,17 @@ async function forceLogout(url: URL) {
   }
 }
 
-async function verifySession(req: NextRequest, res: NextResponse, url: URL): Promise<string | null> {
+async function verifySession(req: NextRequest, res: NextResponse, url: URL): Promise<{ verified: boolean } | string | null> {
   try {
-    const response = await axios.post(`${API_URL}/auth/session`, undefined, {
+    const response = await fetch(`${API_URL}/auth/session`, {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Cookie: req.cookies.toString(),
       },
     });
-    return response.data.payload;
+    const data = await response.json();
+    return data.payload;
   } catch (error: any) {
     console.log('🚀 ~ verifySession ~ error:', error.message);
     if (error instanceof Error && error.message?.includes('Network Error')) {
@@ -79,14 +82,16 @@ async function verifySession(req: NextRequest, res: NextResponse, url: URL): Pro
 
 async function getRefreshToken(req: NextRequest) {
   try {
-    const response = await axios.post(`${API_URL}/auth/refresh`, undefined, {
+    const response = await fetch(`${API_URL}/auth/refresh`, {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Cookie: req.cookies.toString(),
       },
     });
+    const data = await response.json();
     await setCookies(response);
-    return response.data.payload;
+    return data.payload;
   } catch (error: any) {
     console.log('🚀 ~ getRefreshToken ~ error:', error.message);
     if (error instanceof Error && error.message?.includes('Network Error')) {
@@ -138,8 +143,7 @@ export async function middleware(req: NextRequest, res: NextResponse) {
     if (verifiedSession === null) {
       return forceLogout(url);
     }
-
-    if (verifiedSession && (isGuestPath(pathname) || pathname === '/')) {
+    if ((verifiedSession as { verified: boolean }).verified && (isGuestPath(pathname) || pathname === '/')) {
       url.pathname = '/dashboard';
       url.search = '';
       return NextResponse.redirect(url);

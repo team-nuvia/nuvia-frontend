@@ -15,46 +15,47 @@ import { Alert, Box, Card, CardContent, Chip, CircularProgress, Container, Divid
 import { useTheme } from '@mui/material/styles';
 import { TimeIcon } from '@mui/x-date-pickers/icons';
 import { AnswerStatus } from '@share/enums/answer-status';
+import { DataType } from '@share/enums/data-type';
 import { QuestionType } from '@share/enums/question-type';
-import { useMutation } from '@tanstack/react-query';
+import { UseMutateFunction, useMutation } from '@tanstack/react-query';
 import { DateFormat } from '@util/dateFormat';
 import { isEmpty } from '@util/isEmpty';
 import { isNil } from '@util/isNil';
 import { AxiosError } from 'axios';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useContext, useEffect, useMemo, useState } from 'react';
-import * as Yup from 'yup';
 
-// --- Start Answer Schema ---
-const AnswerStartSchema = Yup.object().shape({
-  userAgent: Yup.string(),
-  startAt: Yup.date().nullable(),
-});
-const startAnswerInitialValues: StartAnswerInitialValues = {
-  userAgent: '',
-  startAt: new Date(),
-};
+// // --- Start Answer Schema ---
+// const AnswerStartSchema = Yup.object().shape({
+//   userAgent: Yup.string(),
+//   startAt: Yup.date().nullable(),
+// });
+// const startAnswerInitialValues: StartAnswerInitialValues = {
+//   userAgent: '',
+//   startAt: new Date(),
+// };
 
-// --- In progress Answer Schema ---
-const AnswerInProgressSchema = Yup.object().shape({
-  answers: Yup.array().of(
-    Yup.object().shape({
-      questionId: Yup.number().required('질문 ID는 필수입니다.'),
-      optionIds: Yup.array().of(Yup.number()).nullable(),
-      value: Yup.string().nullable(),
-    }),
-  ),
-});
-const answerInitialValues: AnswerInitialValues = {
-  answers: [],
-};
+// // --- In progress Answer Schema ---
+// const AnswerInProgressSchema = Yup.object().shape({
+//   answers: Yup.array().of(
+//     Yup.object().shape({
+//       questionId: Yup.number().required('질문 ID는 필수입니다.'),
+//       optionIds: Yup.array().of(Yup.number()).nullable(),
+//       value: Yup.string().nullable(),
+//     }),
+//   ),
+// });
+// const answerInitialValues: AnswerInitialValues = {
+//   answers: [],
+// };
 
 interface ResponseSurveyProps {
   isDemo?: boolean;
   survey: PreviewPayload;
+  refreshJwsMutation?: UseMutateFunction<any, AxiosError<ServerResponse<void>, any>, void, unknown>;
 }
 // --- COMPONENT ---
-const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false }) => {
+const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false, refreshJwsMutation }) => {
   // --- STATE ---
   const theme = useTheme();
   const user = useAuthStore((state) => state.user);
@@ -71,6 +72,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
     mutationKey: mutationKeys.survey.createAnswer(),
     mutationFn: ({ surveyId, answerData }: { surveyId: number; answerData: AnswerPayload }) => createAnswer(surveyId, answerData),
     onSuccess: (response) => {
+      refreshJwsMutation?.();
       // console.log('🚀 ~ ResponseSurvey ~ response:', response);
       if (response.httpStatus === 201) {
         addNotice(response.message, 'success');
@@ -140,6 +142,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
   }, [questions, currentStep]);
 
   function handleOptionChange<T extends string>(questionIdx: number, optionIdx: number | null, value: T | null) {
+    if (value === undefined) return;
     setErrors((errors) => {
       const newErrors = { ...errors };
       delete newErrors[questionIdx];
@@ -148,12 +151,14 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
     setQuestions((questions) => {
       return questions.map((q) => {
         if (q.idx === questionIdx) {
+          const origin = q.questionAnswers?.get(optionIdx ? optionIdx : 1);
           if (q.questionType === QuestionType.SingleChoice) {
             if (value && !isNaN(+value)) {
               q.questionAnswers?.clear();
               q.questionAnswers?.set(1, {
                 optionId: +value,
                 value: null,
+                referenceBuffer: origin?.referenceBuffer ?? null,
               });
             }
           } else if (q.questionType === QuestionType.MultipleChoice) {
@@ -166,6 +171,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
                 q.questionAnswers?.set(optionIdx as number, {
                   optionId: optionIdx,
                   value: null,
+                  referenceBuffer: origin?.referenceBuffer ?? null,
                 });
               }
             }
@@ -174,6 +180,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
               q.questionAnswers?.set(1, {
                 optionId: null,
                 value: value,
+                referenceBuffer: origin?.referenceBuffer ?? null,
               });
             } else {
               q.questionAnswers?.delete(1);
@@ -210,11 +217,15 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
         const value = Array.from(values)
           .map(({ value }) => value)
           .filter((value) => !isNil(value) && value);
-        if (value[0]) {
+        const valueFirst = value[0];
+        if (valueFirst) {
+          // if (rest.dataType === DataType.Image) {
+          //   console.log('🚀 ~ handleSaveAnswer ~ valueFirst:', valueFirst);
+          // }
           acc.push({
             questionId: rest.id ?? 0,
             optionIds: null, // Remove client-side IDs
-            value: '' + value[0],
+            value: valueFirst,
           });
         }
         return acc;
@@ -506,7 +517,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
                 exit={{ opacity: 0, x: direction === 'next' ? -100 : 100 }}
                 transition={{ duration: 0.3 }}
               >
-                <Card sx={{ mb: 4 }}>
+                <Card>
                   <CardContent sx={{ p: 4 }}>
                     <ResponseCard
                       key={currentQuestion.id || 'idx' + currentQuestion.idx}
@@ -537,41 +548,31 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
         </Grid>
 
         <Grid size={{ xs: 12 }}>
+          <Stack direction="row" gap={1} justifyContent="center" alignItems="center" my={2}>
+            {survey.questions.map((_, index) => (
+              <Box
+                key={index}
+                sx={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  backgroundColor: index <= currentStep ? 'primary.main' : 'action.disabled',
+                  transition: 'all 0.3s',
+                }}
+              />
+            ))}
+          </Stack>
+        </Grid>
+
+        <Grid size={{ xs: 12 }}>
           {/* 네비게이션 버튼 */}
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
-            <ActionButton variant="outlined" startIcon={<ArrowBack />} onClick={handlePrevious} disabled={currentStep === 0} sx={{ minWidth: 120 }}>
+          <Stack direction="row" gap={1} justifyContent="space-between" alignItems="center">
+            <ActionButton variant="outlined" startIcon={<ArrowBack />} onClick={handlePrevious} disabled={currentStep === 0}>
               이전
             </ActionButton>
 
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              {survey.questions.map((_, index) => (
-                <Box
-                  key={index}
-                  sx={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: '50%',
-                    backgroundColor: index <= currentStep ? 'primary.main' : 'action.disabled',
-                    transition: 'all 0.3s',
-                  }}
-                />
-              ))}
-            </Box>
-
             <Stack direction="row" gap={1}>
-              <ActionButton
-                type="button"
-                variant="contained"
-                startIcon={<SaveIcon />}
-                onClick={isDemo ? () => {} : handleSaveAnswer}
-                sx={{ minWidth: 120 }}
-              >
+              <ActionButton type="button" variant="contained" startIcon={<SaveIcon />} onClick={isDemo ? () => {} : handleSaveAnswer}>
                 임시 저장
               </ActionButton>
 
@@ -581,17 +582,16 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false 
                   startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
                   type="submit"
                   disabled={isSubmitting || !isAllAnswered}
-                  sx={{ minWidth: 120 }}
                 >
                   {isSubmitting ? '제출 중...' : '제출하기'}
                 </ActionButton>
               ) : (
-                <ActionButton type="button" variant="contained" endIcon={<ArrowForward />} onClick={handleNext} sx={{ minWidth: 120 }}>
+                <ActionButton type="button" variant="contained" endIcon={<ArrowForward />} onClick={handleNext}>
                   다음
                 </ActionButton>
               )}
             </Stack>
-          </Box>
+          </Stack>
         </Grid>
       </Grid>
       {/* 하단 정보 */}

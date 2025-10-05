@@ -22,7 +22,6 @@ const Page: React.FC<PageProps> = async ({ params }) => {
     return <SurveyDetail survey={survey.payload} />;
   } catch (error: any) {
     const axiosError = error as AxiosError<ServerResponse<void>>;
-    console.log('🚀 ~ Page ~ error:', axiosError.response?.data.reason);
     if (axiosError.response?.status === 400) {
       return <NotFound reason={axiosError.response?.data.message} />;
     }

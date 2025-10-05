@@ -36,7 +36,7 @@ export const QUESTION_DEFAULT_DATA_TYPE_LIST: {
   text: '텍스트',
   email: '이메일',
   video: '비디오',
-  location: '위치',
+  // location: '위치',
   rating: '평점',
 };
 
@@ -63,7 +63,7 @@ export const QUESTION_DATA_TYPE_MAP: {
   text: { key: QuestionType.ShortText, type: DataType.Text },
   email: { key: QuestionType.ShortText, type: DataType.Email },
   video: { key: QuestionType.ShortText, type: DataType.Video },
-  location: { key: QuestionType.ShortText, type: DataType.Location },
+  // location: { key: QuestionType.ShortText, type: DataType.Location },
   rating: { key: QuestionType.ShortText, type: DataType.Rating },
 };
 
@@ -88,7 +88,7 @@ export const QUESTION_DEFAULT_DATA_TYPE_ICON: {
   text: <ShortTextIcon />,
   email: <EmailIcon />,
   video: <VideoCameraFrontIcon />,
-  location: <LocationOnIcon />,
+  // location: <LocationOnIcon />,
   rating: <StarIcon />,
 };
 

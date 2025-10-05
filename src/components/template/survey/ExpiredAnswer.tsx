@@ -13,7 +13,7 @@ const ExpiredAnswer: React.FC<ExpiredAnswerProps> = ({ survey }) => {
   const mainUrl = useAuthStore((state) => state.mainUrl);
 
   function handleNewAnswer() {
-    window.location.href = `/dashboard/survey/view/${survey.hashedUniqueKey}`;
+    window.location.href = `/survey/view/${survey.hashedUniqueKey}`;
   }
 
   return (

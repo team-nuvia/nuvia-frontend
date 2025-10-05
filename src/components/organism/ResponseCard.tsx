@@ -1,4 +1,7 @@
+import { QuestionAnswerFileNestedResponseDto } from '@share/interface/ianswer-nested';
+import ActionButton from '@components/atom/ActionButton';
 import CommonText from '@components/atom/CommonText';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { Box, Checkbox, Chip, FormControl, FormControlLabel, FormGroup, Grid, Radio, RadioGroup, Rating, Stack, TextField } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
@@ -8,7 +11,8 @@ import { QuestionType } from '@share/enums/question-type';
 import { IQuestionOption } from '@share/interface/iquestion';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
-import { useMemo } from 'react';
+import Image from 'next/image';
+import { useEffect, useMemo, useState } from 'react';
 
 // const DATA_TYPE_MAP = {
 //   [DataType.Text]: '텍스트',
@@ -33,7 +37,7 @@ interface ResponseCardProps {
   questionType: QuestionType;
   dataType: DataType;
   isRequired: boolean;
-  answers: Map<number, { optionId: number | null; value: string | number | null }>;
+  answers: Map<number, { optionId: number | null; value: string | number | null; referenceBuffer: QuestionAnswerFileNestedResponseDto | null }>;
   questionOptions?: IQuestionOption[];
   handleOptionChange: (questionId: number, optionId: number, value: any) => void;
   // handleOptionClear: () => void;
@@ -52,6 +56,7 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
   handleOptionChange,
   // handleOptionClear,
 }) => {
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const inputValueType = useMemo(() => {
     switch (dataType) {
       case DataType.Image:
@@ -60,8 +65,8 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
         return 'file';
       case DataType.File:
         return 'file';
-      case DataType.Location:
-        return 'text';
+      // case DataType.Location:
+      //   return 'text';
       case DataType.Rating:
         return 'number';
       case DataType.Date:
@@ -77,6 +82,45 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
         return 'text';
     }
   }, [dataType]);
+
+  function bufferToBase64ImageUrl(bufferData: any, mimeType: string = 'image/jpeg'): string {
+    const uint8Array = new Uint8Array(bufferData.data || bufferData);
+
+    // Base64 인코딩
+    let binary = '';
+    uint8Array.forEach((byte) => {
+      binary += String.fromCharCode(byte);
+    });
+    const base64 = btoa(binary);
+
+    return `data:${mimeType};base64,${base64}`;
+  }
+
+  useEffect(() => {
+    const file = answers.get(1)?.value as unknown as File;
+    const referenceBuffer = answers.get(1)?.referenceBuffer as unknown as QuestionAnswerFileNestedResponseDto;
+
+    if (DataType.Image !== dataType && DataType.File !== dataType && DataType.Video !== dataType) {
+      return;
+    }
+
+    console.log('🚀 ~ ResponseCard ~ answers.get(1):', answers.get(1));
+    console.log('🚀 ~ ResponseCard ~ referenceBuffer:', referenceBuffer);
+    if (referenceBuffer) {
+      const imageUrl = bufferToBase64ImageUrl(referenceBuffer.buffer.data, referenceBuffer.mimetype);
+      console.log('🚀 ~ ResponseCard ~ imageUrl:', imageUrl);
+      setPreviewImage(imageUrl);
+      return;
+    }
+
+    if (!file || !(file instanceof File)) return;
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      setPreviewImage(reader.result as string);
+    };
+    reader.onerror = (error) => console.error(error);
+  }, [answers.get(1)?.value, answers.get(1)?.referenceBuffer]);
 
   const dynamicField = (dataType: DataType, answers: Map<number, any>) => {
     if (dataType === DataType.Rating) {
@@ -192,20 +236,54 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
     if (dataType === DataType.Image) {
       /* 설문 응답할 때 처리 */
       return (
-        <TextField
-          fullWidth
-          size="small"
-          label="이미지"
-          type="file"
-          slotProps={{
-            htmlInput: {
-              accept: 'image/*',
-            },
-          }}
-          value={answers?.get(1)?.value}
-          onChange={(e) => handleOptionChange(idx, 1, e.target.value)}
-          // onChange={(e) => handleQuestionChange(id, 'value', e.target.value)}
-        />
+        <Stack direction="row" gap={1}>
+          <Stack
+            position="relative"
+            flex={1}
+            direction="row"
+            gap={1}
+            alignItems="center"
+            justifyContent="center"
+            width="auto"
+            minWidth={600}
+            minHeight={300}
+            height="auto"
+            sx={{ backgroundColor: 'grey' }}
+          >
+            {(answers?.get(1)?.value || previewImage) && (
+              /* 이미지 사이징 자동화?? */
+              <Image
+                src={previewImage ?? ''}
+                alt="이미지 미리보기"
+                fill // This makes the image fill its parent
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // Optimize image loading for different screen sizes
+                style={{ objectFit: 'contain', borderRadius: 8, border: '1px solid #eee' }}
+                unoptimized
+              />
+            )}
+          </Stack>
+          <Box>
+            <ActionButton component="label" variant="contained" startIcon={<CloudUploadIcon />}>
+              이미지 등록
+              <input
+                type="file"
+                accept="image/*"
+                // value={answers?.get(1)?.value}
+                onChange={(e) => handleOptionChange(idx, 1, e.currentTarget.files?.[0])}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 1,
+                  height: 1,
+                  overflow: 'hidden',
+                  clip: 'rect(0 0 0 0)',
+                  clipPath: 'inset(50%)',
+                }}
+              />
+            </ActionButton>
+          </Box>
+        </Stack>
       );
     }
     if (dataType === DataType.Video) {
@@ -227,15 +305,15 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
         />
       );
     }
-    if (dataType === DataType.Location) {
-      /* 설문 응답할 때 처리 */
-      // return (
-      //   <CommonText variant="caption" color="error">
-      //     설문응답 시 표시됩니다.
-      //   </CommonText>
-      // );
-      return;
-    }
+    // if (dataType === DataType.Location) {
+    //   /* 설문 응답할 때 처리 */
+    //   // return (
+    //   //   <CommonText variant="caption" color="error">
+    //   //     설문응답 시 표시됩니다.
+    //   //   </CommonText>
+    //   // );
+    //   return;
+    // }
     return (
       <TextField
         fullWidth
