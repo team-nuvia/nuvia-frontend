@@ -1,6 +1,8 @@
 /* query key에 사용되는 키 목록 */
 /* event bus에서 필요한 키 도메인 별로 뜯어서 사용 */
 
+import { SurveyStatus } from '@share/enums/survey-status';
+
 const queryKeys = {
   user: {
     me: () => ['user', 'me'] as const,
@@ -10,7 +12,7 @@ const queryKeys = {
     list: () => ['categories'] as const,
   },
   survey: {
-    list: () => ['survey', 'list'] as const,
+    list: (type?: SurveyStatus) => ['survey', 'list', type ?? 'all'] as const,
     detail: (id?: number) => ['survey', 'detail', id] as const,
     binList: () => ['survey', 'bin'] as const,
     categoryList: () => ['categories', 'list'] as const,

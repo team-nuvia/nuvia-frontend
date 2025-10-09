@@ -141,7 +141,7 @@ export async function middleware(req: NextRequest, res: NextResponse) {
     if (verifiedSession === null) {
       return forceLogout(url);
     }
-    if ((verifiedSession as { verified: boolean }).verified && (isGuestPath(pathname) || pathname === '/')) {
+    if ((verifiedSession as { verified: boolean })?.verified && (isGuestPath(pathname) || pathname === '/')) {
       url.pathname = '/dashboard';
       url.search = '';
       return NextResponse.redirect(url);

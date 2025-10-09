@@ -14,7 +14,7 @@ import { MetadataStatusType } from '@share/enums/metadata-status-type';
 import { SurveyStatus, SurveyStatusList } from '@share/enums/survey-status';
 import { UserRole } from '@share/enums/user-role';
 import { SearchSurvey } from '@share/interface/search-survey';
-import { useSuspenseQuery } from '@tanstack/react-query';
+import { useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { LocalizationManager } from '@util/LocalizationManager';
 import { roleAtLeast } from '@util/roleAtLeast';
 import { AnimatePresence } from 'framer-motion';
@@ -28,8 +28,10 @@ export default function SurveyList() {
   const [selectedTab, setSelectedTab] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>(SurveyStatusList.join(','));
-  const { data, isLoading } = useSuspenseQuery({
-    queryKey: queryKeys.survey.list(),
+  const { data, isLoading } = useQuery({
+    queryKey: queryKeys.survey.list(
+      [SurveyStatusList.join(','), SurveyStatus.Draft, SurveyStatus.Active, SurveyStatus.Closed][selectedTab] as SurveyStatus,
+    ),
     queryFn: () =>
       getSurveyList({
         page: 1,

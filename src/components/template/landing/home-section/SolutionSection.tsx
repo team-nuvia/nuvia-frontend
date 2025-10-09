@@ -12,9 +12,9 @@ export default function SolutionSection() {
   const steps = [
     {
       icon: <Create sx={{ fontSize: 56, color: theme.palette.primary.main }} />,
-      title: '직관적인 설문 제작',
-      description: '드래그 앤 드롭으로 3분 만에 완성',
-      features: ['템플릿 제공', '실시간 미리보기', '다양한 질문 유형'],
+      title: '간편 설문 생성',
+      description: '복잡한 설정 없이 누구나 빠르게 설문을 만들 수 있습니다.',
+      features: ['직관적 UI', '다양한 질문 유형', '실시간 미리보기'],
       time: '3분',
     },
     {
@@ -185,7 +185,7 @@ export default function SolutionSection() {
 
         <Box textAlign="center" sx={{ mt: 8, ...getFadeUpStyles(inView, 800) }}>
           <Typography variant="h6" sx={{ color: theme.palette.primary.main, fontWeight: 600 }}>
-            💡 기존 도구 대비 평균 제작 시간: 30분 → 5분
+            💡 설문 제작, 공유, 분석까지 단 몇 분이면 충분합니다
           </Typography>
         </Box>
       </Container>

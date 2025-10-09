@@ -3,6 +3,7 @@
 import { useEventBus } from '@/store/event-bus.store';
 import { AppEventType } from '@/store/lib/app-event';
 import queryKeys from '@/store/lib/query-key';
+import { SurveyStatus, SurveyStatusList } from '@share/enums/survey-status';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
@@ -16,6 +17,9 @@ export function QueryInvalidationBridge() {
         case AppEventType.NOTIFICATION_RELOAD: {
           // 알림 갱신 관련 데이터 일괄
           qc.invalidateQueries({ queryKey: queryKeys.survey.list() });
+          for (const status of [SurveyStatusList.join(','), SurveyStatus.Draft, SurveyStatus.Active, SurveyStatus.Closed]) {
+            qc.invalidateQueries({ queryKey: queryKeys.survey.list(status as SurveyStatus) });
+          }
           qc.invalidateQueries({ queryKey: queryKeys.survey.metadata() });
           qc.invalidateQueries({ queryKey: queryKeys.notification.list() });
           qc.invalidateQueries({ queryKey: queryKeys.organization.list() });
@@ -28,11 +32,17 @@ export function QueryInvalidationBridge() {
         }
         case AppEventType.SURVEY_TOGGLE_VISIBILITY: {
           qc.invalidateQueries({ queryKey: queryKeys.survey.list() });
+          for (const status of [SurveyStatusList.join(','), SurveyStatus.Draft, SurveyStatus.Active, SurveyStatus.Closed]) {
+            qc.invalidateQueries({ queryKey: queryKeys.survey.list(status as SurveyStatus) });
+          }
           break;
         }
         case AppEventType.SURVEY_UPDATED:
         case AppEventType.SURVEY_DELETED: {
           qc.invalidateQueries({ queryKey: queryKeys.survey.list() });
+          for (const status of [SurveyStatusList.join(','), SurveyStatus.Draft, SurveyStatus.Active, SurveyStatus.Closed]) {
+            qc.invalidateQueries({ queryKey: queryKeys.survey.list(status as SurveyStatus) });
+          }
           qc.invalidateQueries({ queryKey: queryKeys.survey.metadata() });
           break;
         }
@@ -42,6 +52,9 @@ export function QueryInvalidationBridge() {
           qc.invalidateQueries({ queryKey: queryKeys.dashboard.recentSurvey() });
           qc.invalidateQueries({ queryKey: queryKeys.graph.dailyResponseCount() });
           qc.invalidateQueries({ queryKey: queryKeys.survey.list() });
+          for (const status of [SurveyStatusList.join(','), SurveyStatus.Draft, SurveyStatus.Active, SurveyStatus.Closed]) {
+            qc.invalidateQueries({ queryKey: queryKeys.survey.list(status as SurveyStatus) });
+          }
           qc.invalidateQueries({ queryKey: queryKeys.survey.metadata() });
           break;
         }
@@ -49,6 +62,9 @@ export function QueryInvalidationBridge() {
           qc.invalidateQueries({ queryKey: queryKeys.survey.binList() });
           qc.invalidateQueries({ queryKey: queryKeys.survey.metadata() });
           qc.invalidateQueries({ queryKey: queryKeys.survey.list() });
+          for (const status of [SurveyStatusList.join(','), SurveyStatus.Draft, SurveyStatus.Active, SurveyStatus.Closed]) {
+            qc.invalidateQueries({ queryKey: queryKeys.survey.list(status as SurveyStatus) });
+          }
           break;
         }
         case AppEventType.USER_SETTINGS_UPDATED: {

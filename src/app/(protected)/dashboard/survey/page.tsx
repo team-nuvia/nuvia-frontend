@@ -1,7 +1,7 @@
 import queryKeys from '@/store/lib/query-key';
-import { getDashboardRecentSurveysServer } from '@api/survey/get-dashboard-recent-surveys-server';
-import { getSurveyList } from '@api/survey/get-survey-list';
-import { getSurveyMetadata } from '@api/survey/get-survey-metadata';
+import { getSurveyListServer } from '@api/server/get-survey-list-server';
+import { getSurveyMetadataServer } from '@api/server/get-survey-metadata-server';
+import { getDashboardRecentSurveysServer } from '@api/server/get-dashboard-recent-surveys-server';
 import LoadingScreen from '@components/molecular/LoadingScreen';
 import SurveyList from '@components/template/survey/SurveyList';
 import { MetadataStatusType } from '@share/enums/metadata-status-type';
@@ -15,7 +15,7 @@ export default async function Page() {
     queryClient.prefetchQuery({
       queryKey: queryKeys.survey.list(),
       queryFn: () =>
-        getSurveyList({
+        getSurveyListServer({
           page: 1,
           limit: 10,
           search: '',
@@ -24,7 +24,7 @@ export default async function Page() {
     }),
     queryClient.prefetchQuery({
       queryKey: queryKeys.survey.metadata(),
-      queryFn: () => getSurveyMetadata(MetadataStatusType.SurveyList),
+      queryFn: () => getSurveyMetadataServer(MetadataStatusType.SurveyList),
     }),
     queryClient.prefetchQuery({
       queryKey: queryKeys.dashboard.recentSurvey(),
