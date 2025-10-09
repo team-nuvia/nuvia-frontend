@@ -10,12 +10,12 @@ import { changePassword, ChangePasswordData } from '@api/user/change-password';
 import { deleteAccount } from '@api/user/delete-account';
 import { getUsersMe } from '@api/user/get-users-me';
 import { updateNickname } from '@api/user/setting/update-nickname';
-import { suspendAccount } from '@api/user/suspend-account';
 import ActionButton from '@components/atom/ActionButton';
 import LimitTextField from '@components/atom/LimitTextField';
 import { GlobalDialogContext } from '@context/GlobalDialogContext';
 import {
   AccessTime as AccessTimeIcon,
+  ArrowBack,
   CalendarToday as CalendarIcon,
   Cancel as CancelIcon,
   Delete as DeleteIcon,
@@ -36,10 +36,6 @@ import { useFormik } from 'formik';
 import React, { useContext, useState } from 'react';
 import * as Yup from 'yup';
 
-interface UpdateUserInfoData {
-  name: string;
-}
-
 interface SettingProps {}
 
 const Settings: React.FC<SettingProps> = () => {
@@ -50,17 +46,6 @@ const Settings: React.FC<SettingProps> = () => {
   const { handleOpenDialog } = useContext(GlobalDialogContext);
   const [isEditingName, setIsEditingName] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
-  // const [confirmDialog, setConfirmDialog] = useState<{
-  //   open: boolean;
-  //   type: 'suspend' | 'delete' | null;
-  //   title: string;
-  //   message: string;
-  // }>({
-  //   open: false,
-  //   type: null,
-  //   title: '',
-  //   message: '',
-  // });
 
   // 사용자 정보 조회
   const {
@@ -105,19 +90,19 @@ const Settings: React.FC<SettingProps> = () => {
   });
 
   // 계정 휴면 처리 mutation
-  const suspendAccountMutation = useMutation({
-    mutationKey: mutationKeys.user.suspendAccount(),
-    mutationFn: async () => suspendAccount(),
-    onSuccess: (data) => {
-      // handleCloseDialog();
-      // 성공 알림 표시
-      addNotice(data.message ?? '계정 휴면 처리되었습니다.', 'success');
-    },
-    onError: (error: AxiosError<ServerResponse<null>>) => {
-      console.error(error.response?.data?.message ?? '계정 휴면 처리 실패:', error);
-      // 에러 알림 표시
-    },
-  });
+  // const suspendAccountMutation = useMutation({
+  //   mutationKey: mutationKeys.user.suspendAccount(),
+  //   mutationFn: async () => suspendAccount(),
+  //   onSuccess: (data) => {
+  //     // handleCloseDialog();
+  //     // 성공 알림 표시
+  //     addNotice(data.message ?? '계정 휴면 처리되었습니다.', 'success');
+  //   },
+  //   onError: (error: AxiosError<ServerResponse<null>>) => {
+  //     console.error(error.response?.data?.message ?? '계정 휴면 처리 실패:', error);
+  //     // 에러 알림 표시
+  //   },
+  // });
 
   // 계정 탈퇴 mutation
   const deleteAccountMutation = useMutation({
@@ -183,12 +168,12 @@ const Settings: React.FC<SettingProps> = () => {
   function handleOpenSuspendDialog() {
     handleOpenDialog({
       title: '계정 휴면 처리',
-      content: '계정을 휴면 처리하시겠습니까? 휴면 처리된 계정은 로그인이 제한됩니다.',
+      content: '준비 중인 기능입니다.',
       type: 'warning',
       confirmText: '휴면 처리',
-      actionCallback: () => {
-        suspendAccountMutation.mutate();
-      },
+      // actionCallback: () => {
+      //   suspendAccountMutation.mutate();
+      // },
     });
   }
 
@@ -247,9 +232,20 @@ const Settings: React.FC<SettingProps> = () => {
 
   return (
     <Box sx={{ maxWidth: 800, mx: 'auto', p: 3 }}>
-      <Typography variant="h4" gutterBottom sx={{ mb: 4, fontWeight: 600 }}>
-        사용자 설정
-      </Typography>
+      <Stack direction="row" alignItems="center" gap={2} mb={4}>
+        <ActionButton
+          variant="text"
+          size="large"
+          startIcon={<ArrowBack />}
+          onClick={() => router.push('/dashboard/user')}
+          onMouseEnter={() => router.prefetch('/dashboard/user')}
+        >
+          뒤로가기
+        </ActionButton>
+        <Typography variant="h4" sx={{ fontWeight: 600 }}>
+          사용자 설정
+        </Typography>
+      </Stack>
 
       {/* 사용자 기본 정보 */}
       <Card sx={{ mb: 3 }}>
@@ -327,11 +323,10 @@ const Settings: React.FC<SettingProps> = () => {
           ) : (
             <form onSubmit={nicknameForm.handleSubmit}>
               <LimitTextField
-                fullWidth
                 maxLength={20}
                 label="닉네임"
                 name="nickname"
-                value={nicknameForm.values.nickname}
+                value={user?.nickname ?? nicknameForm.values.nickname}
                 onChange={nicknameForm.handleChange}
                 onBlur={nicknameForm.handleBlur}
                 error={nicknameForm.touched.nickname && Boolean(nicknameForm.errors.nickname)}

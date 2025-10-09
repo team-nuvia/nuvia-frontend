@@ -1,9 +1,11 @@
+import { useAuthStore } from '@/store/auth.store';
 import ActionButton from '@components/atom/ActionButton';
 import { Card, Container, Stack, Typography } from '@mui/material';
-import router from 'next/router';
 
 interface SecurityProps {}
 const Security: React.FC<SecurityProps> = () => {
+  const router = useAuthStore((state) => state.router)!;
+
   return (
     <Container maxWidth="md">
       <Typography variant="h6" fontWeight="bold" mb={3}>
@@ -20,7 +22,12 @@ const Security: React.FC<SecurityProps> = () => {
                 마지막 변경: 30일 전
               </Typography>
             </Stack>
-            <ActionButton variant="outlined" size="small" onClick={() => router.push('/dashboard/user/settings')}>
+            <ActionButton
+              variant="outlined"
+              size="small"
+              onClick={() => router.push('/dashboard/user/settings')}
+              onMouseEnter={() => router.prefetch('/dashboard/user/settings')}
+            >
               변경
             </ActionButton>
           </Stack>

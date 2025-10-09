@@ -117,6 +117,7 @@ serverApi.interceptors.response.use(
           if (maxRetryCount < MAX_RETRY_COUNT) {
             try {
               maxRetryCount++;
+              console.log('여기냐');
 
               await serverApi.post('/auth/refresh');
               maxRetryCount = 0;

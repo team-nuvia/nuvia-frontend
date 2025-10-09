@@ -24,6 +24,13 @@ function mergeCookies(existing: string, setCookies: string[]) {
 
 export async function getUserInformation() {
   const cookieStore = await cookies();
+  const hasSession = cookieStore.has('session');
+  const hasAccessToken = cookieStore.has('access_token');
+
+  if (!hasSession || !hasAccessToken) {
+    return null;
+  }
+
   let cookieHeader = cookieStore.toString();
 
   const verifyRes = await fetch(`${API_URL}/auth/verify`, {

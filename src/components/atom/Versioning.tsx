@@ -15,7 +15,7 @@ const Versioning: React.FC<VersioningProps> = (props) => {
         position: 'absolute',
         top: 67,
         left: 8,
-        zIndex: 10,
+        zIndex: 1000,
         fontWeight: 700,
         letterSpacing: 1,
         // 텍스트 마스크로 색상 반전 효과

@@ -76,7 +76,6 @@ export const AxiosProvider = ({ children }: { children: React.ReactNode }) => {
               if (maxRetryCount.current < MAX_RETRY_COUNT) {
                 try {
                   maxRetryCount.current++;
-
                   await snapApi.post('/auth/refresh');
                   maxRetryCount.current = 0;
                 } catch (error: any) {
