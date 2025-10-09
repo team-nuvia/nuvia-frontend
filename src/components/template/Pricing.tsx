@@ -1,18 +1,22 @@
 'use client';
 
 import { GetPlansModel } from '@/models/GetPlansModel';
+import { useAuthStore } from '@/store/auth.store';
 import queryKeys from '@/store/lib/query-key';
 import { getPlans } from '@api/plan/get-plans';
+import { GlobalDialogContext } from '@context/GlobalDialogContext';
 import { Check, Star } from '@mui/icons-material';
 import { Box, Button, Card, CardContent, Chip, Container, Grid, Stack, Typography, useTheme } from '@mui/material';
 import { PlanNameType } from '@share/enums/plan-name-type.enum';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { LocalizationManager } from '@util/LocalizationManager';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 
 interface PricingProps {}
 const Pricing: React.FC<PricingProps> = () => {
   const theme = useTheme();
+  const router = useAuthStore((state) => state.router)!;
+  const { handleOpenDialog } = useContext(GlobalDialogContext);
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
   const { data: plansResponse } = useSuspenseQuery<ServerResponse<GetPlansModel[]>>({
     queryKey: queryKeys.plan.list(),
@@ -258,6 +262,23 @@ const Pricing: React.FC<PricingProps> = () => {
                           bgcolor: theme.palette.primary.dark,
                         },
                       }),
+                    }}
+                    onMouseEnter={() => {
+                      if (plan.name !== PlanNameType.Free) {
+                        router.prefetch('/auth/login');
+                      }
+                    }}
+                    onClick={() => {
+                      if (plan.name === PlanNameType.Free) {
+                        router.push('/auth/login');
+                      } else {
+                        handleOpenDialog({
+                          title: `${LocalizationManager.translate(plan.name)} 플랜 구독`,
+                          content: '플랜 구독 기능은 준비 중입니다.',
+                          type: 'warning',
+                          confirmText: '구독하기',
+                        });
+                      }
                     }}
                   >
                     {plan.buttonText}
