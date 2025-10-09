@@ -103,11 +103,8 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
       return;
     }
 
-    console.log('🚀 ~ ResponseCard ~ answers.get(1):', answers.get(1));
-    console.log('🚀 ~ ResponseCard ~ referenceBuffer:', referenceBuffer);
     if (referenceBuffer) {
       const imageUrl = bufferToBase64ImageUrl(referenceBuffer.buffer.data, referenceBuffer.mimetype);
-      console.log('🚀 ~ ResponseCard ~ imageUrl:', imageUrl);
       setPreviewImage(imageUrl);
       return;
     }

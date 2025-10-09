@@ -1,40 +1,65 @@
-import { GetMeResponse } from '@/models/GetMeResponse';
 import { API_URL } from '@common/variables';
-import axios from 'axios';
 import { cookies } from 'next/headers';
+
+function mergeCookies(existing: string, setCookies: string[]) {
+  // existing: "a=1; b=2"
+  const jar = new Map<string, string>();
+  existing
+    .split(';')
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .forEach((kv) => {
+      const [k, v] = kv.split('=');
+      if (k) jar.set(k, v ?? '');
+    });
+  for (const sc of setCookies) {
+    const [pair] = sc.split(';'); // "name=value"
+    const [k, v] = pair.split('=');
+    if (k) jar.set(k.trim(), v ?? '');
+  }
+  return Array.from(jar.entries())
+    .map(([k, v]) => `${k}=${v}`)
+    .join('; ');
+}
 
 export async function getUserInformation() {
   const cookieStore = await cookies();
-  try {
-    const verifyResponse = await axios.post(
-      `${API_URL}/auth/verify`,
-      {},
+  let cookieHeader = cookieStore.toString();
+
+  const verifyRes = await fetch(`${API_URL}/auth/verify`, {
+    method: 'POST',
+    headers: { cookie: cookieHeader, 'cache-control': 'no-cache' },
+    cache: 'no-store',
+  });
+
+  let userRes = await fetch(`${API_URL}/users/me`, {
+    headers: { cookie: cookieHeader },
+    cache: 'no-store',
+  });
+
+  if (userRes.status === 401) {
+    // 1) 내부 프록시 호출 (브라우저에도 Set-Cookie 전달)
+    const refreshRes = await fetch(
+      `${process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : process.env.NEXT_PUBLIC_SITE_URL}/api/auth/refresh`,
       {
-        headers: {
-          'cache-control': 'no-cache',
-          Cookie: cookieStore.toString(),
-        },
+        method: 'POST',
+        cache: 'no-store',
+        headers: { cookie: cookieHeader },
+        credentials: 'include',
       },
     );
 
-    if (verifyResponse.status !== 200 && verifyResponse.status !== 201) return null;
-  } catch (error) {
-    return null;
-  }
+    // 2) 같은 서버 렌더 내 재시도용으로 수동 머지
+    const setCookies = refreshRes.headers.getSetCookie?.() ?? [];
+    cookieHeader = mergeCookies(cookieHeader, setCookies);
 
-  try {
-    const userResponse = await axios.get(`${API_URL}/users/me`, {
-      headers: {
-        Cookie: cookieStore.toString(),
-        'cache-control': 'no-cache',
-      },
+    userRes = await fetch(`${API_URL}/users/me`, {
+      headers: { cookie: cookieHeader },
+      cache: 'no-store',
     });
-    const userJson = await userResponse.data;
-
-    if (userResponse.status !== 200 && userResponse.status !== 201) return null;
-
-    return userJson.payload as GetMeResponse; // { user: {...} }
-  } catch (error) {
-    return null;
   }
+
+  if (!verifyRes.ok || !userRes.ok) return null;
+  const userJson = await userRes.json();
+  return userJson.payload;
 }

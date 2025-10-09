@@ -1,13 +1,11 @@
 import '@/styles/global.css';
 import { BRAND_NAME } from '@common/variables';
 import GoogleAnalytics from '@components/GoogleAnalytics';
-import LoadingScreen from '@components/molecular/LoadingScreen';
 import Providers from '@context/providers';
 import { InitColorSchemeScript } from '@mui/material';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import type { Metadata, Viewport } from 'next';
 import { Noto_Sans_KR } from 'next/font/google';
-import { Suspense } from 'react';
 
 const notoSansKR = Noto_Sans_KR({
   weight: ['100', '300', '400', '500', '700', '900'],
@@ -16,7 +14,10 @@ const notoSansKR = Noto_Sans_KR({
 });
 
 export const metadata: Metadata = {
-  title: `${BRAND_NAME} - 빠르고 간편한 설문 플랫폼`,
+  title: {
+    default: `${BRAND_NAME} - 빠르고 간편한 설문 플랫폼`,
+    template: `%s | ${BRAND_NAME}`,
+  },
   description: '설문을 쉽고 빠르게 생성하고 관리하세요. 직관적인 인터페이스로 누구나 쉽게 설문을 만들고 응답을 분석할 수 있습니다.',
   keywords: ['설문', '설문조사', '폼', '데이터 수집', '응답 분석', '온라인 설문'],
   icons: {
@@ -32,6 +33,7 @@ export const metadata: Metadata = {
     ],
   },
   openGraph: {
+    siteName: BRAND_NAME,
     title: `${BRAND_NAME} - 빠르고 간편한 설문 플랫폼`,
     description: '설문을 쉽고 빠르게 생성하고 관리하세요. 직관적인 인터페이스로 누구나 쉽게 설문을 만들고 응답을 분석할 수 있습니다.',
     type: 'website',
@@ -71,9 +73,7 @@ export default function RootLayout({
         <InitColorSchemeScript defaultMode="system" attribute="class" modeStorageKey="theme-mode" />
         {measurementId && <GoogleAnalytics measurementId={measurementId} />}
         <AppRouterCacheProvider>
-          <Suspense fallback={<LoadingScreen loadingText="서비스 로드 중..." />}>
-            <Providers>{children}</Providers>
-          </Suspense>
+          <Providers>{children}</Providers>
         </AppRouterCacheProvider>
       </body>
     </html>

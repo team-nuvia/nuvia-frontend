@@ -22,7 +22,7 @@ const AuthenticationProvider = ({ user, initialize }: { user: GetMeResponse | nu
         setMainUrl('/');
       }
     }
-  }, []);
+  }, [user, initialize]);
 
   return null;
 };

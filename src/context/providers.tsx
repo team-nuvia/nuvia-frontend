@@ -1,5 +1,7 @@
 import { getUserInformation } from '@api/server/get-user-information';
+import LoadingScreen from '@components/molecular/LoadingScreen';
 import { CssBaseline } from '@mui/material';
+import { Suspense } from 'react';
 import AuthenticationProvider from './AuthenticationContext';
 import { AxiosProvider } from './AxiosContext';
 import GlobalDialogProvider from './GlobalDialogContext';
@@ -10,15 +12,20 @@ import { QueryInvalidationBridge } from './QueryInvalidationBridge';
 import ReactQueryProvider from './ReactQueryProvider';
 import { ThemeProvider } from './ThemeContext';
 
+const InitializeAuth = async () => {
+  const user = await getUserInformation();
+  return <AuthenticationProvider initialize={true} user={user} />;
+};
+
 interface ProvidersProps {
   children: React.ReactNode;
 }
 const Providers: React.FC<ProvidersProps> = async ({ children }) => {
-  const user = await getUserInformation();
-
   return (
     <ThemeProvider>
-      <AuthenticationProvider initialize={true} user={user} />
+      <Suspense fallback={<LoadingScreen loadingText="서비스 로드 중..." />}>
+        <InitializeAuth />
+      </Suspense>
       <AxiosProvider>
         <CssBaseline />
         <GlobalSnackbarSettingProvider>
@@ -26,11 +33,7 @@ const Providers: React.FC<ProvidersProps> = async ({ children }) => {
             <ReactQueryProvider>
               <QueryInvalidationBridge />
               <NetworkProvider>
-                <GlobalDialogProvider>
-                  {/* <LoadingProvider> */}
-                  {children}
-                  {/* </LoadingProvider> */}
-                </GlobalDialogProvider>
+                <GlobalDialogProvider>{children}</GlobalDialogProvider>
               </NetworkProvider>
             </ReactQueryProvider>
           </GlobalSnackbar>
