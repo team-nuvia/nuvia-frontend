@@ -9,6 +9,7 @@ interface UserCardProps {
   nameSize?: number;
   profileImage: string | null;
   isVisible?: boolean;
+  isLoading?: boolean;
 }
 
 const UserCard: React.FC<UserCardProps> = (props) => {
@@ -35,7 +36,7 @@ const UserCard: React.FC<UserCardProps> = (props) => {
 
   return (
     <Stack ref={containerRef}>
-      <UserDescription {...props} isVisible={isVisible} />
+      <UserDescription {...props} isVisible={isVisible} isLoading={props.isLoading} />
     </Stack>
   );
 };

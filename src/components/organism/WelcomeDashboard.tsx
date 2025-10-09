@@ -2,7 +2,7 @@ import { useAuthStore } from '@/store/auth.store';
 import ActionButton from '@components/atom/ActionButton';
 import CommonText from '@components/atom/CommonText';
 import { Add } from '@mui/icons-material';
-import { Stack } from '@mui/material';
+import { Skeleton, Stack } from '@mui/material';
 import { UserRole } from '@share/enums/user-role';
 import { roleAtLeast } from '@util/roleAtLeast';
 import { useRouter } from 'next/navigation';
@@ -10,6 +10,18 @@ import { useRouter } from 'next/navigation';
 const WelcomeDashboard = () => {
   const user = useAuthStore((state) => state.user);
   const router = useRouter();
+
+  if (!user) {
+    return (
+      <Stack gap={2}>
+        <Skeleton variant="rounded" width={170} height={24} />
+        <Stack direction="row" gap={1}>
+          <Skeleton variant="rounded" width={150} height={42} />
+          <Skeleton variant="rounded" width={150} height={42} />
+        </Stack>
+      </Stack>
+    );
+  }
 
   return (
     <Stack gap={2}>
@@ -22,6 +34,9 @@ const WelcomeDashboard = () => {
             color="black"
             size="large"
             startIcon={<Add />}
+            onMouseEnter={() => {
+              router.prefetch('/dashboard/survey/create');
+            }}
             onClick={() => {
               router.push('/dashboard/survey/create');
             }}
@@ -34,6 +49,9 @@ const WelcomeDashboard = () => {
             color="black"
             variant="outlined"
             shape="rounded"
+            onMouseEnter={() => {
+              router.prefetch('/dashboard/survey');
+            }}
             onClick={() => {
               router.push('/dashboard/survey');
             }}

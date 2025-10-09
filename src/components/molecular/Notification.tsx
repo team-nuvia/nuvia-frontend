@@ -17,7 +17,7 @@ import { Badge, Box, Divider, IconButton, Menu, Paper, Stack, Tooltip, Typograph
 import { NotificationActionStatus } from '@share/enums/notification-action-status';
 import { NotificationType } from '@share/enums/notification-type';
 import { OrganizationRoleStatusType } from '@share/enums/organization-role-status-type';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { DateFormat } from '@util/dateFormat';
 import { isNil } from '@util/isNil';
 import { LocalizationManager } from '@util/LocalizationManager';
@@ -25,7 +25,6 @@ import { useRouter } from 'next/navigation';
 import React, { useContext, useMemo, useState } from 'react';
 
 const Notification = () => {
-  const queryClient = useQueryClient();
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
   const [page, setPage] = useState(1);

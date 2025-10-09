@@ -22,7 +22,6 @@ export function QueryInvalidationBridge() {
           break;
         }
         case AppEventType.NOTIFICATION_REFRESH: {
-          console.log('NOTIFICATION_REFRESH');
           qc.invalidateQueries({ queryKey: queryKeys.notification.list() });
           qc.invalidateQueries({ queryKey: queryKeys.organization.list() });
           break;
@@ -40,6 +39,7 @@ export function QueryInvalidationBridge() {
         case AppEventType.ORGANIZATION_UPDATED: {
           qc.invalidateQueries({ queryKey: queryKeys.organization.list() });
           qc.invalidateQueries({ queryKey: queryKeys.dashboard.metadata() });
+          qc.invalidateQueries({ queryKey: queryKeys.dashboard.recentSurvey() });
           qc.invalidateQueries({ queryKey: queryKeys.graph.dailyResponseCount() });
           qc.invalidateQueries({ queryKey: queryKeys.survey.list() });
           qc.invalidateQueries({ queryKey: queryKeys.survey.metadata() });

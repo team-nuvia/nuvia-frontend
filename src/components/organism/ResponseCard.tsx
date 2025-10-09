@@ -10,7 +10,6 @@ import { QuestionType } from '@share/enums/question-type';
 import { IAnswerResponse } from '@share/interface/ianswer-nested';
 import { IQuestionOption } from '@share/interface/iquestion';
 import dayjs from 'dayjs';
-import 'dayjs/locale/ko';
 import Image from 'next/image';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -104,11 +103,8 @@ const ResponseCard: React.FC<ResponseCardProps> = ({
       return;
     }
 
-    console.log('🚀 ~ ResponseCard ~ answers.get(1):', answers.get(1));
-    console.log('🚀 ~ ResponseCard ~ referenceBuffer:', referenceBuffer);
     if (referenceBuffer) {
       const imageUrl = bufferToBase64ImageUrl(referenceBuffer.buffer.data, referenceBuffer.mimetype);
-      console.log('🚀 ~ ResponseCard ~ imageUrl:', imageUrl);
       setPreviewImage(imageUrl);
       return;
     }

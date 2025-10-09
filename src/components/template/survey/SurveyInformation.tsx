@@ -20,6 +20,7 @@ import dayjs from 'dayjs';
 import { memo } from 'react';
 
 interface SurveyInformationProps {
+  isEditing: boolean;
   categories: ICategory[];
   handleChange: (name: string, value: any) => void;
   title: string;
@@ -36,6 +37,7 @@ interface SurveyInformationProps {
   errorsCategoryId?: string;
 }
 const SurveyInformation: React.FC<SurveyInformationProps> = ({
+  isEditing,
   categories,
   handleChange,
   title,
@@ -61,7 +63,7 @@ const SurveyInformation: React.FC<SurveyInformationProps> = ({
         borderRadius: 3,
         border: '1px solid',
         borderColor: 'divider',
-        background: `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.background.paper} 100%)`,
+        background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.background.default} 100%)`,
       }}
     >
       <Box sx={{ mb: 5 }}>
@@ -74,7 +76,7 @@ const SurveyInformation: React.FC<SurveyInformationProps> = ({
             fontSize: { xs: '1.75rem', md: '2.25rem' },
           }}
         >
-          설문 제작
+          {isEditing ? '설문 수정' : '설문 제작'}
         </Typography>
         <Typography
           variant="body1"
@@ -83,7 +85,7 @@ const SurveyInformation: React.FC<SurveyInformationProps> = ({
             fontWeight: 400,
           }}
         >
-          새로운 설문을 만들어보세요
+          {isEditing ? '기존 설문을 수정해보세요' : '새로운 설문을 만들어보세요'}
         </Typography>
       </Box>
 

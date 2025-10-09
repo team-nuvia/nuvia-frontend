@@ -1,5 +1,5 @@
 import CommonText from '@components/atom/CommonText';
-import { Avatar, Stack } from '@mui/material';
+import { Avatar, Skeleton, Stack } from '@mui/material';
 
 interface UserDescriptionProps {
   name: string;
@@ -8,8 +8,34 @@ interface UserDescriptionProps {
   nameSize?: number;
   profileImage: string | null;
   isVisible?: boolean;
+  isLoading?: boolean;
 }
-const UserDescription: React.FC<UserDescriptionProps> = ({ name, caption, content, nameSize = 16, profileImage, isVisible = false }) => {
+const UserDescription: React.FC<UserDescriptionProps> = ({
+  name,
+  caption,
+  content,
+  nameSize = 16,
+  profileImage,
+  isVisible = false,
+  isLoading = false,
+}) => {
+  if (isLoading) {
+    return (
+      <Stack direction="row" alignItems="center" justifyContent={isVisible ? 'flex-start' : 'center'} gap={2} mb={2}>
+        <Skeleton variant="circular" width={35} height={35} />
+        {isVisible && (
+          <Stack direction="column" justifyContent="center" gap={0.5}>
+            <Skeleton variant="rounded" width={140} height={14} />
+            <Stack direction="row" alignItems="center" gap={0.5}>
+              <Skeleton variant="rounded" width={38} height={14} />
+              {caption && <Skeleton variant="rounded" width={38} height={14} />}
+            </Stack>
+          </Stack>
+        )}
+      </Stack>
+    );
+  }
+
   return (
     <Stack direction="row" alignItems="center" justifyContent={isVisible ? 'flex-start' : 'center'} gap={2} mb={2}>
       <Avatar src={profileImage ?? 'https://github.com/shadcn.png'} sx={{ width: 35, height: 35 }} />

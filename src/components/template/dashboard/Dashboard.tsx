@@ -1,5 +1,6 @@
 'use client';
 
+import queryKeys from '@/store/lib/query-key';
 import { getLast7DaysResponseCount } from '@api/survey/get-daily-response-count';
 import { getSurveyMetadata } from '@api/survey/get-survey-metadata';
 import RecentSurveyData from '@components/molecular/RecentSurveyData';
@@ -8,17 +9,16 @@ import { BarChart, CheckCircleOutline, DonutLarge, PeopleAlt } from '@mui/icons-
 import { Box, Card, Container, Grid, Paper, Skeleton, Stack, Typography } from '@mui/material';
 import { MetadataStatusType } from '@share/enums/metadata-status-type';
 import { useQuery } from '@tanstack/react-query';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 const Dashboard = () => {
   const { data: metadataData, isLoading: metadataLoading } = useQuery({
-    queryKey: ['dashboard-metadata'],
+    queryKey: queryKeys.dashboard.metadata(),
     queryFn: () => getSurveyMetadata(MetadataStatusType.Dashboard),
   });
-
   const { data: last7Days, isLoading: last7DaysLoading } = useQuery({
-    queryKey: ['daily-response-count'],
+    queryKey: queryKeys.graph.dailyResponseCount(),
     queryFn: getLast7DaysResponseCount,
   });
 
@@ -76,6 +76,14 @@ const Dashboard = () => {
       },
     ];
   }, [metadataData]);
+
+  /* Social Login 리디렉트 경로 제거 */
+  useEffect(() => {
+    const nq = localStorage.getItem('nq');
+    if (nq) {
+      localStorage.removeItem('nq');
+    }
+  }, []);
 
   return (
     <Box sx={{ flexGrow: 1, p: 4 }}>

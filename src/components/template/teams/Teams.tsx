@@ -34,7 +34,7 @@ import { OrganizationRoleStatusType } from '@share/enums/organization-role-statu
 import { PlanNameType } from '@share/enums/plan-name-type.enum';
 import { SubscriptionTargetType } from '@share/enums/subscription-target-type';
 import { UserRole, UserRoleList } from '@share/enums/user-role';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { DateFormat } from '@util/dateFormat';
 import { LocalizationManager } from '@util/LocalizationManager';
 import { roleAtLeast } from '@util/roleAtLeast';
@@ -67,11 +67,21 @@ const Teams = () => {
   const mainUrl = useAuthStore((state) => state.mainUrl);
   const updateUser = useAuthStore((state) => state.actions.updateUser);
   const { handleOpenDialog } = useContext(GlobalDialogContext);
-  const { data: organizationData, isLoading: isOrganizationLoading } = useQuery({
+  const { data: organizationData, isLoading: isOrganizationLoading } = useSuspenseQuery({
     queryKey: queryKeys.organization.list(),
     queryFn: getUserOrganizations,
   });
   const currentOrganization = organizationData?.payload?.currentOrganization;
+  const {
+    data: organizationRoles,
+    isLoading: isOrganizationRolesLoading,
+    isRefetching: isOrganizationRolesRefetching,
+    refetch: refetchOrganizationRoles,
+  } = useQuery({
+    queryKey: queryKeys.organization.role(currentOrganization?.id),
+    queryFn: () => getOrganizationRoles(currentOrganization!.id),
+    enabled: !!currentOrganization?.id,
+  });
   const updatedRow = useCallback(
     (id: GridRowId) => {
       if (!apiRef.current) return null;
@@ -86,16 +96,7 @@ const Teams = () => {
     },
     [apiRef],
   );
-  const {
-    data: organizationRoles,
-    isLoading: isOrganizationRolesLoading,
-    isRefetching: isOrganizationRolesRefetching,
-    refetch: refetchOrganizationRoles,
-  } = useQuery({
-    queryKey: queryKeys.organization.role(currentOrganization?.id),
-    queryFn: () => getOrganizationRoles(currentOrganization!.id),
-    enabled: !!currentOrganization?.id,
-  });
+
   const { mutate: updateOrganizationRoleMutate } = useMutation({
     mutationKey: mutationKeys.subscription.updateOrganizationRole(),
     mutationFn: ({

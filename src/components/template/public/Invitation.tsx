@@ -5,13 +5,12 @@ import mutationKeys from '@/store/lib/mutation-key';
 import { getVerify } from '@api/auth/get-verify';
 import { verifyInvitationToken } from '@api/auth/verify-invitation-token';
 import ActionButton from '@components/atom/ActionButton';
-import LoadingContext from '@context/LoadingContext';
 import { CheckCircle as CheckCircleIcon, Error as ErrorIcon, Mail as MailIcon } from '@mui/icons-material';
 import { Alert, Box, Card, CardContent, CircularProgress, Container, Fade, Stack, Typography, useTheme } from '@mui/material';
 import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { usePathname } from 'next/navigation';
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 // 초대 승락 페이지 로직
 // 1. 토큰 유효성 검증을 위해 서버에 요청
@@ -37,7 +36,6 @@ const Invitation: React.FC<InvitationProps> = ({ token }) => {
   const router = useAuthStore((state) => state.router)!;
   const mainUrl = useAuthStore((state) => state.mainUrl);
   const addNotice = useAuthStore((state) => state.addNotice)!;
-  const { endLoading } = useContext(LoadingContext);
   const theme = useTheme();
   const [status, setStatus] = useState<InvitationStatus>('loading');
   const [errorMessage, setErrorMessage] = useState<string>('');
@@ -48,14 +46,12 @@ const Invitation: React.FC<InvitationProps> = ({ token }) => {
     mutationFn: () => verifyInvitationToken(token),
     onSuccess: async (data) => {
       if (data.ok && data.payload.verified) {
-        endLoading();
         setStatus('success');
         setErrorMessage('');
         addNotice(data.message ?? '초대를 수락했습니다.', 'success');
       }
     },
     onError: async (error: AxiosError<ServerResponse<{ verified: boolean }>>) => {
-      endLoading();
       if (error instanceof AxiosError && error.code === 'ERR_NETWORK') {
         console.error('초대 처리 중 오류 발생:', error);
         setStatus('error');
@@ -91,7 +87,6 @@ const Invitation: React.FC<InvitationProps> = ({ token }) => {
       }
     },
     onError: async (error) => {
-      endLoading();
       if (error instanceof AxiosError && error.code === 'ERR_NETWORK') {
         console.error('초대 처리 중 오류 발생:', error);
         setStatus('error');

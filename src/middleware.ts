@@ -1,24 +1,25 @@
 // import axios, { AxiosResponse } from 'axios';
-import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { API_URL } from '@common/variables';
 import { isGuestPath, isMemberPath } from '@util/guard';
+import { ResponseCookie } from 'next/dist/compiled/@edge-runtime/cookies';
+import { cookies } from 'next/headers';
+import { NextRequest, NextResponse } from 'next/server';
 
 async function setCookies(result: Response) {
-  const cookieList = result.headers.get('set-cookie') ?? [];
+  const cookieList = result.headers.getSetCookie() ?? [];
   for (const cookie of cookieList) {
     const [main, ...cookieRows] = cookie.split(';').map((keyValue) => keyValue.trim().split('='));
-    const parsedCookie = Object.fromEntries(cookieRows);
+    const parsedCookie = Object.fromEntries(cookieRows.map(([key, value]) => [key, value]));
     const cookieStore = await cookies();
-    const cookieData = {
+    const cookieData: ResponseCookie = {
       name: main[0],
-      value: main[1],
-      path: parsedCookie.Path,
-      secure: parsedCookie.Secure,
+      value: main[1] ?? '',
+      path: parsedCookie.Path ?? '/',
+      secure: (parsedCookie.Secure as unknown as boolean) ?? false,
       expires: new Date(parsedCookie.Expires).getTime(),
-      sameSite: parsedCookie.SameSite,
+      sameSite: (parsedCookie.SameSite as unknown as boolean) ?? 'Lax',
       httpOnly: 'HttpOnly' in parsedCookie,
-      domain: parsedCookie.Domain,
+      domain: parsedCookie.Domain ?? '',
     };
     cookieStore.set(cookieData);
   }
@@ -33,13 +34,13 @@ async function clearCookie() {
 
 async function forceLogout(url: URL) {
   try {
-    const result = await fetch(`${API_URL}/auth/logout`, {
+    await fetch(`${API_URL}/auth/logout`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    await setCookies(result);
+    await clearCookie();
     if (!url.pathname.startsWith('/auth/login')) {
       url.search = `redirect=${encodeURIComponent(url.pathname)}&action=view`;
     }
@@ -47,10 +48,7 @@ async function forceLogout(url: URL) {
     return NextResponse.redirect(url);
   } catch (error: any) {
     console.log('🚀 ~ forceLogout ~ error:', error.message);
-    const cookieStore = await cookies();
-    cookieStore.delete('session');
-    cookieStore.delete('access_token');
-    cookieStore.delete('refresh_token');
+    await clearCookie();
     if (!url.pathname.startsWith('/auth/login')) {
       url.search = `redirect=${encodeURIComponent(url.pathname)}&action=view&reason=server_error`;
     }

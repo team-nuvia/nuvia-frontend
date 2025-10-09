@@ -17,7 +17,7 @@ import { UserRole } from '@share/enums/user-role';
 import { useQuery } from '@tanstack/react-query';
 import { LocalizationManager } from '@util/LocalizationManager';
 import { roleAtLeast } from '@util/roleAtLeast';
-import { useContext, useMemo, useState } from 'react';
+import { memo, useContext, useMemo, useState } from 'react';
 import InviteDialog from '../template/teams/InviteDialog';
 import SidebarMobile from './SidebarMobile';
 import UserCard from './UserCard';
@@ -104,10 +104,6 @@ const Sidebar: React.FC<SidebarProps> = () => {
     setIsCollapsed(!isCollapsed);
   };
 
-  if (!user) {
-    return null;
-  }
-
   if (isMobile) {
     return <SidebarMobile menus={menus} />;
   }
@@ -159,6 +155,7 @@ const Sidebar: React.FC<SidebarProps> = () => {
             content={user?.nickname ?? ''}
             nameSize={16}
             profileImage={user?.profileImageUrl ?? ''}
+            isLoading={!user}
           />
         </Stack>
 
@@ -171,4 +168,4 @@ const Sidebar: React.FC<SidebarProps> = () => {
   );
 };
 
-export default Sidebar;
+export default memo(Sidebar);

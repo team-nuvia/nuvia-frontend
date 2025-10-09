@@ -9,12 +9,7 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = async ({ children }) => {
   return (
     <Stack id="wrap" flex={1} sx={{ position: 'relative' }}>
-      <Versioning
-        sx={{
-          top: 67,
-          left: 10,
-        }}
-      />
+      <Versioning sx={{ top: 67, left: 10 }} />
       <Header />
       <Stack direction="row" flex={1}>
         <Stack flex={1} sx={{ overflowX: 'hidden' }}>

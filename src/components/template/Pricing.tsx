@@ -6,68 +6,20 @@ import { getPlans } from '@api/plan/get-plans';
 import { Check, Star } from '@mui/icons-material';
 import { Box, Button, Card, CardContent, Chip, Container, Grid, Stack, Typography, useTheme } from '@mui/material';
 import { PlanNameType } from '@share/enums/plan-name-type.enum';
-import { useQuery } from '@tanstack/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { LocalizationManager } from '@util/LocalizationManager';
 import { useState } from 'react';
-
-// interface PricingPlan {
-//   id: string;
-//   name: string;
-//   price: number;
-//   period: 'monthly' | 'yearly';
-//   description: string;
-//   features: string[];
-//   isPopular?: boolean;
-//   isFree?: boolean;
-//   buttonText: string;
-//   buttonDisabled?: boolean;
-// }
 
 interface PricingProps {}
 const Pricing: React.FC<PricingProps> = () => {
   const theme = useTheme();
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
-  const { data: plansResponse } = useQuery<ServerResponse<GetPlansModel[]>>({
+  const { data: plansResponse } = useSuspenseQuery<ServerResponse<GetPlansModel[]>>({
     queryKey: queryKeys.plan.list(),
     queryFn: getPlans,
   });
 
   const plans = plansResponse?.payload ?? [];
-  // 임시 데이터 - 서버에서 받아올 예정
-  // const plans: PricingPlan[] = [
-  //   {
-  //     id: 'free',
-  //     name: 'Free',
-  //     price: 0,
-  //     period: 'monthly',
-  //     description: '개인 사용자를 위한 기본 기능',
-  //     features: ['월 100개 응답까지', '기본 설문 템플릿', '모바일 최적화', '기본 데이터 분석', '이메일 지원'],
-  //     isFree: true,
-  //     buttonText: '무료로 시작하기',
-  //     buttonDisabled: false,
-  //   },
-  //   {
-  //     id: 'pro',
-  //     name: 'Pro',
-  //     price: billingPeriod === 'monthly' ? 29 : 290,
-  //     period: billingPeriod,
-  //     description: '소규모 팀을 위한 고급 기능',
-  //     features: ['월 5,000개 응답까지', '고급 설문 템플릿', 'AI 기반 분석', '조직 협업 기능', '우선 지원', '커스텀 브랜딩'],
-  //     isPopular: true,
-  //     buttonText: '준비중',
-  //     buttonDisabled: true,
-  //   },
-  //   {
-  //     id: 'enterprise',
-  //     name: 'Enterprise',
-  //     price: billingPeriod === 'monthly' ? 99 : 990,
-  //     period: billingPeriod,
-  //     description: '대규모 조직을 위한 완전한 솔루션',
-  //     features: ['무제한 응답', '모든 템플릿', '고급 AI 분석', '전담 계정 관리', '24/7 전화 지원', 'API 접근', 'SSO 통합'],
-  //     buttonText: '준비중',
-  //     buttonDisabled: true,
-  //   },
-  // ];
 
   const formatPrice = (price: number) => {
     if (price === 0) return '무료';

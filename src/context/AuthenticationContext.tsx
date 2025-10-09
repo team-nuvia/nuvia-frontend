@@ -2,13 +2,9 @@
 
 import { GetMeResponse } from '@/models/GetMeResponse';
 import { useAuthStore } from '@/store/auth.store';
-import { useLoading } from '@hooks/useLoading';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { Fragment, useEffect } from 'react';
+import { useEffect } from 'react';
 
-const AuthenticationProvider = ({ children, user, initialize }: { children: React.ReactNode; user: GetMeResponse | null; initialize: boolean }) => {
-  useLoading();
+const AuthenticationProvider = ({ user, initialize }: { user: GetMeResponse | null; initialize: boolean }) => {
   const setUser = useAuthStore((state) => state.actions.setUser);
   const setIsUserLoading = useAuthStore((state) => state.actions.setIsUserLoading);
   const setMainUrl = useAuthStore((state) => state.actions.setMainUrl);
@@ -26,15 +22,9 @@ const AuthenticationProvider = ({ children, user, initialize }: { children: Reac
         setMainUrl('/');
       }
     }
-  }, []);
+  }, [user, initialize]);
 
-  return (
-    <Fragment>
-      <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ko">
-        {children}
-      </LocalizationProvider>
-    </Fragment>
-  );
+  return null;
 };
 
 export default AuthenticationProvider;

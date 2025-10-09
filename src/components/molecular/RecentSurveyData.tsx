@@ -1,11 +1,12 @@
 import { useAuthStore } from '@/store/auth.store';
 import queryKeys from '@/store/lib/query-key';
 import { getDashboardRecentSurveysServer } from '@api/survey/get-dashboard-recent-surveys-server';
-import CommonText from '@components/atom/CommonText';
+import { Typography } from '@mui/material';
 import { DataGrid, GridColDef, GridRowsProp } from '@mui/x-data-grid';
 import { SurveyStatus } from '@share/enums/survey-status';
 import { useQuery } from '@tanstack/react-query';
 import { LocalizationManager } from '@util/LocalizationManager';
+import Link from 'next/link';
 import { memo, useMemo } from 'react';
 
 interface RecentSurveyDataProps {}
@@ -15,9 +16,10 @@ const RecentSurveyData: React.FC<RecentSurveyDataProps> = () => {
   const { data: recentSurveysData, isLoading: recentSurveysLoading } = useQuery({
     queryKey: queryKeys.dashboard.recentSurvey(),
     queryFn: getDashboardRecentSurveysServer,
+    enabled: !!user,
   });
   const rows: GridRowsProp = useMemo<GridRowsProp>(() => {
-    if (!recentSurveysData?.payload) {
+    if (!recentSurveysData || !recentSurveysData.payload) {
       return [];
     }
 
@@ -26,10 +28,10 @@ const RecentSurveyData: React.FC<RecentSurveyDataProps> = () => {
       title: survey.title,
       hashedUniqueKey: survey.hashedUniqueKey,
       status: survey.status,
-      expiresAt: survey.expiresAt,
+      userName: survey.author?.name,
       responses: survey.responses,
     }));
-  }, [recentSurveysData?.payload, user]);
+  }, [recentSurveysData?.payload]);
 
   const columns: GridColDef[] = useMemo(
     () => [
@@ -38,10 +40,10 @@ const RecentSurveyData: React.FC<RecentSurveyDataProps> = () => {
         headerName: '설문 제목',
         width: 200,
         renderCell: (params) => (
-          <CommonText
-            component="a"
-            thickness="regular"
-            fontSize={16}
+          <Typography
+            component={Link}
+            href={`/survey/view/${params.row.hashedUniqueKey}`}
+            variant="body1"
             color="primary.main"
             sx={{
               cursor: 'pointer',
@@ -49,17 +51,17 @@ const RecentSurveyData: React.FC<RecentSurveyDataProps> = () => {
                 textDecoration: 'underline',
               },
             }}
-            onClick={() => {
-              router.push(`/survey/view/${params.row.hashedUniqueKey}`);
+            onMouseEnter={() => {
+              router?.prefetch(`/survey/view/${params.row.hashedUniqueKey}`);
             }}
           >
             {params.value}
-          </CommonText>
+          </Typography>
         ),
       },
       { field: 'status', headerName: '상태', width: 100, valueFormatter: (value) => LocalizationManager.translate(value as SurveyStatus) },
-      { field: 'expiresAt', headerName: '마감기한', width: 100 },
-      { field: 'responses', headerName: '응답 수', width: 100 },
+      { field: 'userName', headerName: '작성자', width: 100 },
+      { field: 'responses', headerName: '응답 수', width: 100, valueFormatter: (value: number) => value.toLocaleString() + ' 명' },
     ],
     [],
   );
@@ -70,7 +72,6 @@ const RecentSurveyData: React.FC<RecentSurveyDataProps> = () => {
 
   return (
     <DataGrid
-      loading={recentSurveysLoading}
       rows={rows}
       columns={columns}
       density="compact"

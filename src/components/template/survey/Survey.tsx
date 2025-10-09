@@ -34,6 +34,7 @@ import * as Yup from 'yup';
 import SurveyInformation from './SurveyInformation';
 import { useEventBus } from '@/store/event-bus.store';
 import { AppEventType } from '@/store/lib/app-event';
+import { isNil } from '@util/isNil';
 
 // --- VALIDATION SCHEMA ---
 const SurveySchema = Yup.object().shape({
@@ -500,6 +501,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
         <Grid container spacing={3}>
           <Grid size={{ xs: 12, md: 12 }}>
             <SurveyInformation
+              isEditing={!isNil(id)}
               title={formik.values.title}
               description={formik.values.description}
               expiresAt={formik.values.expiresAt}
