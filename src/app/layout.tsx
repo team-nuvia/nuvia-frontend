@@ -1,22 +1,13 @@
-import AuthenticationProvider from '@/context/AuthenticationContext';
-import { LoadingProvider } from '@/context/LoadingContext';
-import { QueryInvalidationBridge } from '@/context/QueryInvalidationBridge';
 import '@/styles/global.css';
-import { getUserInformation } from '@api/server/get-user-information';
 import { BRAND_NAME } from '@common/variables';
-import { AxiosProvider } from '@context/AxiosContext';
-import GlobalDialogProvider from '@context/GlobalDialogContext';
-import { GlobalSnackbar } from '@context/GlobalSnackbar';
-import { GlobalSnackbarSettingProvider } from '@context/GlobalSnackbarSettingProvider';
-import { NetworkProvider } from '@context/NetworkContext';
-import ReactQueryProvider from '@context/ReactQueryProvider';
-import { ThemeProvider } from '@context/ThemeContext';
-import { CssBaseline, InitColorSchemeScript } from '@mui/material';
+import GoogleAnalytics from '@components/GoogleAnalytics';
+import LoadingScreen from '@components/molecular/LoadingScreen';
+import Providers from '@context/providers';
+import { InitColorSchemeScript } from '@mui/material';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import type { Metadata, Viewport } from 'next';
 import { Noto_Sans_KR } from 'next/font/google';
-import GoogleAnalytics from '@components/GoogleAnalytics';
-import Versioning from '@components/atom/Versioning';
+import { Suspense } from 'react';
 
 const notoSansKR = Noto_Sans_KR({
   weight: ['100', '300', '400', '500', '700', '900'],
@@ -60,12 +51,11 @@ export const viewport: Viewport = {
   maximumScale: 1,
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const user = await getUserInformation();
   const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
   return (
@@ -81,27 +71,9 @@ export default async function RootLayout({
         <InitColorSchemeScript defaultMode="system" attribute="class" modeStorageKey="theme-mode" />
         {measurementId && <GoogleAnalytics measurementId={measurementId} />}
         <AppRouterCacheProvider>
-          <ThemeProvider>
-            <AxiosProvider>
-              <CssBaseline />
-              <GlobalSnackbarSettingProvider>
-                <GlobalSnackbar>
-                  <ReactQueryProvider>
-                    <QueryInvalidationBridge />
-                    <NetworkProvider>
-                      <GlobalDialogProvider>
-                        <LoadingProvider>
-                          <AuthenticationProvider initialize={true} user={user}>
-                            {children}
-                          </AuthenticationProvider>
-                        </LoadingProvider>
-                      </GlobalDialogProvider>
-                    </NetworkProvider>
-                  </ReactQueryProvider>
-                </GlobalSnackbar>
-              </GlobalSnackbarSettingProvider>
-            </AxiosProvider>
-          </ThemeProvider>
+          <Suspense fallback={<LoadingScreen loadingText="서비스 로드 중..." />}>
+            <Providers>{children}</Providers>
+          </Suspense>
         </AppRouterCacheProvider>
       </body>
     </html>

@@ -8,7 +8,6 @@ import { startAnswer } from '@api/survey/start-answer';
 import { validateFirstSurveyAnswer } from '@api/survey/validate-first-answer';
 import ActionButton from '@components/atom/ActionButton';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
-import LoadingContext from '@context/LoadingContext';
 import { PlayArrow, QuestionMark, Timer } from '@mui/icons-material';
 import { Box, Card, Chip, Container, Typography, useTheme } from '@mui/material';
 import { QuestionType } from '@share/enums/question-type';
@@ -22,7 +21,6 @@ import ExpiredAnswer from './ExpiredAnswer';
 export default function SurveyDetail({ survey }: { survey: GetSurveyDetailResponse }) {
   const theme = useTheme();
   const { addNotice } = useContext(GlobalSnackbarContext);
-  const { endLoading, startLoading } = useContext(LoadingContext);
   const [isFirstAnswer, setIsFirstAnswer] = useState<boolean | null>(null);
   const [isExpired, setIsExpired] = useState(false);
   const [requireRefreshJws, setRequireRefreshJws] = useState(false);
@@ -34,7 +32,6 @@ export default function SurveyDetail({ survey }: { survey: GetSurveyDetailRespon
         setRequireRefreshJws(false);
         setIsFirstAnswer(data.payload?.isFirst ?? false);
         setIsExpired(false);
-        endLoading();
       }
     },
     onError: (error: AxiosError<ServerResponse<void>>) => {
@@ -68,7 +65,6 @@ export default function SurveyDetail({ survey }: { survey: GetSurveyDetailRespon
             break;
         }
         addNotice(error.response?.data.message, 'error');
-        endLoading();
       } else if (error.response?.status === 404) {
         addNotice('존재하지 않는 설문입니다.', 'error');
       } else {
@@ -90,7 +86,6 @@ export default function SurveyDetail({ survey }: { survey: GetSurveyDetailRespon
         addNotice('존재하지 않는 설문입니다.', 'error');
       } else {
         addNotice(error.response?.data?.message ?? '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
-        endLoading();
       }
     },
   });
@@ -111,7 +106,6 @@ export default function SurveyDetail({ survey }: { survey: GetSurveyDetailRespon
       refreshJwsMutation();
       return;
     } else {
-      startLoading();
       startAnswerMutation();
     }
   }

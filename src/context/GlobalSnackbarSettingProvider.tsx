@@ -1,7 +1,7 @@
 'use client';
 
 import { SnackbarProvider } from 'notistack';
-import { createContext, useState } from 'react';
+import { createContext, useMemo, useState } from 'react';
 
 export interface SnackbarContextType {
   maxSnack: number;
@@ -16,8 +16,10 @@ export const SnackbarContext = createContext<SnackbarContextType>({
 export const GlobalSnackbarSettingProvider = ({ children }: { children: React.ReactNode }) => {
   const [maxSnack, setMaxSnack] = useState(3);
 
+  const contextValue = useMemo(() => ({ maxSnack, setMaxSnack }), [maxSnack]);
+
   return (
-    <SnackbarContext.Provider value={{ maxSnack, setMaxSnack }}>
+    <SnackbarContext.Provider value={contextValue}>
       <SnackbarProvider
         maxSnack={maxSnack ?? 3}
         preventDuplicate={false}

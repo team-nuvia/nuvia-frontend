@@ -2,9 +2,22 @@
 
 import { useAuthStore } from '@/store/auth.store';
 import { ThemeProvider as MuiThemeProvider, Theme } from '@mui/material/styles';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { darkTheme, lightTheme } from '@util/theme';
+import dayjs from 'dayjs';
+import 'dayjs/locale/ko';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useState } from 'react';
 
+export type { Dayjs } from 'dayjs';
+
+dayjs.locale('ko');
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+dayjs.tz.setDefault('Asia/Seoul');
 type ThemeMode = 'light' | 'dark' | 'system';
 
 interface ThemeContextType {
@@ -111,7 +124,11 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <ThemeContext.Provider value={{ theme, mode, changeTheme, toggleTheme }}>
-      <MuiThemeProvider theme={theme}>{children}</MuiThemeProvider>
+      <MuiThemeProvider theme={theme}>
+        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ko">
+          {children}
+        </LocalizationProvider>
+      </MuiThemeProvider>
     </ThemeContext.Provider>
   );
 };

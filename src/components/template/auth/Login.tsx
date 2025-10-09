@@ -135,6 +135,13 @@ const Login: React.FC<LoginProps> = (/* { searchParams } */) => {
     router?.prefetch(mainUrl);
   }, [router]);
 
+  useEffect(() => {
+    if (user) {
+      setUser(null);
+      setMainUrl('/');
+    }
+  }, [user]);
+
   return (
     <Stack flex={1} py={5} direction="row" alignItems="center" justifyContent="center">
       <Container component="main" maxWidth="xs">

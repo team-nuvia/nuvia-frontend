@@ -14,14 +14,13 @@ import { MetadataStatusType } from '@share/enums/metadata-status-type';
 import { SurveyStatus, SurveyStatusList } from '@share/enums/survey-status';
 import { UserRole } from '@share/enums/user-role';
 import { SearchSurvey } from '@share/interface/search-survey';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { LocalizationManager } from '@util/LocalizationManager';
 import { roleAtLeast } from '@util/roleAtLeast';
 import { AnimatePresence } from 'framer-motion';
 import { useContext, useEffect, useState } from 'react';
 
 export default function SurveyList() {
-  const queryClient = useQueryClient();
   const router = useAuthStore((state) => state.router)!;
   const user = useAuthStore((state) => state.user);
   const [surveys, setSurveys] = useState<SearchSurvey[]>([]);
@@ -29,7 +28,7 @@ export default function SurveyList() {
   const [selectedTab, setSelectedTab] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>(SurveyStatusList.join(','));
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useSuspenseQuery({
     queryKey: queryKeys.survey.list(),
     queryFn: () =>
       getSurveyList({
@@ -39,7 +38,7 @@ export default function SurveyList() {
         status: [SurveyStatusList.join(','), SurveyStatus.Draft, SurveyStatus.Active, SurveyStatus.Closed][selectedTab],
       }),
   });
-  const { data: surveyMetadata } = useQuery({
+  const { data: surveyMetadata } = useSuspenseQuery({
     queryKey: queryKeys.survey.metadata(),
     queryFn: () => getSurveyMetadata(MetadataStatusType.SurveyList),
   });
@@ -49,10 +48,6 @@ export default function SurveyList() {
       setSurveys(data.payload.data);
     }
   }, [data, isLoading]);
-
-  // useEffect(() => {
-  //   queryClient.invalidateQueries({ queryKey: queryKeys.survey.list() });
-  // }, [selectedTab]);
 
   const handleRedirectCreate = () => {
     router.push('/dashboard/survey/create');

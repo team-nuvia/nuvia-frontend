@@ -15,7 +15,29 @@ import MenuOutlinedIcon from '@mui/icons-material/MenuOutlined';
 import { Avatar, IconButton, Menu, MenuItem, Stack, Toolbar, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useMutation } from '@tanstack/react-query';
 import { usePathname } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
+
+const guestMenu = [
+  {
+    label: '구독하기',
+    to: '/pricing',
+  },
+  {
+    label: '로그인',
+    to: '/auth/login',
+  },
+];
+const memberMenu = [
+  {
+    label: '대시보드',
+    to: '/dashboard',
+  },
+  {
+    label: '구독하기',
+    to: '/pricing',
+  },
+];
+const guestProfileMenu = [{ label: '로그인', to: '/auth/login' }];
 
 interface HeaderProps {}
 const Header: React.FC<HeaderProps> = () => {
@@ -29,24 +51,8 @@ const Header: React.FC<HeaderProps> = () => {
   const addNotice = useAuthStore((state) => state.addNotice)!;
   const setUser = useAuthStore((state) => state.actions.setUser);
   const setMainUrl = useAuthStore((state) => state.actions.setMainUrl);
-  const [commonMenus, setCommonMenus] = useState<MenuOption[]>([
-    // {
-    //   label: 'Nuvia란?',
-    //   to: '/about',
-    // },
-    {
-      label: '구독하기',
-      to: '/pricing',
-    },
-    {
-      label: '로그인',
-      to: '/auth/login',
-    },
-  ]);
-  const [menus, setMenus] = useState<MenuOption[]>([{ label: 'Login', to: '/auth/login' }]);
-
-  // MUI의 useMediaQuery 훅을 사용하여 모바일 여부를 판별합니다.
-  // theme.breakpoints.down('sm')는 MUI의 기본 모바일 브레이크포인트입니다.
+  const [commonMenus, setCommonMenus] = useState<MenuOption[]>(guestMenu);
+  const [menus, setMenus] = useState<MenuOption[]>(guestProfileMenu);
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const { mutate: logoutMutation, isSuccess } = useMutation({
@@ -55,71 +61,39 @@ const Header: React.FC<HeaderProps> = () => {
     onSuccess: () => {
       setUser(null);
       setMainUrl('/');
+      if (!pathname.startsWith('/auth/login')) {
+        router?.push(`/auth/login?redirect=${encodeURIComponent(pathname)}&action=view`);
+      }
+      addNotice!('로그아웃 되었습니다.', 'success');
     },
   });
 
-  useEffect(() => {
-    setCommonMenus(
-      user
-        ? [
-            // {
-            //   label: 'Nuvia란?',
-            //   to: '/about',
-            // },
-            // {
-            //   label: '커뮤니티',
-            //   to: '/community',
-            // },
-            {
-              label: '대시보드',
-              to: '/dashboard',
-            },
-            {
-              label: '구독하기',
-              to: '/pricing',
-            },
-          ]
-        : [
-            // {
-            //   label: 'Nuvia란?',
-            //   to: '/about',
-            // },
-            {
-              label: '구독하기',
-              to: '/pricing',
-            },
-            {
-              label: '로그인',
-              to: '/auth/login',
-            },
-          ],
-    );
-    setMenus(
-      user
-        ? [
-            { label: '나의 프로필', to: '/dashboard/user' },
-            {
-              label: '로그아웃',
-              request: async () => {
-                logoutMutation();
-              },
-              prefetch: '/auth/login',
-            },
-          ]
-        : [{ label: '로그인', to: '/auth/login' }],
-    );
-  }, [user]);
+  const memberProfileMenu: MenuOption[] = [
+    { label: '나의 프로필', to: '/dashboard/user' },
+    {
+      label: '로그아웃',
+      request: async () => {
+        logoutMutation();
+      },
+      prefetch: '/auth/login',
+    },
+  ];
 
   useEffect(() => {
-    if (isSuccess) {
-      if (!user) {
-        addNotice!('로그아웃 되었습니다.', 'success');
-        if (!pathname.startsWith('/auth/login')) {
-          router?.push(`/auth/login?redirect=${encodeURIComponent(pathname)}&action=view`);
-        }
-      }
-    }
-  }, [isSuccess, user, router, pathname]);
+    setCommonMenus(user ? memberMenu : guestMenu);
+    setMenus(user ? memberProfileMenu : guestProfileMenu);
+  }, [user]);
+
+  // useEffect(() => {
+  //   if (isSuccess) {
+  //     if (!user) {
+  //       addNotice!('로그아웃 되었습니다.', 'success');
+  //       if (!pathname.startsWith('/auth/login')) {
+  //         router?.push(`/auth/login?redirect=${encodeURIComponent(pathname)}&action=view`);
+  //       }
+  //     }
+  //   }
+  // }, [isSuccess, user, router, pathname]);
 
   useEffect(() => {
     if (y > 30) {
@@ -303,4 +277,4 @@ const Header: React.FC<HeaderProps> = () => {
   );
 };
 
-export default Header;
+export default memo(Header);

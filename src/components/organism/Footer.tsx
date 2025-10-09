@@ -5,6 +5,7 @@ import CommonText from '@components/atom/CommonText';
 import LinkText from '@components/atom/LinkText';
 import BrandHead from '@components/molecular/BrandHead';
 import { Divider, Stack } from '@mui/material';
+import { memo } from 'react';
 
 interface FooterProps {}
 const Footer: React.FC<FooterProps> = () => {
@@ -43,4 +44,4 @@ const Footer: React.FC<FooterProps> = () => {
   );
 };
 
-export default Footer;
+export default memo(Footer);

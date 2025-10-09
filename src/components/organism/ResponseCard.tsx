@@ -10,7 +10,6 @@ import { QuestionType } from '@share/enums/question-type';
 import { IAnswerResponse } from '@share/interface/ianswer-nested';
 import { IQuestionOption } from '@share/interface/iquestion';
 import dayjs from 'dayjs';
-import 'dayjs/locale/ko';
 import Image from 'next/image';
 import { useEffect, useMemo, useState } from 'react';
 

@@ -1,7 +1,8 @@
 'use client';
 
 import { VERSION } from '@common/variables';
-import { SxProps, Theme, Typography, TypographyProps, useTheme } from '@mui/material';
+import { Typography, TypographyProps, useTheme } from '@mui/material';
+import { memo } from 'react';
 
 interface VersioningProps extends TypographyProps {}
 const Versioning: React.FC<VersioningProps> = (props) => {
@@ -38,4 +39,4 @@ const Versioning: React.FC<VersioningProps> = (props) => {
   );
 };
 
-export default Versioning;
+export default memo(Versioning);

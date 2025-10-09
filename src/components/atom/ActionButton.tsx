@@ -1,6 +1,6 @@
 import { ButtonProps, CircularProgress } from '@mui/material';
 import CommonButton from './CommonButton';
-import { useCallback, useContext } from 'react';
+import { memo, useCallback, useContext } from 'react';
 import { NetworkContext } from '@context/NetworkContext';
 import { GlobalDialogContext } from '@context/GlobalDialogContext';
 
@@ -34,4 +34,4 @@ const ActionButton: React.FC<ActionButtonProps> = ({ children, isLoading, disabl
   );
 };
 
-export default ActionButton;
+export default memo(ActionButton);

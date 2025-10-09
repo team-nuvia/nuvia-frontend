@@ -22,13 +22,14 @@ interface ActionFormProps {
 const ActionForm: React.FC<ActionFormProps> = ({ title, onSubmit, submitText, slots, signupPath, signupText, isLoading, socialLogin }) => {
   const router = useAuthStore((state) => state.router)!;
 
-  useEffect(() => {
-    const nq = localStorage.getItem('nq');
-    if (nq) {
-      window.location.search = nq;
-      localStorage.removeItem('nq');
-    }
-  }, []);
+  // useEffect(() => {
+  //   const nq = localStorage.getItem('nq');
+  //   if (nq) {
+  //     console.log('설마 여긴가??2');
+  //     window.location.search = nq;
+  //     localStorage.removeItem('nq');
+  //   }
+  // }, []);
 
   const handleClick = useCallback(
     (provider: SocialProvider) => {
@@ -41,6 +42,8 @@ const ActionForm: React.FC<ActionFormProps> = ({ title, onSubmit, submitText, sl
           url.searchParams.set(key, value);
         });
       }
+
+      /* 소셜 로그인은 서버에서 작업하기 때문에 location으로 처리 */
       window.location.href = url.toString();
       localStorage.setItem('nq', window.location.search);
     },

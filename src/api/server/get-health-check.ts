@@ -2,8 +2,10 @@ import { snapApi } from '..';
 
 export async function getHealthCheck() {
   try {
-    await fetch('https://1.1.1.1', {
+    await fetch('https://one.one.one.one/', {
       mode: 'no-cors',
+      method: 'HEAD',
+      cache: 'no-cache',
     });
   } catch (error) {
     throw error;
