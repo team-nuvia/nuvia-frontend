@@ -29,11 +29,8 @@ interface SearchParams {
   redirect?: string;
 }
 
-interface LoginProps {
-  // searchParams: SearchParams;
-}
-const Login: React.FC<LoginProps> = (/* { searchParams } */) => {
-  // const { action, token, redirect } = searchParams;
+interface LoginProps {}
+const Login: React.FC<LoginProps> = () => {
   const theme = useTheme();
   const searchParams = useSearchParams();
   const action = searchParams.get('action');

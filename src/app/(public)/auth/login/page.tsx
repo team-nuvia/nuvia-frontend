@@ -1,5 +1,6 @@
 import Login from '@components/template/auth/Login';
 import { generatePageMetadata } from '@util/metadata';
+import { Suspense } from 'react';
 
 export const metadata = generatePageMetadata({
   title: '로그인',
@@ -8,12 +9,13 @@ export const metadata = generatePageMetadata({
   path: '/auth/login',
 });
 
-interface PageProps {
-  // searchParams: Promise<Record<string, string>>;
-}
+interface PageProps {}
 const Page: React.FC<PageProps> = async () => {
-  // const searchParamData = await searchParams;
-  return <Login /* searchParams={searchParamData} */ />;
+  return (
+    <Suspense>
+      <Login />
+    </Suspense>
+  );
 };
 
 export default Page;
