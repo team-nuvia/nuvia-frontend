@@ -1,3 +1,5 @@
+const TIME_AGO_LIMIT = ['second', 'minute', 'hour', 'day', /* 'week',  */ 'month', 'year'] as const;
+
 export class DateFormat {
   static convert(format: string = 'YYYY-MM-dd HH:mm:ss', baseTime: string | number | Date = new Date()) {
     const base = new Date(baseTime);
@@ -39,27 +41,41 @@ export class DateFormat {
     });
   }
 
-  static getTimeAgo(date: Date) {
+  static getTimeAgo(date: Date, limit?: (typeof TIME_AGO_LIMIT)[number]) {
+    const index = limit ? TIME_AGO_LIMIT.indexOf(limit) : -1;
     const base = new Date(date);
     const now = new Date();
     const diff = now.getTime() - base.getTime();
 
     // 2시간(7200초) 이상이면 toUTCOnly 포맷으로 반환
-    if (diff >= 7200000) {
-      return this.toUTCOnly(base);
-    }
+    // if (index > 2) {
+    //   return this.toUTCOnly(base);
+    // }
 
     const diffInSeconds = Math.floor(diff / 1000);
     const diffInMinutes = Math.floor(diff / (1000 * 60));
     const diffInHours = Math.floor(diff / (1000 * 60 * 60));
+    const diffInDays = Math.floor(diff / (1000 * 60 * 60 * 24));
+    // const diffInWeeks = Math.floor(diff / (1000 * 60 * 60 * 24 * 7));
+    const diffInMonths = Math.floor(diff / (1000 * 60 * 60 * 24 * 30));
+    const diffInYears = Math.floor(diff / (1000 * 60 * 60 * 24 * 365));
 
-    if (diffInSeconds < 60) {
+    if (diffInSeconds < 60 && index >= 0) {
       return `${diffInSeconds}초 전`;
-    } else if (diffInMinutes < 60) {
+    } else if (diffInMinutes < 60 && index >= 1) {
       return `${diffInMinutes}분 전`;
-    } else {
+    } else if (diffInHours < 24 && index >= 2) {
       return `${diffInHours}시간 전`;
+    } else if (diffInDays < 7 && index >= 3) {
+      return `${diffInDays}일 전`;
+      // } else if (diffInWeeks < 4 && index >= 4) {
+      //   return `${diffInWeeks}주 전`;
+    } else if (diffInMonths < 12 && index >= 5) {
+      return `${diffInMonths}개월 전`;
+    } else if (index >= 6) {
+      return `${diffInYears}년 전`;
     }
+    return this.toUTCOnly(base);
   }
 
   static toKSTOnly(date: Date) {

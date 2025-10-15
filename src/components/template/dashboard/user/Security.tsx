@@ -14,7 +14,7 @@ const Security: React.FC<SecurityProps> = () => {
         보안 설정
       </Typography>
       <Stack spacing={3}>
-        {user.lastUpdatedAt ? (
+        {user?.lastUpdatedAt ? (
           <Card elevation={1} sx={{ p: 3 }}>
             <Stack direction="row" justifyContent="space-between" alignItems="center">
               <Stack spacing={1}>
@@ -22,7 +22,8 @@ const Security: React.FC<SecurityProps> = () => {
                   비밀번호 변경
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  마지막 변경: {user.lastUpdatedAt && user.createdAt !== user.lastUpdatedAt ? DateFormat.toUTCOnly(user.lastUpdatedAt) : 'N/A'}
+                  마지막 변경:{' '}
+                  {user?.lastUpdatedAt && user?.createdAt !== user?.lastUpdatedAt ? DateFormat.getTimeAgo(user?.lastUpdatedAt, 'month') : 'N/A'}
                 </Typography>
               </Stack>
               <ActionButton

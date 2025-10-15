@@ -38,6 +38,14 @@ const AccountOverview: React.FC<AccountOverviewProps> = ({ user }) => {
               </Box>
               <Box>
                 <Typography variant="body2" color="text.secondary">
+                  닉네임
+                </Typography>
+                <Typography variant="body1" fontWeight="medium">
+                  {user?.nickname}
+                </Typography>
+              </Box>
+              <Box>
+                <Typography variant="body2" color="text.secondary">
                   이메일
                 </Typography>
                 <Typography variant="body1" fontWeight="medium">
