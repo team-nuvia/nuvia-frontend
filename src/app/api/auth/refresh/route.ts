@@ -8,7 +8,7 @@ export async function POST() {
   const res = await fetch(`${API_URL}/auth/refresh`, {
     method: 'POST',
     headers: { cookie: cookieStore.toString() },
-    cache: 'no-store',
+    // cache: 'no-store',
   });
 
   const body = await res.text(); // (json이면 json()으로)

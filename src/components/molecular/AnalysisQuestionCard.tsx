@@ -37,7 +37,7 @@ function renderChart(d: QuestionDistribution['distribution']) {
               <XAxis dataKey="name" interval={0} tick={{ fontSize: 12 }} />
               <YAxis />
               <Tooltip />
-              <Bar dataKey="count" />
+              <Bar dataKey="count" fill="#45612a" />
             </BarChart>
           </ResponsiveContainer>
         </ChartBox>

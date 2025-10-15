@@ -13,5 +13,6 @@ export interface GetMeResponse {
   createdAt: Date;
   updatedAt: Date;
   lastAccessAt: Date | null;
+  lastUpdatedAt: Date | null;
   profileImageUrl: string | null;
 }

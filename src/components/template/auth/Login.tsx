@@ -96,7 +96,9 @@ const Login: React.FC<LoginProps> = () => {
   });
 
   useEffect(() => {
+    if(!router) return;
     if (!isSuccess || !isGetUsersMeSuccess) return;
+    
     if (user) {
       if (action === 'invitation' && redirect && token) {
         router.push(`${redirect}?q=${token}`);
@@ -109,6 +111,8 @@ const Login: React.FC<LoginProps> = () => {
   }, [isSuccess, isGetUsersMeSuccess]);
 
   useEffect(() => {
+    if(!router) return;
+
     const nq = localStorage.getItem('nq');
     const url = new URLSearchParams({
       redirect: redirect || '',

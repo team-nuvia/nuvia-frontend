@@ -36,12 +36,12 @@ export async function getUserInformation() {
   const verifyRes = await fetch(`${API_URL}/auth/verify`, {
     method: 'POST',
     headers: { cookie: cookieHeader, 'cache-control': 'no-cache' },
-    cache: 'no-store',
+    // cache: 'no-store',
   });
 
   let userRes = await fetch(`${API_URL}/users/me`, {
     headers: { cookie: cookieHeader },
-    cache: 'no-store',
+    // cache: 'no-store',
   });
 
   if (userRes.status === 401) {
@@ -50,7 +50,7 @@ export async function getUserInformation() {
       `${process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : process.env.NEXT_PUBLIC_SITE_URL}/api/auth/refresh`,
       {
         method: 'POST',
-        cache: 'no-store',
+        // cache: 'no-store',
         headers: { cookie: cookieHeader },
         credentials: 'include',
       },
@@ -62,7 +62,7 @@ export async function getUserInformation() {
 
     userRes = await fetch(`${API_URL}/users/me`, {
       headers: { cookie: cookieHeader },
-      cache: 'no-store',
+      // cache: 'no-store',
     });
   }
 

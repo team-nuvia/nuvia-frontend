@@ -1,7 +1,7 @@
 import { useAuthStore } from '@/store/auth.store';
 import queryKeys from '@/store/lib/query-key';
 import { getDashboardRecentSurveys } from '@api/survey/get-dashboard-recent-surveys';
-import { Typography } from '@mui/material';
+import { Skeleton, Typography } from '@mui/material';
 import { DataGrid, GridColDef, GridRowsProp } from '@mui/x-data-grid';
 import { SurveyStatus } from '@share/enums/survey-status';
 import { useQuery } from '@tanstack/react-query';
@@ -66,8 +66,8 @@ const RecentSurveyData: React.FC<RecentSurveyDataProps> = () => {
     [],
   );
 
-  if (recentSurveysLoading) {
-    return null;
+  if (!recentSurveysData || recentSurveysLoading) {
+    return <Skeleton variant="rectangular" width="100%" height={420} />;
   }
 
   return (
