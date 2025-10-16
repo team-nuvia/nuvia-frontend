@@ -34,7 +34,7 @@ export const getLast7DaysWithLabels = (): Array<{ date: string; label: string }>
  * @param targetDate - 대상 날짜 (YYYY-MM-DD 형식)
  * @returns 오늘로부터 며칠 전인지 (0이면 오늘, 1이면 어제)
  */
-export const getDaysAgo = (targetDate: string): number => {
+export const getDaysAgo = (targetDate: string | Date): number => {
   const today = dayjs().startOf('day');
   const target = dayjs(targetDate).startOf('day');
   return today.diff(target, 'day');
@@ -48,6 +48,6 @@ export const getCurrentWeekRange = (): { startDate: string; endDate: string } =>
   const today = dayjs();
   const startDate = today.subtract(6, 'day').format('YYYY-MM-DD');
   const endDate = today.format('YYYY-MM-DD');
-  
+
   return { startDate, endDate };
 };

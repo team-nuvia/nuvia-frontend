@@ -7,12 +7,15 @@ import { BRAND_NAME } from '@common/variables';
 import CommonText from '@components/atom/CommonText';
 import ActionForm from '@components/molecular/ActionForm';
 import BrandHead from '@components/molecular/BrandHead';
-import { Container, Stack, TextField, useTheme } from '@mui/material';
+import { GlobalDialogContext } from '@context/GlobalDialogContext';
+import { Checkbox, Container, Stack, TextField, useTheme } from '@mui/material';
 import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { useFormik } from 'formik';
-import { useLayoutEffect } from 'react';
+import { Fragment, useContext, useEffect, useLayoutEffect, useState } from 'react';
 import * as Yup from 'yup';
+import Terms from '../Terms';
+import Privacy from '../Privacy';
 
 interface SignupProps {}
 
@@ -20,6 +23,8 @@ const Signup: React.FC<SignupProps> = () => {
   const theme = useTheme();
   const router = useAuthStore((state) => state.router)!;
   const addNotice = useAuthStore((state) => state.addNotice)!;
+  const [termsAgreed, setTermsAgreed] = useState([false, false]);
+  const { handleOpenDialog } = useContext(GlobalDialogContext)!;
   const { mutate: signupMutation } = useMutation({
     mutationKey: mutationKeys.user.signup(),
     mutationFn: signup,
@@ -51,7 +56,11 @@ const Signup: React.FC<SignupProps> = () => {
   // 유효성 검사 스키마
   const validationSchema = Yup.object({
     name: Yup.string().required('이름을 입력해주세요.').min(2, '이름은 2자 이상이어야 합니다.').max(20, '이름은 20자 이하여야 합니다.'),
-    nickname: Yup.string().required('닉네임을 입력해주세요.').min(2, '닉네임은 2자 이상이어야 합니다.').max(20, '닉네임은 20자 이하여야 합니다.'),
+    nickname: Yup.string()
+      .matches(/^[a-zA-Z0-9]+$/, '닉네임은 영문 대소문자와 숫자만 가능합니다')
+      .required('닉네임을 입력해주세요.')
+      .min(2, '닉네임은 2자 이상이어야 합니다.')
+      .max(20, '닉네임은 20자 이하여야 합니다.'),
     email: Yup.string().required('이메일을 입력해주세요.').email('올바른 이메일 형식이 아닙니다.'),
     password: Yup.string()
       .required('비밀번호를 입력해주세요.')
@@ -60,6 +69,7 @@ const Signup: React.FC<SignupProps> = () => {
     passwordConfirm: Yup.string()
       .required('비밀번호 확인을 입력해주세요.')
       .oneOf([Yup.ref('password')], '비밀번호가 일치하지 않습니다.'),
+    termsAgreed: Yup.boolean().isTrue('이용약관 및 개인정보 처리방침을 확인해주세요.').required('이용약관 및 개인정보 처리방침을 확인해주세요.'),
   });
 
   const formik = useFormik({
@@ -69,6 +79,7 @@ const Signup: React.FC<SignupProps> = () => {
       email: '',
       password: '',
       passwordConfirm: '',
+      termsAgreed: false,
     },
     validationSchema,
     onSubmit: async (values) => {
@@ -99,6 +110,54 @@ const Signup: React.FC<SignupProps> = () => {
     { name: 'passwordConfirm', label: '비밀번호 확인', type: 'password' },
   ];
 
+  useEffect(() => {
+    if (termsAgreed[0] && termsAgreed[1]) {
+      formik.setFieldValue('termsAgreed', true);
+    }
+  }, [termsAgreed]);
+
+  useEffect(() => {
+    if (!formik.values.termsAgreed) {
+      setTermsAgreed([false, false]);
+    } else {
+      setTermsAgreed([true, true]);
+    }
+  }, [formik.values.termsAgreed]);
+
+  function handleOpenTerms() {
+    handleOpenDialog({
+      title: '이용약관 확인',
+      content: <Terms />,
+      type: 'info',
+      confirmText: '확인',
+      cancelText: '닫기',
+      actionCallback: () => {
+        setTermsAgreed((prev) => {
+          const newTermsAgreed = [...prev];
+          newTermsAgreed[0] = true;
+          return newTermsAgreed;
+        });
+      },
+    });
+  }
+
+  function handleOpenPrivacy() {
+    handleOpenDialog({
+      title: '개인정보 처리방침 확인',
+      content: <Privacy />,
+      type: 'info',
+      confirmText: '확인',
+      cancelText: '닫기',
+      actionCallback: () => {
+        setTermsAgreed((prev) => {
+          const newTermsAgreed = [...prev];
+          newTermsAgreed[1] = true;
+          return newTermsAgreed;
+        });
+      },
+    });
+  }
+
   return (
     <Stack flex={1} py={5} direction="row" alignItems="center" justifyContent="center">
       <Container component="main" maxWidth="xs">
@@ -121,30 +180,66 @@ const Signup: React.FC<SignupProps> = () => {
               </CommonText>
             </Stack>
           }
-          slots={fieldConfig.map(({ name, label, type }) => (
-            <TextField
-              key={name}
-              name={name}
-              autoComplete={name}
-              size="medium"
-              required
-              fullWidth
-              label={label}
-              type={type}
-              value={formik.values[name as keyof typeof formik.values]}
-              placeholder={`${label}을 입력해주세요.`}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.touched[name as keyof typeof formik.touched] && Boolean(formik.errors[name as keyof typeof formik.errors])}
-              helperText={formik.touched[name as keyof typeof formik.touched] && formik.errors[name as keyof typeof formik.errors]}
-              sx={{
-                '& .MuiOutlinedInput-input:autofill': {
-                  WebkitBoxShadow: (theme) => `0 0 0 1000px ${theme.palette.background.paper} inset`,
-                  WebkitTextFillColor: (theme) => theme.palette.text.primary,
-                },
-              }}
-            />
-          ))}
+          slots={fieldConfig
+            .map(({ name, label, type }) => (
+              <TextField
+                key={name}
+                name={name}
+                autoComplete={name}
+                size="medium"
+                required
+                fullWidth
+                label={label}
+                type={type}
+                value={formik.values[name as keyof typeof formik.values]}
+                placeholder={`${label}을 입력해주세요.`}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.touched[name as keyof typeof formik.touched] && Boolean(formik.errors[name as keyof typeof formik.errors])}
+                helperText={formik.touched[name as keyof typeof formik.touched] && formik.errors[name as keyof typeof formik.errors]}
+                sx={{
+                  '& .MuiOutlinedInput-input:autofill': {
+                    WebkitBoxShadow: (theme) => `0 0 0 1000px ${theme.palette.background.paper} inset`,
+                    WebkitTextFillColor: (theme) => theme.palette.text.primary,
+                  },
+                }}
+              />
+            ))
+            .concat([
+              <Fragment key="termsAgreed">
+                <Stack direction="row" alignItems="center" gap={1}>
+                  <Checkbox
+                    name="termsAgreed"
+                    disabled={!termsAgreed[0] || !termsAgreed[1]}
+                    checked={formik.values.termsAgreed}
+                    onChange={(e) => formik.handleChange(e)}
+                    onBlur={formik.handleBlur}
+                    color="primary"
+                    required
+                    sx={{
+                      p: 0,
+                    }}
+                  />
+                  <CommonText variant="body2" color="textSecondary">
+                    <span>
+                      <span style={{ color: !termsAgreed[0] ? '#999' : '#1976d2', fontWeight: 500, cursor: 'pointer' }} onClick={handleOpenTerms}>
+                        이용약관
+                      </span>
+                      과{' '}
+                      <span style={{ color: !termsAgreed[1] ? '#999' : '#1976d2', fontWeight: 500, cursor: 'pointer' }} onClick={handleOpenPrivacy}>
+                        개인정보 처리방침
+                      </span>
+                      에 동의합니다.
+                    </span>
+                  </CommonText>
+                </Stack>
+                {formik.touched.termsAgreed && Boolean(formik.errors.termsAgreed) && (
+                  <CommonText variant="caption" color="error">
+                    {formik.errors.termsAgreed}
+                  </CommonText>
+                )}
+              </Fragment>,
+            ])}
           submitText="회원가입"
           onSubmit={formik.handleSubmit}
           signupPath="/auth/login"

@@ -38,6 +38,14 @@ const AccountOverview: React.FC<AccountOverviewProps> = ({ user }) => {
               </Box>
               <Box>
                 <Typography variant="body2" color="text.secondary">
+                  닉네임
+                </Typography>
+                <Typography variant="body1" fontWeight="medium">
+                  {user?.nickname}
+                </Typography>
+              </Box>
+              <Box>
+                <Typography variant="body2" color="text.secondary">
                   이메일
                 </Typography>
                 <Typography variant="body1" fontWeight="medium">
@@ -77,7 +85,7 @@ const AccountOverview: React.FC<AccountOverviewProps> = ({ user }) => {
                   가입일
                 </Typography>
                 <Typography variant="body1" fontWeight="medium">
-                  {DateFormat.toKST('YYYY-MM-dd', user?.createdAt)}
+                  {DateFormat.toUTC('YYYY-MM-dd', user?.createdAt)}
                 </Typography>
               </Box>
               <Box>
@@ -85,7 +93,7 @@ const AccountOverview: React.FC<AccountOverviewProps> = ({ user }) => {
                   최근 접속
                 </Typography>
                 <Typography variant="body1" fontWeight="medium">
-                  {DateFormat.toKST('YYYY-MM-dd HH:mm', user?.updatedAt)}
+                  {DateFormat.toUTC('YYYY-MM-dd HH:mm', user?.updatedAt)}
                 </Typography>
               </Box>
               <Box>

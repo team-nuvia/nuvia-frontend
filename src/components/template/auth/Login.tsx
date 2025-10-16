@@ -96,7 +96,9 @@ const Login: React.FC<LoginProps> = () => {
   });
 
   useEffect(() => {
+    if (!router) return;
     if (!isSuccess || !isGetUsersMeSuccess) return;
+
     if (user) {
       if (action === 'invitation' && redirect && token) {
         router.push(`${redirect}?q=${token}`);
@@ -106,9 +108,11 @@ const Login: React.FC<LoginProps> = () => {
         router.push(mainUrl);
       }
     }
-  }, [isSuccess, isGetUsersMeSuccess]);
+  }, [user, isSuccess, isGetUsersMeSuccess]);
 
   useEffect(() => {
+    if (!router) return;
+
     const nq = localStorage.getItem('nq');
     const url = new URLSearchParams({
       redirect: redirect || '',
@@ -131,13 +135,6 @@ const Login: React.FC<LoginProps> = () => {
   useEffect(() => {
     router?.prefetch(mainUrl);
   }, [router]);
-
-  useEffect(() => {
-    if (user) {
-      setUser(null);
-      setMainUrl('/');
-    }
-  }, [user]);
 
   return (
     <Stack flex={1} py={5} direction="row" alignItems="center" justifyContent="center">

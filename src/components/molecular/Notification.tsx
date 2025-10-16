@@ -261,7 +261,7 @@ const Notification = () => {
                       ))}
 
                     <Stack direction="row" justifyContent="space-between" alignItems="center">
-                      <Typography variant="caption" color="text.disabled" title={DateFormat.toKSTOnly(notification.createdAt)}>
+                      <Typography variant="caption" color="text.disabled" title={DateFormat.toUTCOnly(notification.createdAt)}>
                         {DateFormat.getTimeAgo(notification.createdAt)}
                       </Typography>
                       <Typography variant="caption" color="text.disabled">

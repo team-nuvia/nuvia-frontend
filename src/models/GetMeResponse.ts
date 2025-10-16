@@ -10,8 +10,10 @@ export interface GetMeResponse {
   role: UserRole;
   provider: SocialProvider;
   currentOrganization: IOrganization;
+  termsAgreed: boolean;
   createdAt: Date;
   updatedAt: Date;
   lastAccessAt: Date | null;
+  lastUpdatedAt: Date | null;
   profileImageUrl: string | null;
 }

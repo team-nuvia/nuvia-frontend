@@ -1,10 +1,12 @@
 import { useAuthStore } from '@/store/auth.store';
 import ActionButton from '@components/atom/ActionButton';
 import { Card, Container, Stack, Typography } from '@mui/material';
+import { DateFormat } from '@util/dateFormat';
 
 interface SecurityProps {}
 const Security: React.FC<SecurityProps> = () => {
   const router = useAuthStore((state) => state.router)!;
+  const user = useAuthStore((state) => state.user)!;
 
   return (
     <Container maxWidth="md">
@@ -12,26 +14,33 @@ const Security: React.FC<SecurityProps> = () => {
         보안 설정
       </Typography>
       <Stack spacing={3}>
-        <Card elevation={1} sx={{ p: 3 }}>
-          <Stack direction="row" justifyContent="space-between" alignItems="center">
-            <Stack spacing={1}>
-              <Typography variant="body1" fontWeight="medium">
-                비밀번호 변경
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                마지막 변경: 30일 전
-              </Typography>
+        {user?.lastUpdatedAt ? (
+          <Card elevation={1} sx={{ p: 3 }}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Stack spacing={1}>
+                <Typography variant="body1" fontWeight="medium">
+                  비밀번호 변경
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  마지막 변경:{' '}
+                  {user?.lastUpdatedAt && user?.createdAt !== user?.lastUpdatedAt ? DateFormat.getTimeAgo(user?.lastUpdatedAt, 'month') : 'N/A'}
+                </Typography>
+              </Stack>
+              <ActionButton
+                variant="outlined"
+                size="small"
+                onClick={() => router.push('/dashboard/user/settings')}
+                onMouseEnter={() => router.prefetch('/dashboard/user/settings')}
+              >
+                변경
+              </ActionButton>
             </Stack>
-            <ActionButton
-              variant="outlined"
-              size="small"
-              onClick={() => router.push('/dashboard/user/settings')}
-              onMouseEnter={() => router.prefetch('/dashboard/user/settings')}
-            >
-              변경
-            </ActionButton>
-          </Stack>
-        </Card>
+          </Card>
+        ) : (
+          <Typography variant="body1" fontWeight="medium">
+            소셜 로그인 사용자는 비밀번호 변경이 불가능합니다.
+          </Typography>
+        )}
 
         {/* <Card elevation={1} sx={{ p: 3 }}>
                       <Stack direction="row" justifyContent="space-between" alignItems="center">

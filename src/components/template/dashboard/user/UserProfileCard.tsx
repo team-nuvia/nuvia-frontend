@@ -1,4 +1,5 @@
 import { GetMeResponse } from '@/models/GetMeResponse';
+import { useAuthStore } from '@/store/auth.store';
 import ActionButton from '@components/atom/ActionButton';
 import { AccountCircle, CalendarToday, Edit, Email, Person } from '@mui/icons-material';
 import { Avatar, Card, CardContent, Divider, Stack, Typography, useTheme } from '@mui/material';
@@ -9,6 +10,11 @@ interface UserProfileCardProps {
 }
 const UserProfileCard: React.FC<UserProfileCardProps> = ({ user }) => {
   const theme = useTheme();
+  const router = useAuthStore((state) => state.router)!;
+
+  function handleEditProfile() {
+    router.push('/dashboard/user/settings');
+  }
 
   return (
     <Card elevation={2} sx={{ height: 'fit-content' }}>
@@ -44,19 +50,26 @@ const UserProfileCard: React.FC<UserProfileCardProps> = ({ user }) => {
             <Stack direction="row" alignItems="center" spacing={2}>
               <CalendarToday color="action" />
               <Typography variant="body2" color="text.secondary">
-                가입일: {DateFormat.toKST('YYYY-MM-dd HH:mm', user?.createdAt)}
+                가입일: {DateFormat.toUTC('YYYY-MM-dd HH:mm', user?.createdAt)}
               </Typography>
             </Stack>
 
             <Stack direction="row" alignItems="center" spacing={2}>
               <Person color="action" />
               <Typography variant="body2" color="text.secondary">
-                최근 접속: {DateFormat.toKST('YYYY-MM-dd HH:mm', user?.updatedAt)}
+                최근 접속: {user?.updatedAt ? DateFormat.getTimeAgo(user?.updatedAt, 'hour') : 'N/A'}
               </Typography>
             </Stack>
           </Stack>
 
-          <ActionButton variant="contained" startIcon={<Edit />} fullWidth size="large">
+          <ActionButton
+            variant="contained"
+            startIcon={<Edit />}
+            fullWidth
+            size="large"
+            onClick={handleEditProfile}
+            onMouseEnter={() => router.prefetch('/dashboard/user/settings')}
+          >
             프로필 편집
           </ActionButton>
         </Stack>

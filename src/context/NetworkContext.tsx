@@ -19,7 +19,7 @@ export const NetworkContext = createContext<NetworkContextType>({
   isServerAlive: true,
 });
 
-const ONLINE_INTERVAL = 30000;
+const ONLINE_INTERVAL = 60000;
 const OFFLINE_INTERVAL = 5000;
 
 export function NetworkProvider({ children }: { children: React.ReactNode }) {

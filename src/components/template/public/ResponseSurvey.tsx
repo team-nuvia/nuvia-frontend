@@ -479,7 +479,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false,
                   <Stack direction="row" alignItems="center" gap={1}>
                     <Chip size="small" icon={<Category />} label={survey.category.name || '카테고리'} />
                     {survey.expiresAt ? (
-                      <Chip size="small" icon={<TimeIcon />} label={`${DateFormat.toKST('YYYY-MM-dd HH:mm', survey.expiresAt)} 까지`} />
+                      <Chip size="small" icon={<TimeIcon />} label={`${DateFormat.toUTC('YYYY-MM-dd HH:mm', survey.expiresAt)} 까지`} />
                     ) : (
                       <Chip size="small" icon={<TimeIcon />} label="만료 없음" />
                     )}

@@ -21,6 +21,7 @@ import {
   Delete as DeleteIcon,
   Edit as EditIcon,
   Email as EmailIcon,
+  Lock,
   Pause as PauseIcon,
   Person as PersonIcon,
   Save as SaveIcon,
@@ -282,7 +283,7 @@ const Settings: React.FC<SettingProps> = () => {
                     가입일
                   </Typography>
                 </Box>
-                <Typography variant="body1">{DateFormat.toKST('YYYY-MM-dd', user.createdAt)}</Typography>
+                <Typography variant="body1">{DateFormat.toUTC('YYYY-MM-dd', user.createdAt)}</Typography>
               </Paper>
             </Grid>
 
@@ -294,7 +295,7 @@ const Settings: React.FC<SettingProps> = () => {
                     최근 접속
                   </Typography>
                 </Box>
-                <Typography variant="body1">{DateFormat.toKST('YYYY-MM-dd HH:mm', user.lastAccessAt)}</Typography>
+                <Typography variant="body1">{user.lastAccessAt ? DateFormat.getTimeAgo(user.lastAccessAt, 'hour') : 'N/A'}</Typography>
               </Paper>
             </Grid>
           </Grid>
@@ -430,6 +431,14 @@ const Settings: React.FC<SettingProps> = () => {
                 </Stack>
               </form>
             )}
+          </CardContent>
+        </Card>
+      )}
+      {user.provider !== SocialProvider.Local && (
+        <Card sx={{ mb: 3 }}>
+          <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Lock color="warning" />
+            <Typography variant="body1">소셜 로그인 사용자는 비밀번호 변경이 불가능합니다.</Typography>
           </CardContent>
         </Card>
       )}

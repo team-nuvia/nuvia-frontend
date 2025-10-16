@@ -37,13 +37,17 @@ function a11yProps(index: number) {
 }
 
 const Profile: React.FC<ProfileProps> = () => {
-  const router = useRouter();
+  const router = useAuthStore((state) => state.router)!;
   const user = useAuthStore((state) => state.user);
   const [tabValue, setTabValue] = useState(0);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
+
+  function handleEditProfile() {
+    router.push('/dashboard/user/settings');
+  }
 
   return (
     <Box sx={{ flexGrow: 1, minHeight: '100vh' }}>
@@ -60,7 +64,13 @@ const Profile: React.FC<ProfileProps> = () => {
           <Typography variant="h4" component="h1" fontWeight="bold">
             프로필
           </Typography>
-          <ActionButton variant="outlined" startIcon={<Settings />} size="large" onClick={() => router.push('/dashboard/user/settings')}>
+          <ActionButton
+            variant="outlined"
+            startIcon={<Settings />}
+            size="large"
+            onClick={handleEditProfile}
+            onMouseEnter={() => router.prefetch('/dashboard/user/settings')}
+          >
             설정
           </ActionButton>
         </Box>

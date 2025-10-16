@@ -1,15 +1,24 @@
 'use client';
 
-import { mockAnalysis } from '@/app/(protected)/dashboard/survey/[id]/analysis/analysis.mock';
+import { useAuthStore } from '@/store/auth.store';
+import queryKeys from '@/store/lib/query-key';
+import { getBasicAnalyses } from '@api/analyses/get-basic-analyses';
 import { AnalysisOverviewCards } from '@components/molecular/AnalysisOverviewCards';
 import { AnalysisQuestionCard } from '@components/molecular/AnalysisQuestionCard';
 import { Box, Container, Divider, Stack, Typography } from '@mui/material';
+import { useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
 
 export default function Analysis({ params }: { params: { surveyId: string } }) {
   const { surveyId } = params;
   const [data, setData] = useState<AnalysisPageData | null>(null);
   const [loading, setLoading] = useState(true);
+  const user = useAuthStore((state) => state.user)!;
+  const { data: basicAnalyses, isLoading: isLoadingBasicAnalyses } = useQuery({
+    queryKey: queryKeys.analyses.basic(surveyId),
+    queryFn: () => getBasicAnalyses(surveyId),
+    enabled: !!surveyId,
+  });
 
   // TODO: 실제 API 연결 + 로딩 처리 hook으로 대체
   useEffect(() => {
@@ -18,8 +27,8 @@ export default function Analysis({ params }: { params: { surveyId: string } }) {
       try {
         // const res = await fetch(`/api/analytics/surveys/${params.surveyId}`);
         // const json = await res.json();
-        const json = mockAnalysis; // 데모
-        if (mounted) setData(json);
+        const json = basicAnalyses?.payload; // 데모
+        if (mounted && json) setData(json);
       } finally {
         if (mounted) setLoading(false);
       }
@@ -27,7 +36,7 @@ export default function Analysis({ params }: { params: { surveyId: string } }) {
     return () => {
       mounted = false;
     };
-  }, [params.surveyId]);
+  }, [params.surveyId, isLoadingBasicAnalyses, user]);
 
   const title = useMemo(() => data?.overview.title ?? '분석', [data]);
 

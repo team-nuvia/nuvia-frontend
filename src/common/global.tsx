@@ -92,6 +92,9 @@ export const QUESTION_DEFAULT_DATA_TYPE_ICON: {
   rating: <StarIcon />,
 };
 
+/* 질문 카드 및 질문 생성 FAB에서 제외할 타입 */
+export const BANNED_KEYS = [DataType.Text, DataType.Video, DataType.File] as (DataType | QuestionType)[];
+
 export const QUESTION_TYPE_ICONS: {
   [key in QuestionType | DataType]: React.ReactElement;
 } = {
