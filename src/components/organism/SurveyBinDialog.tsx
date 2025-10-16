@@ -94,7 +94,7 @@ export default function SurveyBinDialog() {
           >
             <ListItemText
               primary={`${item.title} (${LocalizationManager.translate(item.status)})`}
-              secondary={`삭제일: ${DateFormat.toKST('YYYY-MM-dd', item.deletedAt)}`}
+              secondary={`삭제일: ${DateFormat.toUTC('YYYY-MM-dd', item.deletedAt)}`}
             />
           </ListItem>
         ))}

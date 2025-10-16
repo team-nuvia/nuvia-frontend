@@ -283,7 +283,7 @@ const Settings: React.FC<SettingProps> = () => {
                     가입일
                   </Typography>
                 </Box>
-                <Typography variant="body1">{DateFormat.toKST('YYYY-MM-dd', user.createdAt)}</Typography>
+                <Typography variant="body1">{DateFormat.toUTC('YYYY-MM-dd', user.createdAt)}</Typography>
               </Paper>
             </Grid>
 

@@ -50,7 +50,7 @@ const UserProfileCard: React.FC<UserProfileCardProps> = ({ user }) => {
             <Stack direction="row" alignItems="center" spacing={2}>
               <CalendarToday color="action" />
               <Typography variant="body2" color="text.secondary">
-                가입일: {DateFormat.toKST('YYYY-MM-dd HH:mm', user?.createdAt)}
+                가입일: {DateFormat.toUTC('YYYY-MM-dd HH:mm', user?.createdAt)}
               </Typography>
             </Stack>
 

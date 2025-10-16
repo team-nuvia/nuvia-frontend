@@ -85,7 +85,7 @@ const AccountOverview: React.FC<AccountOverviewProps> = ({ user }) => {
                   가입일
                 </Typography>
                 <Typography variant="body1" fontWeight="medium">
-                  {DateFormat.toKST('YYYY-MM-dd', user?.createdAt)}
+                  {DateFormat.toUTC('YYYY-MM-dd', user?.createdAt)}
                 </Typography>
               </Box>
               <Box>
@@ -93,7 +93,7 @@ const AccountOverview: React.FC<AccountOverviewProps> = ({ user }) => {
                   최근 접속
                 </Typography>
                 <Typography variant="body1" fontWeight="medium">
-                  {DateFormat.toKST('YYYY-MM-dd HH:mm', user?.updatedAt)}
+                  {DateFormat.toUTC('YYYY-MM-dd HH:mm', user?.updatedAt)}
                 </Typography>
               </Box>
               <Box>

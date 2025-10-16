@@ -301,7 +301,7 @@ const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey }) => {
 
             {/* 날짜 */}
             <Typography variant="caption" color="text.secondary">
-              생성일: {DateFormat.toKST('YYYY-MM-dd HH:mm', survey.createdAt)}
+              생성일: {DateFormat.toUTC('YYYY-MM-dd HH:mm', survey.createdAt)}
             </Typography>
           </CardContent>
 
