@@ -106,11 +106,12 @@ export async function middleware(req: NextRequest, res: NextResponse) {
   const cookieStore = await cookies();
 
   // 세션 쿠키(예: 'session' 또는 'access_token') 존재 여부만 빠르게 체크
+  const accessToken = cookieStore.get('access_token')?.value;
   const session = cookieStore.get('session')?.value;
   const refreshToken = cookieStore.get('refresh_token')?.value;
   const redirect = url.pathname;
 
-  if (!session && !refreshToken) {
+  if (!accessToken || !session || !refreshToken) {
     // 비회원
     if (isMemberPath(pathname)) {
       // 잘못된 접근

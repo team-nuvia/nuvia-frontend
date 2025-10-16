@@ -1,7 +1,9 @@
 'use client';
 
 import { Card, CardContent, CardHeader, Divider, Typography } from '@mui/material';
-import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { DataType } from '@share/enums/data-type';
+import { QuestionType } from '@share/enums/question-type';
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 export function AnalysisQuestionCard({ data }: { data: QuestionDistribution }) {
   const { questionTitle, distribution, totalAnswers, note } = data;
@@ -24,10 +26,11 @@ export function AnalysisQuestionCard({ data }: { data: QuestionDistribution }) {
   );
 }
 
-function renderChart(d: QuestionDistribution['distribution']) {
+function renderChart(d: Distribution) {
   switch (d.type) {
-    case 'single':
-    case 'multiple': {
+    case DataType.Rating:
+    case QuestionType.SingleChoice:
+    case QuestionType.MultipleChoice: {
       const rows = d.buckets.map((b) => ({ name: b.value, count: b.count }));
       return (
         <ChartBox>
@@ -43,7 +46,7 @@ function renderChart(d: QuestionDistribution['distribution']) {
         </ChartBox>
       );
     }
-    case 'number': {
+    case DataType.Time: {
       const rows = d.bins.map((b) => ({ name: `${b.x0}–${b.x1}`, count: b.count }));
       return (
         <ChartBox>
@@ -59,23 +62,41 @@ function renderChart(d: QuestionDistribution['distribution']) {
         </ChartBox>
       );
     }
-    case 'date': {
-      const rows = d.buckets.map((b) => ({ date: b.date, count: b.count }));
-      return (
-        <ChartBox>
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={rows} margin={{ top: 8, right: 16, left: -8, bottom: 8 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-              <YAxis />
-              <Tooltip />
-              <Line type="monotone" dataKey="count" />
-            </LineChart>
-          </ResponsiveContainer>
-        </ChartBox>
-      );
-    }
-    case 'text': {
+    // case 'number': {
+    //   const rows = d.bins.map((b) => ({ name: `${b.x0}–${b.x1}`, count: b.count }));
+    //   return (
+    //     <ChartBox>
+    //       <ResponsiveContainer width="100%" height="100%">
+    //         <BarChart data={rows} margin={{ top: 8, right: 16, left: -16, bottom: 8 }}>
+    //           <CartesianGrid strokeDasharray="3 3" />
+    //           <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+    //           <YAxis />
+    //           <Tooltip />
+    //           <Bar dataKey="count" />
+    //         </BarChart>
+    //       </ResponsiveContainer>
+    //     </ChartBox>
+    //   );
+    // }
+    // case DataType.Date: {
+    //   const rows = d.buckets.map((b) => ({ date: b.date, count: b.count }));
+    //   return (
+    //     <ChartBox>
+    //       <ResponsiveContainer width="100%" height="100%">
+    //         <LineChart data={rows} margin={{ top: 8, right: 16, left: -8, bottom: 8 }}>
+    //           <CartesianGrid strokeDasharray="3 3" />
+    //           <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+    //           <YAxis />
+    //           <Tooltip />
+    //           <Line type="monotone" dataKey="count" />
+    //         </LineChart>
+    //       </ResponsiveContainer>
+    //     </ChartBox>
+    //   );
+    // }
+    case DataType.Date:
+    case QuestionType.ShortText:
+    case QuestionType.LongText: {
       // MVP: 상위 샘플 나열
       return (
         <Typography variant="body2" component="div" sx={{ display: 'grid', gap: 0.75 }}>

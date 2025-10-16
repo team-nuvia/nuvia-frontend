@@ -4,6 +4,9 @@
 import { SurveyStatus } from '@share/enums/survey-status';
 
 const queryKeys = {
+  analyses: {
+    basic: (surveyId: number | string) => ['analyses', 'basic', surveyId] as const,
+  },
   user: {
     me: () => ['user', 'me'] as const,
     settings: () => ['user', 'settings'] as const,

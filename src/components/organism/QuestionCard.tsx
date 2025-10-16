@@ -1,4 +1,4 @@
-import { QUESTION_DEFAULT_TYPE_LIST } from '@common/global';
+import { BANNED_KEYS, QUESTION_DEFAULT_TYPE_LIST } from '@common/global';
 import ActionButton from '@components/atom/ActionButton';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditSquareIcon from '@mui/icons-material/EditSquare';
@@ -206,19 +206,21 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
         {questionType === QuestionType.ShortText && (
           <FormControl>
             <RadioGroup row value={dataType} onChange={(e) => handleChangeBy(`questions.${index}.dataType`, e.target.value as DataType)}>
-              {Object.values(DataType).map((value) => (
-                <FormControlLabel
-                  key={value}
-                  value={value}
-                  control={<Radio size="small" />}
-                  label={DATA_TYPE_MAP[value]}
-                  slotProps={{
-                    typography: {
-                      variant: 'caption',
-                    },
-                  }}
-                />
-              ))}
+              {Object.values(DataType)
+                .filter((value) => !BANNED_KEYS.includes(value))
+                .map((value) => (
+                  <FormControlLabel
+                    key={value}
+                    value={value}
+                    control={<Radio size="small" />}
+                    label={DATA_TYPE_MAP[value]}
+                    slotProps={{
+                      typography: {
+                        variant: 'caption',
+                      },
+                    }}
+                  />
+                ))}
             </RadioGroup>
           </FormControl>
         )}

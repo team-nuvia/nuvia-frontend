@@ -5,26 +5,11 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CloseIcon from '@mui/icons-material/Close';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import SearchIcon from '@mui/icons-material/Search';
-import {
-  Box,
-  Chip,
-  Fab,
-  Grid,
-  IconButton,
-  InputAdornment,
-  Stack,
-  SvgIcon,
-  SwipeableDrawer,
-  Tab,
-  Tabs,
-  TextField,
-  Typography,
-  useTheme,
-} from '@mui/material';
+import { Box, Chip, Fab, Grid, IconButton, InputAdornment, Stack, SvgIcon, SwipeableDrawer, Tab, Tabs, TextField, Typography } from '@mui/material';
 import * as React from 'react';
 
 import { RemovePin } from '@assets/RemovePin';
-import { QUESTION_DATA_TYPE_MAP, QUESTION_TYPE_ICONS, QUESTION_TYPE_MAP } from '@common/global';
+import { BANNED_KEYS, QUESTION_DATA_TYPE_MAP, QUESTION_TYPE_ICONS, QUESTION_TYPE_MAP } from '@common/global';
 import ActionButton from '@components/atom/ActionButton';
 import { DataType } from '@share/enums/data-type';
 import { QuestionType } from '@share/enums/question-type';
@@ -42,7 +27,7 @@ export const AddQuestionSheet: React.FC<{
   onPick: (questionType: QuestionType, dataType?: DataType) => void;
   isMobile?: boolean;
 }> = ({ onPick, isMobile = true }) => {
-  const theme = useTheme();
+  // const theme = useTheme();
   // const mobile = useMediaQuery(theme.breakpoints.down('md')) || isMobile;
   // const questionField = useField<AllQuestion[]>('questions');
 
@@ -67,7 +52,7 @@ export const AddQuestionSheet: React.FC<{
 
   // QUESTION_TYPE_MAP 중에서 실제 메타(getMeta)가 있는 키만 노출
   const allKeys = React.useMemo(() => {
-    return (Object.keys(QUESTION_TYPE_MAP) as QKey[]).filter((k) => k !== 'text' && Boolean(getMeta(k)));
+    return (Object.keys(QUESTION_TYPE_MAP) as QKey[]).filter((k) => !BANNED_KEYS.includes(k) && Boolean(getMeta(k)));
   }, []);
 
   const categories = React.useMemo(() => {

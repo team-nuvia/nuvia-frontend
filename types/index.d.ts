@@ -2,6 +2,8 @@ import { ButtonProps } from '@mui/material';
 import '@mui/material/styles';
 import { SurveyStatus } from '@share/enums/survey-status';
 import { AllQuestion } from '@share/interface/iquestion';
+import { QuestionType } from '@share/enums/question-type';
+import { DataType } from '@share/enums/data-type';
 
 export declare global {
   interface Payload<T> {
@@ -56,9 +58,6 @@ export declare global {
     export default ReactComponent;
   }
 
-  /* Analysis Types */
-  export type QuestionType = 'single' | 'multiple' | 'number' | 'date' | 'text';
-
   export interface AnswerResponseItem {
     questionId: number;
     optionIds: number[] | null;
@@ -111,11 +110,15 @@ export declare global {
   }
 
   export type Distribution =
-    | { type: 'single'; buckets: ChoiceBucket[] }
-    | { type: 'multiple'; buckets: ChoiceBucket[] }
-    | { type: 'number'; bins: NumberBin[] }
-    | { type: 'date'; buckets: DateBucket[] }
-    | { type: 'text'; samples: TextSample[] };
+    | { type: (typeof QuestionType)['SingleChoice']; buckets: ChoiceBucket[] }
+    | { type: (typeof QuestionType)['MultipleChoice']; buckets: ChoiceBucket[] }
+    | { type: (typeof DataType)['Rating']; buckets: ChoiceBucket[] }
+    | { type: (typeof DataType)['Time']; bins: NumberBin[] }
+    // | { type: DataType.Number; bins: NumberBin[] }
+    // | { type: DataType.Date; buckets: DateBucket[] }
+    | { type: (typeof DataType)['Date']; samples: TextSample[] }
+    | { type: (typeof QuestionType)['ShortText']; samples: TextSample[] }
+    | { type: (typeof QuestionType)['LongText']; samples: TextSample[] };
 
   export interface QuestionDistribution {
     questionId: string;
