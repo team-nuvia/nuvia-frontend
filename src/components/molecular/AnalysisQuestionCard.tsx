@@ -40,7 +40,7 @@ function renderChart(d: Distribution) {
               <XAxis dataKey="name" interval={0} tick={{ fontSize: 12 }} />
               <YAxis />
               <Tooltip />
-              <Bar dataKey="count" fill="#45612a" />
+              <Bar dataKey="count" fill="#3D5AFE" />
             </BarChart>
           </ResponsiveContainer>
         </ChartBox>
@@ -56,7 +56,7 @@ function renderChart(d: Distribution) {
               <XAxis dataKey="name" tick={{ fontSize: 12 }} />
               <YAxis />
               <Tooltip />
-              <Bar dataKey="count" />
+              <Bar dataKey="count" fill="#3D5AFE" />
             </BarChart>
           </ResponsiveContainer>
         </ChartBox>

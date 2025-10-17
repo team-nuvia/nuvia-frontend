@@ -6,15 +6,15 @@ export function AnalysisOverviewCards({ data, loading }: { data?: OverviewPayloa
   if (loading) return <SkeletonCards />;
 
   const s = data?.stats;
-  const pct = (n?: number | null) => (n == null ? '—' : `${Math.round(n * 100)}%`);
+  // const pct = (n?: number | null) => (n == null ? '—' : `${Math.round(n * 100)}%`);
   const num = (n?: number) => (typeof n === 'number' ? n.toLocaleString() : '—');
 
   return (
     <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
       <StatCard title="총 응답 수" value={num(s?.totalResponses)} />
       <StatCard title="설문당 평균 응답 수" value={num(s?.avgResponsesPerSurvey)} />
-      <StatCard title="최근 30일 응답 증가율" value={`${(s?.growth30dPct ?? 0).toFixed(1)}%`} />
-      <StatCard title="완료율" value={pct(s?.completionRate)} />
+      <StatCard title="최근 30일 응답 증가율" value={s?.growth30dPct === null ? '—' : `${(s?.growth30dPct ?? 0).toFixed(1)}%`} />
+      <StatCard title="완료율" value={s?.completionRate === null ? '—' : `${(s?.completionRate ?? 0).toFixed(1)}%`} />
     </Stack>
   );
 }
