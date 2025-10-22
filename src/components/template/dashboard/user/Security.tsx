@@ -37,7 +37,7 @@ const Security: React.FC<SecurityProps> = () => {
             </Stack>
           </Card>
         ) : (
-          <Typography variant="body1" fontWeight="medium">
+          <Typography variant="body1" fontWeight="medium" color="text.secondary">
             소셜 로그인 사용자는 비밀번호 변경이 불가능합니다.
           </Typography>
         )}

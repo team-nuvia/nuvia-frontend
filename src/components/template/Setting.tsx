@@ -8,10 +8,11 @@ import queryKeys from '@/store/lib/query-key';
 import { getUserSettings } from '@api/user/get-user-settings';
 import { updateUserSettings } from '@api/user/setting/update-user-settings';
 import CommonText from '@components/atom/CommonText';
+import OutlineStack from '@components/atom/OutlineStack';
 import SettingItem from '@components/molecular/SettingItem';
 import { useTheme } from '@context/ThemeContext';
 import { Check as CheckIcon, DarkMode as DarkModeIcon, LightMode as LightModeIcon, Settings as SettingsIcon } from '@mui/icons-material';
-import { Box, Chip, Container, ListItemIcon, ListItemText, Menu, MenuItem, Stack } from '@mui/material';
+import { Box, Chip, ListItemIcon, ListItemText, Menu, MenuItem, Stack } from '@mui/material';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 
@@ -20,6 +21,7 @@ const Setting: React.FC<SettingProps> = () => {
   const { mode, changeTheme } = useTheme();
   const publish = useEventBus((s) => s.publish);
   const user = useAuthStore((state) => state.user);
+  const addNotice = useAuthStore((state) => state.addNotice)!;
   const fetchUser = useAuthStore((state) => state.actions.fetchUser);
   const [themeMenuAnchor, setThemeMenuAnchor] = useState<null | HTMLElement>(null);
   const { data } = useQuery({
@@ -38,6 +40,7 @@ const Setting: React.FC<SettingProps> = () => {
 
   const handleEmailNotificationSubmit = (checked: boolean) => {
     updateUserSettingsMutation({ mailing: checked });
+    addNotice(checked ? '이메일 알림 설정이 활성화되었습니다.' : '이메일 알림 설정이 비활성화되었습니다.', 'success');
   };
 
   const handleThemeMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -81,87 +84,67 @@ const Setting: React.FC<SettingProps> = () => {
 
   // TODO: 설정 데이터 가져오기
   return (
-    <Container maxWidth="md">
-      <Stack flex={1} gap={3} p={5}>
-        <CommonText variant="h4">설정</CommonText>
-        <Stack
-          gap={5}
-          sx={{
-            borderWidth: 1,
-            borderStyle: 'solid',
-            borderColor: 'divider',
-            borderRadius: 3,
-            p: 3,
-          }}
-        >
-          {/* <SettingItem title="FAB 메뉴 🧪" description="Shift + 마우스 오른쪽 클릭 플로팅 작업 메뉴 활성화" /> */}
-          <SettingItem
-            title="이메일 알림"
-            description="새로운 응답에 대한 이메일 알림을 받으세요"
-            checked={data?.payload?.mailing ?? false}
-            onSubmit={handleEmailNotificationSubmit}
-          />
+    <OutlineStack gap={5} p={3}>
+      {/* <SettingItem title="FAB 메뉴 🧪" description="Shift + 마우스 오른쪽 클릭 플로팅 작업 메뉴 활성화" /> */}
+      <SettingItem
+        title="이메일 알림"
+        description="새로운 응답에 대한 이메일 알림을 받으세요"
+        checked={data?.payload?.mailing ?? false}
+        onSubmit={handleEmailNotificationSubmit}
+      />
 
-          {/* 테마 설정 */}
-          <Box display="flex" alignItems="center" justifyContent="space-between">
-            <Stack>
-              <CommonText variant="h6" gutterBottom>
-                테마 설정
-              </CommonText>
-              <CommonText variant="body2">앱의 테마를 선택하세요. 시스템 설정을 선택하면 OS 설정을 따릅니다.</CommonText>
-            </Stack>
-            <Box display="flex" alignItems="center" gap={1}>
-              <Chip
-                icon={getThemeIcon(mode)}
-                label={getThemeLabel(mode)}
-                variant="outlined"
-                onClick={handleThemeMenuOpen}
-                sx={{ cursor: 'pointer' }}
-              />
-              {/* <IconButton onClick={handleThemeMenuOpen} size="small">
+      {/* 테마 설정 */}
+      <Box display="flex" alignItems="center" justifyContent="space-between">
+        <Stack>
+          <CommonText variant="h6" gutterBottom>
+            테마 설정
+          </CommonText>
+          <CommonText variant="body2">앱의 테마를 선택하세요. 시스템 설정을 선택하면 OS 설정을 따릅니다.</CommonText>
+        </Stack>
+        <Box display="flex" alignItems="center" gap={1}>
+          <Chip icon={getThemeIcon(mode)} label={getThemeLabel(mode)} variant="outlined" onClick={handleThemeMenuOpen} sx={{ cursor: 'pointer' }} />
+          {/* <IconButton onClick={handleThemeMenuOpen} size="small">
               <SettingsIcon />
             </IconButton> */}
-            </Box>
-          </Box>
+        </Box>
+      </Box>
 
-          <Menu
-            anchorEl={themeMenuAnchor}
-            open={Boolean(themeMenuAnchor)}
-            onClose={handleThemeMenuClose}
-            anchorOrigin={{
-              vertical: 'bottom',
-              horizontal: 'right',
-            }}
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-          >
-            <MenuItem onClick={() => handleThemeChange('light')}>
-              <ListItemIcon>
-                <LightModeIcon />
-              </ListItemIcon>
-              <ListItemText primary="라이트 모드" />
-              {mode === 'light' && <CheckIcon color="primary" />}
-            </MenuItem>
-            <MenuItem onClick={() => handleThemeChange('dark')}>
-              <ListItemIcon>
-                <DarkModeIcon />
-              </ListItemIcon>
-              <ListItemText primary="다크 모드" />
-              {mode === 'dark' && <CheckIcon color="primary" />}
-            </MenuItem>
-            <MenuItem onClick={() => handleThemeChange('system')}>
-              <ListItemIcon>
-                <SettingsIcon />
-              </ListItemIcon>
-              <ListItemText primary="시스템 설정" />
-              {mode === 'system' && <CheckIcon color="primary" />}
-            </MenuItem>
-          </Menu>
-        </Stack>
-      </Stack>
-    </Container>
+      <Menu
+        anchorEl={themeMenuAnchor}
+        open={Boolean(themeMenuAnchor)}
+        onClose={handleThemeMenuClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+      >
+        <MenuItem onClick={() => handleThemeChange('light')}>
+          <ListItemIcon>
+            <LightModeIcon />
+          </ListItemIcon>
+          <ListItemText primary="라이트 모드" />
+          {mode === 'light' && <CheckIcon color="primary" />}
+        </MenuItem>
+        <MenuItem onClick={() => handleThemeChange('dark')}>
+          <ListItemIcon>
+            <DarkModeIcon />
+          </ListItemIcon>
+          <ListItemText primary="다크 모드" />
+          {mode === 'dark' && <CheckIcon color="primary" />}
+        </MenuItem>
+        <MenuItem onClick={() => handleThemeChange('system')}>
+          <ListItemIcon>
+            <SettingsIcon />
+          </ListItemIcon>
+          <ListItemText primary="시스템 설정" />
+          {mode === 'system' && <CheckIcon color="primary" />}
+        </MenuItem>
+      </Menu>
+    </OutlineStack>
   );
 };
 

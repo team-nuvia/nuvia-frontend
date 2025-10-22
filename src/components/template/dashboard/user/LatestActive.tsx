@@ -1,6 +1,7 @@
 import mutationKeys from '@/store/lib/mutation-key';
 import { getUserAccesses, UserAccess } from '@api/user/get-user-accesses';
-import { Card, Container, Stack, Typography } from '@mui/material';
+import OutlineBox from '@components/atom/OutlineBox';
+import { Box, Card, Container, Stack, Typography } from '@mui/material';
 import { useMutation } from '@tanstack/react-query';
 import { DateFormat } from '@util/dateFormat';
 import { useEffect, useMemo, useState } from 'react';
@@ -48,10 +49,10 @@ const LatestActive: React.FC<LatestActiveProps> = () => {
           </Typography>
         )}
       </Stack>
-      <Stack gap={1}>
+      <Stack gap={2}>
         {accessLogs.map((item) => (
-          <Card key={item.id} elevation={1} sx={{ p: 1.5 }}>
-            <Stack gap={2}>
+          <OutlineBox key={item.id} sx={{ p: 1.5 }}>
+            <Stack gap={1}>
               <Stack direction="row" justifyContent="space-between" alignItems="center">
                 <Stack gap={1}>
                   <Typography variant="body1" fontWeight="medium">
@@ -66,7 +67,7 @@ const LatestActive: React.FC<LatestActiveProps> = () => {
                 {item.lastAccessAt ? DateFormat.getTimeAgo(item.lastAccessAt) : '접속 기록 불명'}
               </Typography>
             </Stack>
-          </Card>
+          </OutlineBox>
         ))}
         {totalCount > 0 && (
           <Card elevation={1} sx={{ p: 2, mt: 2 }}>
