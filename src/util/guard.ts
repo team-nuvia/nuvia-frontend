@@ -16,7 +16,7 @@ export function isPublicPath(pathname: string) {
 }
 
 export function isGuestPath(pathname: string) {
-  return pathname && (pathname === '/' || GUEST_PATHS.some((guestPath) => guestPath === pathname || pathname.startsWith(guestPath)));
+  return pathname && ( GUEST_PATHS.some((guestPath) => guestPath === pathname || pathname.startsWith(guestPath)));
 }
 
 export function isMemberPath(pathname: string) {

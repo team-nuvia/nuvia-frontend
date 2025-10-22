@@ -33,8 +33,8 @@ export const HeroSection = () => {
           </Showbox>
           <Showbox>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-              <CTAButton label="지금 설문 만들기" />
-              <CTAButton label="데모 보기" path="/demo" invert />
+              <CTAButton label="무료로 설문 만들기" />
+              {/* <CTAButton label="데모 보기" path="/demo" invert /> */}
             </Stack>
           </Showbox>
         </Stack>
