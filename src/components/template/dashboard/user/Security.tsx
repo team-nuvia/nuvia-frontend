@@ -1,6 +1,6 @@
 import { useAuthStore } from '@/store/auth.store';
 import ActionButton from '@components/atom/ActionButton';
-import { Card, Container, Stack, Typography } from '@mui/material';
+import { Card, CardContent, Container, Stack, Typography } from '@mui/material';
 import { DateFormat } from '@util/dateFormat';
 
 interface SecurityProps {}
@@ -15,26 +15,28 @@ const Security: React.FC<SecurityProps> = () => {
       </Typography>
       <Stack spacing={3}>
         {user?.lastUpdatedAt ? (
-          <Card elevation={1} sx={{ p: 3 }}>
-            <Stack direction="row" justifyContent="space-between" alignItems="center">
-              <Stack spacing={1}>
-                <Typography variant="body1" fontWeight="medium">
-                  비밀번호 변경
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  마지막 변경:{' '}
-                  {user?.lastUpdatedAt && user?.createdAt !== user?.lastUpdatedAt ? DateFormat.getTimeAgo(user?.lastUpdatedAt, 'month') : 'N/A'}
-                </Typography>
+          <Card variant="outlined">
+            <CardContent>
+              <Stack direction="row" justifyContent="space-between" alignItems="center">
+                <Stack spacing={1}>
+                  <Typography variant="body1" fontWeight="medium">
+                    비밀번호 변경
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    마지막 변경:{' '}
+                    {user?.lastUpdatedAt && user?.createdAt !== user?.lastUpdatedAt ? DateFormat.getTimeAgo(user?.lastUpdatedAt, 'month') : 'N/A'}
+                  </Typography>
+                </Stack>
+                <ActionButton
+                  variant="outlined"
+                  size="small"
+                  onClick={() => router.push('/user/settings')}
+                  onMouseEnter={() => router.prefetch('/user/settings')}
+                >
+                  변경
+                </ActionButton>
               </Stack>
-              <ActionButton
-                variant="outlined"
-                size="small"
-                onClick={() => router.push('/dashboard/user/settings')}
-                onMouseEnter={() => router.prefetch('/dashboard/user/settings')}
-              >
-                변경
-              </ActionButton>
-            </Stack>
+            </CardContent>
           </Card>
         ) : (
           <Typography variant="body1" fontWeight="medium" color="text.secondary">

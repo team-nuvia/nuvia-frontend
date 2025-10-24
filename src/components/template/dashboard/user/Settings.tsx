@@ -12,8 +12,7 @@ import { getUsersMe } from '@api/user/get-users-me';
 import { updateNickname } from '@api/user/setting/update-nickname';
 import ActionButton from '@components/atom/ActionButton';
 import LimitTextField from '@components/atom/LimitTextField';
-import OutlineStack from '@components/atom/OutlineStack';
-import Setting from '@components/template/Setting';
+import PersonalSetting from '@components/template/dashboard/user/PersonalSetting';
 import { GlobalDialogContext } from '@context/GlobalDialogContext';
 import {
   AccessTime as AccessTimeIcon,
@@ -30,7 +29,7 @@ import {
   Security as SecurityIcon,
   Warning as WarningIcon,
 } from '@mui/icons-material';
-import { Alert, Avatar, Box, CardContent, Container, Divider, Grid, IconButton, Stack, TextField, Typography } from '@mui/material';
+import { Alert, Avatar, Box, Card, CardContent, Container, Divider, Grid, IconButton, Stack, TextField, Typography } from '@mui/material';
 import { SocialProvider } from '@share/enums/social-provider.enum';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { DateFormat } from '@util/dateFormat';
@@ -241,8 +240,8 @@ const Settings: React.FC<SettingProps> = () => {
             variant="text"
             size="large"
             startIcon={<ArrowBack />}
-            onClick={() => router.push('/dashboard/user')}
-            onMouseEnter={() => router.prefetch('/dashboard/user')}
+            onClick={() => router.push('/user')}
+            onMouseEnter={() => router.prefetch('/user')}
           >
             뒤로가기
           </ActionButton>
@@ -252,10 +251,10 @@ const Settings: React.FC<SettingProps> = () => {
         </Stack>
 
         {/* 사용자 기본 정보 */}
-        <OutlineStack>
+        <Card variant="outlined">
           <CardContent>
             <Box display="flex" alignItems="center" mb={3}>
-              <Avatar sx={{ width: 64, height: 64, mr: 2, bgcolor: 'primary.main' }}>
+              <Avatar sx={{ width: 64, height: 64, mr: 2, bgcolor: 'primary.main' }} src={user?.profileImageUrl ?? undefined} alt={user?.name}>
                 <PersonIcon fontSize="large" />
               </Avatar>
               <Box>
@@ -303,10 +302,10 @@ const Settings: React.FC<SettingProps> = () => {
               </Grid>
             </Grid>
           </CardContent>
-        </OutlineStack>
+        </Card>
 
         {/* 이름 수정 */}
-        <OutlineStack>
+        <Card variant="outlined">
           <CardContent>
             <Typography variant="h6" sx={{ mb: 3 }}>
               기본 정보 수정
@@ -355,13 +354,13 @@ const Settings: React.FC<SettingProps> = () => {
               </form>
             )}
           </CardContent>
-        </OutlineStack>
+        </Card>
 
-        <Setting />
+        <PersonalSetting />
 
         {/* 비밀번호 변경 */}
         {user.provider === SocialProvider.Local && (
-          <OutlineStack mb={3}>
+          <Card variant="outlined">
             <CardContent>
               <Typography variant="h6" gutterBottom>
                 비밀번호 변경
@@ -437,19 +436,19 @@ const Settings: React.FC<SettingProps> = () => {
                 </form>
               )}
             </CardContent>
-          </OutlineStack>
+          </Card>
         )}
         {user.provider !== SocialProvider.Local && (
-          <OutlineStack>
+          <Card variant="outlined">
             <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Lock color="warning" />
               <Typography variant="body1">소셜 로그인 사용자는 비밀번호 변경이 불가능합니다.</Typography>
             </CardContent>
-          </OutlineStack>
+          </Card>
         )}
 
         {/* Danger Zone */}
-        <OutlineStack sx={{ borderWidth: 2, borderColor: 'error.main' }}>
+        <Card variant="outlined" sx={{ borderWidth: 2, borderColor: 'error.main' }}>
           <CardContent>
             <Box display="flex" alignItems="center" mb={2}>
               <WarningIcon color="error" sx={{ mr: 1 }} />
@@ -490,7 +489,7 @@ const Settings: React.FC<SettingProps> = () => {
               </Box>
             </Stack>
           </CardContent>
-        </OutlineStack>
+        </Card>
 
         {/* 확인 다이얼로그
       <Dialog open={confirmDialog.open} onClose={() => setConfirmDialog({ open: false, type: null, title: '', message: '' })} maxWidth="sm" fullWidth>

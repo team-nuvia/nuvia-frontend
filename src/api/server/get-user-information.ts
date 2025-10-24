@@ -1,3 +1,4 @@
+import { ACCESS_COOKIE_NAME, SESSION_COOKIE_NAME } from '@common/global';
 import { API_URL } from '@common/variables';
 import { cookies } from 'next/headers';
 
@@ -24,8 +25,8 @@ function mergeCookies(existing: string, setCookies: string[]) {
 
 export async function getUserInformation() {
   const cookieStore = await cookies();
-  const hasSession = cookieStore.has('session');
-  const hasAccessToken = cookieStore.has('access_token');
+  const hasSession = cookieStore.has(SESSION_COOKIE_NAME);
+  const hasAccessToken = cookieStore.has(ACCESS_COOKIE_NAME);
 
   if (!hasSession || !hasAccessToken) {
     return null;
@@ -36,12 +37,10 @@ export async function getUserInformation() {
   const verifyRes = await fetch(`${API_URL}/auth/verify`, {
     method: 'POST',
     headers: { cookie: cookieHeader, 'cache-control': 'no-cache' },
-    // cache: 'no-store',
   });
 
   let userRes = await fetch(`${API_URL}/users/me`, {
     headers: { cookie: cookieHeader },
-    // cache: 'no-store',
   });
 
   if (userRes.status === 401) {

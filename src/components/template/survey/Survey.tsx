@@ -662,7 +662,7 @@ const Survey: React.FC<{ id?: string }> = ({ id }) => {
             author: {
               id: 0,
               name: '미리보기 사용자',
-              profileUrl: null,
+              profileImage: null,
             },
             description: formik.values.description,
             category: categories?.payload?.find((category) => category.id === Number(formik.values.categoryId)) || { id: 0, name: '' },

@@ -12,7 +12,7 @@ const Versioning: React.FC<VersioningProps> = (props) => {
       textAlign="right"
       fontSize="0.65rem"
       sx={{
-        position: 'absolute',
+        position: 'fixed',
         top: 67,
         left: 8,
         zIndex: 1000,

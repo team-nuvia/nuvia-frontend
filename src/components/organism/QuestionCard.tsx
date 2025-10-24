@@ -1,5 +1,6 @@
 import { BANNED_KEYS, QUESTION_DEFAULT_TYPE_LIST } from '@common/global';
 import ActionButton from '@components/atom/ActionButton';
+import { AddCircleOutline } from '@mui/icons-material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditSquareIcon from '@mui/icons-material/EditSquare';
 import {
@@ -156,43 +157,41 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
 
       <Box sx={{ mt: 3 }}>
         {(questionType === QuestionType.SingleChoice || questionType === QuestionType.MultipleChoice) && (
-          <Box>
+          <Stack gap={1}>
             {(questionOptions || []).map((option, optIndex) => {
               const touchedOption = touched?.questionOptions?.[optIndex] as FormikTouched<IQuestionOption> | undefined;
               const errorsOption = errors?.questionOptions?.[optIndex] as FormikErrors<IQuestionOption> | undefined;
               return (
-                <Grid container spacing={1} key={idx + '-' + option.idx} alignItems="center">
-                  <Grid size={{ xs: 11 }}>
-                    <TextField
-                      fullWidth
-                      size="small"
-                      label={`옵션 ${optIndex + 1}`}
-                      value={option.label}
-                      name={`questions.${index}.questionOptions.${optIndex}.label`}
-                      onChange={(e) => handleChangeBy(`questions.${index}.questionOptions.${optIndex}.label`, e.target.value)}
-                      variant="standard"
-                      type={inputValueType}
-                      error={touchedOption?.label && Boolean(errorsOption?.label)}
-                      helperText={touchedOption?.label && errorsOption?.label}
-                      required
-                      autoFocus={questionOptions?.length === optIndex + 1}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 1 }}>
-                    <IconButton onClick={() => handleRemoveOption(index, option.idx)} size="small">
-                      <DeleteIcon />
-                    </IconButton>
-                  </Grid>
-                </Grid>
+                <Stack direction="row" gap={1} key={idx + '-' + option.idx} alignItems="center" justifyContent="space-between">
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label={`옵션 ${optIndex + 1}`}
+                    value={option.label}
+                    name={`questions.${index}.questionOptions.${optIndex}.label`}
+                    onChange={(e) => handleChangeBy(`questions.${index}.questionOptions.${optIndex}.label`, e.target.value)}
+                    variant="outlined"
+                    type={inputValueType}
+                    error={touchedOption?.label && Boolean(errorsOption?.label)}
+                    helperText={touchedOption?.label && errorsOption?.label}
+                    required
+                    autoFocus={questionOptions?.length === optIndex + 1}
+                  />
+                  <IconButton onClick={() => handleRemoveOption(index, option.idx)} size="small">
+                    <DeleteIcon />
+                  </IconButton>
+                </Stack>
               );
             })}
-            <ActionButton onClick={() => handleAddOption(index)} sx={{ mt: 1 }}>
-              옵션 추가
-            </ActionButton>
+            <Box>
+              <ActionButton startIcon={<AddCircleOutline />} variant="outlined" onClick={() => handleAddOption(index)} sx={{ mt: 1 }}>
+                옵션 추가
+              </ActionButton>
+            </Box>
             {/* {questionOptions?.length === 0 && questionTouched && (
               <Box sx={{ color: 'error.main', fontSize: '0.75rem', mb: 1 }}>최소 1개의 옵션이 필요합니다.</Box>
             )} */}
-          </Box>
+          </Stack>
         )}
       </Box>
 
@@ -224,9 +223,9 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             </RadioGroup>
           </FormControl>
         )}
-        <IconButton onClick={() => handleRemoveQuestion(index)}>
-          <DeleteIcon />
-        </IconButton>
+        <ActionButton color="error" variant="contained" startIcon={<DeleteIcon />} onClick={() => handleRemoveQuestion(index)}>
+          질문 삭제
+        </ActionButton>
       </Stack>
     </Paper>
   );

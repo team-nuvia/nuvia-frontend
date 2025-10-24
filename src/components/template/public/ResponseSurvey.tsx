@@ -15,7 +15,6 @@ import { Alert, Box, Card, CardContent, Chip, CircularProgress, Container, Divid
 import { useTheme } from '@mui/material/styles';
 import { TimeIcon } from '@mui/x-date-pickers/icons';
 import { AnswerStatus } from '@share/enums/answer-status';
-import { DataType } from '@share/enums/data-type';
 import { QuestionType } from '@share/enums/question-type';
 import { UseMutateFunction, useMutation } from '@tanstack/react-query';
 import { DateFormat } from '@util/dateFormat';
@@ -68,6 +67,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false,
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [direction, setDirection] = useState<'next' | 'previous'>('next');
   const [questions, setQuestions] = useState<PreviewPayload['questions']>(survey.questions);
+  const [autoSaved, setAutoSaved] = useState(false);
   const { mutate: autoSaveMutate } = useMutation({
     mutationKey: mutationKeys.survey.createAnswer(),
     mutationFn: ({ surveyId, answerData }: { surveyId: number; answerData: AnswerPayload }) => createAnswer(surveyId, answerData),
@@ -76,13 +76,13 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false,
       // console.log('🚀 ~ ResponseSurvey ~ response:', response);
       if (response.httpStatus === 201) {
         addNotice(response.message, 'success');
+        setAutoSaved(true);
       } else {
         addNotice(`오류: ${response.statusText}`, 'error');
       }
       setIsSubmitting(false);
     },
     onError: (error: AxiosError<ServerResponse<void>>) => {
-      // console.log('🚀 ~ ResponseSurvey ~ error:', error);
       addNotice(error?.response?.data?.message || '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
       setIsSubmitting(false);
     },
@@ -92,7 +92,6 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false,
     mutationKey: mutationKeys.survey.createAnswer(),
     mutationFn: ({ surveyId, answerData }: { surveyId: number; answerData: AnswerPayload }) => createAnswer(surveyId, answerData),
     onSuccess: (response) => {
-      // console.log('🚀 ~ ResponseSurvey ~ response:', response);
       if (response.httpStatus === 201) {
         addNotice(response.message, 'success');
         // Reset form
@@ -105,20 +104,10 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false,
       setIsSubmitting(false);
     },
     onError: (error: AxiosError<ServerResponse<void>>) => {
-      // console.log('🚀 ~ ResponseSurvey ~ error:', error);
       addNotice(error?.response?.data?.message || '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
       setIsSubmitting(false);
     },
   });
-
-  // const answerFormik = useFormik({
-  //   initialValues: answerInitialValues,
-  //   validationSchema: AnswerInProgressSchema,
-  //   onSubmit: (values) => {
-  //     console.log('🚀 ~ ResponseSurvey ~ values:', values);
-  //     createAnswerMutate({ surveyId: survey.id ?? 0, answerData: values as AnswerPayload });
-  //   },
-  // });
 
   const getQuestionProcess = () => {
     const totalQuestions = questions.length;
@@ -225,7 +214,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false,
           acc.push({
             questionId: rest.id ?? 0,
             optionIds: null, // Remove client-side IDs
-            value: valueFirst,
+            value: valueFirst === 'undefined' ? null : valueFirst,
           });
         }
         return acc;
@@ -418,7 +407,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false,
               >
                 <Chip
                   icon={<Person />}
-                  label={`총 ${survey.totalResponses + 1}명 참여`}
+                  label={`총 ${survey.totalResponses + (autoSaved ? 0 : 1)}명 참여`}
                   sx={{
                     backgroundColor: 'rgba(255,255,255,0.25)',
                     color: 'white',
@@ -487,7 +476,7 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false,
                   </Stack>
                 </Stack>
               }
-              profileImage={(isDemo ? user?.profileImageUrl : survey.author.profileUrl) ?? null}
+              profileImage={(isDemo ? user?.profileImageUrl : survey.author.profileImage) ?? null}
               isVisible
             />
             <CommonText variant="h4" thickness="bold" mb={2}>

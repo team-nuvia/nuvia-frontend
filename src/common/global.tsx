@@ -6,7 +6,6 @@ import EventIcon from '@mui/icons-material/Event';
 import ImageIcon from '@mui/icons-material/Image';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import LinkIcon from '@mui/icons-material/Link';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
 import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked';
 import ShortTextIcon from '@mui/icons-material/ShortText';
 import StarIcon from '@mui/icons-material/Star';
@@ -101,3 +100,11 @@ export const QUESTION_TYPE_ICONS: {
   ...QUESTION_DEFAULT_TYPE_ICON,
   ...QUESTION_DEFAULT_DATA_TYPE_ICON,
 };
+
+/* Cookie Name */
+export const SESSION_COOKIE_NAME = 'x-session';
+export const ACCESS_COOKIE_NAME = 'x-access-token';
+export const REFRESH_COOKIE_NAME = 'x-refresh-token';
+
+export const SUBMISSION_HASH_COOKIE_NAME = 'x-submission-hash';
+export const JWS_COOKIE_NAME = 'x-jws-token';

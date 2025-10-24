@@ -32,16 +32,8 @@ serverApi.interceptors.request.use(
     const cookie = await cookies();
     const cookieHeader = cookie.toString();
     config.headers.Cookie = cookieHeader;
-    // const accessToken = localStorage.getItem('access_token');
-    // if (accessToken) {
-    //   config.headers.Authorization = `Bearer ${accessToken}`;
-    // }
 
-    // 요청 키 생성 (URL + 메서드 + 파라미터)
     const requestKey = getRequestKey(config);
-
-    // 기존 요청이 있다면 취소
-    // if (activeRequests.current.size > 0 && !activeRequests.current.has('POST_/auth/logout_{}')) {
     if (requestMap.has(requestKey)) {
       requestMap.get(requestKey)?.abort();
     }

@@ -31,7 +31,7 @@ export const Default: Story = {
       author: {
         id: 1,
         name: 'test',
-        profileUrl: 'test',
+        profileImage: 'test',
       },
       estimatedTime: 10,
       questionAnswers: [],

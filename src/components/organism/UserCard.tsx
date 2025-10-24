@@ -32,10 +32,10 @@ const UserCard: React.FC<UserCardProps> = (props) => {
     return () => {
       observer.disconnect();
     };
-  }, []);
+  }, [containerRef?.current]);
 
   return (
-    <Stack ref={containerRef}>
+    <Stack ref={containerRef} width="100%">
       <UserDescription {...props} isVisible={isVisible} isLoading={props.isLoading} />
     </Stack>
   );

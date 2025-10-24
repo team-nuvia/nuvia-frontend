@@ -83,6 +83,12 @@ export declare global {
     date: string;
     count: number;
   }
+  export interface UserAllowedPermission {
+    download: {
+      excel: boolean;
+      pdf: boolean;
+    };
+  }
   export interface OverviewPayload {
     surveyId: string;
     title: string;
@@ -130,6 +136,7 @@ export declare global {
   }
 
   export interface AnalysisPageData {
+    permission: UserAllowedPermission;
     overview: OverviewPayload;
     questions: QuestionDistribution[];
   }

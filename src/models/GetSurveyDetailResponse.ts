@@ -59,7 +59,7 @@ export interface GetSurveyDetailResponse extends Omit<ISurvey, 'id' | 'questions
   author: {
     id: number;
     name: string;
-    profileUrl: string | null;
+    profileImage: string | null;
   };
   estimatedTime: number;
   totalResponses: number;

@@ -1,4 +1,5 @@
 // import axios, { AxiosResponse } from 'axios';
+import { ACCESS_COOKIE_NAME, REFRESH_COOKIE_NAME, SESSION_COOKIE_NAME } from '@common/global';
 import { API_URL } from '@common/variables';
 import { isGuestPath, isMemberPath } from '@util/guard';
 import { ResponseCookie } from 'next/dist/compiled/@edge-runtime/cookies';
@@ -27,9 +28,9 @@ async function setCookies(result: Response) {
 
 async function clearCookie() {
   const cookieStore = await cookies();
-  cookieStore.delete('session');
-  cookieStore.delete('access_token');
-  cookieStore.delete('refresh_token');
+  cookieStore.delete(SESSION_COOKIE_NAME);
+  cookieStore.delete(ACCESS_COOKIE_NAME);
+  cookieStore.delete(REFRESH_COOKIE_NAME);
 }
 
 async function forceLogout(url: URL) {
@@ -95,7 +96,6 @@ async function getRefreshToken(req: NextRequest) {
     if (error instanceof Error && error.message?.includes('Network Error')) {
       throw new Error('SERVER_ERROR');
     }
-    // await forceLogout(url);
     throw error;
   }
 }
@@ -106,9 +106,9 @@ export async function middleware(req: NextRequest, res: NextResponse) {
   const cookieStore = await cookies();
 
   // 세션 쿠키(예: 'session' 또는 'access_token') 존재 여부만 빠르게 체크
-  const accessToken = cookieStore.get('access_token')?.value;
-  const session = cookieStore.get('session')?.value;
-  const refreshToken = cookieStore.get('refresh_token')?.value;
+  const accessToken = cookieStore.get(ACCESS_COOKIE_NAME)?.value;
+  const session = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+  const refreshToken = cookieStore.get(REFRESH_COOKIE_NAME)?.value;
   const redirect = url.pathname;
 
   if (!accessToken || !session || !refreshToken) {

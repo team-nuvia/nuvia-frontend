@@ -16,11 +16,13 @@ const Page: React.FC<PageProps> = async ({ params }) => {
   const hash = (await params).hash;
   try {
     const survey = await getSurveyDetailView(hash);
+    console.log('🚀 ~ Page ~ survey:', survey);
     if (!survey.payload) {
       return notFound();
     }
     return <SurveyDetail survey={survey.payload} />;
   } catch (error: any) {
+    console.log('🚀 ~ Page ~ error:', error);
     const axiosError = error as AxiosError<ServerResponse<void>>;
     if (axiosError.response?.status === 400) {
       return <NotFound reason={axiosError.response?.data.message} />;

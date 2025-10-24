@@ -1,7 +1,7 @@
 import mutationKeys from '@/store/lib/mutation-key';
 import { getUserAccesses, UserAccess } from '@api/user/get-user-accesses';
 import OutlineBox from '@components/atom/OutlineBox';
-import { Box, Card, Container, Stack, Typography } from '@mui/material';
+import { Box, Card, CardContent, Container, Stack, Typography } from '@mui/material';
 import { useMutation } from '@tanstack/react-query';
 import { DateFormat } from '@util/dateFormat';
 import { useEffect, useMemo, useState } from 'react';
@@ -51,34 +51,38 @@ const LatestActive: React.FC<LatestActiveProps> = () => {
       </Stack>
       <Stack gap={2}>
         {accessLogs.map((item) => (
-          <OutlineBox key={item.id} sx={{ p: 1.5 }}>
-            <Stack gap={1}>
-              <Stack direction="row" justifyContent="space-between" alignItems="center">
-                <Stack gap={1}>
-                  <Typography variant="body1" fontWeight="medium">
-                    {item.status === 'login' ? '로그인' : '로그아웃'}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {item.accessIp} / {item.accessDevice}
-                  </Typography>
+          <Card variant="outlined" key={item.id}>
+            <CardContent>
+              <Stack gap={1}>
+                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                  <Stack gap={1}>
+                    <Typography variant="body1" fontWeight="medium">
+                      {item.status === 'login' ? '로그인' : '로그아웃'}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {item.accessIp} / {item.accessDevice}
+                    </Typography>
+                  </Stack>
                 </Stack>
+                <Typography variant="caption" color="text.secondary" alignSelf="flex-end">
+                  {item.lastAccessAt ? DateFormat.getTimeAgo(item.lastAccessAt) : '접속 기록 불명'}
+                </Typography>
               </Stack>
-              <Typography variant="caption" color="text.secondary" alignSelf="flex-end">
-                {item.lastAccessAt ? DateFormat.getTimeAgo(item.lastAccessAt) : '접속 기록 불명'}
-              </Typography>
-            </Stack>
-          </OutlineBox>
+            </CardContent>
+          </Card>
         ))}
         {totalCount > 0 && (
-          <Card elevation={1} sx={{ p: 2, mt: 2 }}>
-            <Stack direction="row" justifyContent="space-between" alignItems="center">
-              <Typography variant="body2" color="text.secondary">
-                총 {totalCount}개의 활동 기록
-              </Typography>
-              <Typography variant="body2" color="primary" sx={{ cursor: 'pointer' }} onClick={loadMore}>
-                더 보기
-              </Typography>
-            </Stack>
+          <Card variant="outlined">
+            <CardContent>
+              <Stack direction="row" justifyContent="space-between" alignItems="center">
+                <Typography variant="body2" color="text.secondary">
+                  총 {totalCount}개의 활동 기록
+                </Typography>
+                <Typography variant="body2" color="primary" sx={{ cursor: 'pointer' }} onClick={loadMore}>
+                  더 보기
+                </Typography>
+              </Stack>
+            </CardContent>
           </Card>
         )}
       </Stack>
