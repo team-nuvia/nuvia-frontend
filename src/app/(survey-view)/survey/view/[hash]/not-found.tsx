@@ -7,13 +7,16 @@ import { useState } from 'react';
 import PriorityHighRoundedIcon from '@mui/icons-material/PriorityHighRounded';
 
 interface NotFoundProps {
+  title?: string;
   reason?: string;
+  reload?: boolean;
 }
 
 const NotFound = (props?: NotFoundProps) => {
   const router = useRouter();
+  const [title, setTitle] = useState<string | null>(props?.title || null);
   const [reason, setReason] = useState<string | null>(props?.reason || null);
-
+  const [reload, setReload] = useState<boolean>(props?.reload || false);
   return (
     <Box
       sx={{
@@ -56,7 +59,7 @@ const NotFound = (props?: NotFoundProps) => {
           fontSize: { xs: '1.75rem', sm: '2.25rem' },
         }}
       >
-        설문을 찾을 수 없습니다
+        {title ? title : '설문을 찾을 수 없습니다'}
       </Typography>
 
       <Typography
@@ -73,34 +76,54 @@ const NotFound = (props?: NotFoundProps) => {
       </Typography>
 
       <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
-        <ActionButton
-          variant="contained"
-          color="primary"
-          onClick={() => router.push('/')}
-          sx={{
-            px: 4,
-            py: 1.5,
-            borderRadius: 2,
-            fontWeight: 600,
-            minWidth: '140px',
-          }}
-        >
-          홈으로 돌아가기
-        </ActionButton>
-        <ActionButton
-          variant="outlined"
-          color="primary"
-          onClick={() => router.back()}
-          sx={{
-            px: 4,
-            py: 1.5,
-            borderRadius: 2,
-            fontWeight: 600,
-            minWidth: '140px',
-          }}
-        >
-          이전 페이지로
-        </ActionButton>
+        {reload && (
+          <ActionButton
+            variant="contained"
+            color="primary"
+            onClick={() => window.location.reload()}
+            sx={{
+              px: 4,
+              py: 1.5,
+              borderRadius: 2,
+              fontWeight: 600,
+              minWidth: '140px',
+            }}
+          >
+            새로고침
+          </ActionButton>
+        )}
+        {!reload && (
+          <>
+            <ActionButton
+              variant="contained"
+              color="primary"
+              onClick={() => router.push('/')}
+              sx={{
+                px: 4,
+                py: 1.5,
+                borderRadius: 2,
+                fontWeight: 600,
+                minWidth: '140px',
+              }}
+            >
+              홈으로 돌아가기
+            </ActionButton>
+            <ActionButton
+              variant="outlined"
+              color="primary"
+              onClick={() => router.back()}
+              sx={{
+                px: 4,
+                py: 1.5,
+                borderRadius: 2,
+                fontWeight: 600,
+                minWidth: '140px',
+              }}
+            >
+              이전 페이지로
+            </ActionButton>
+          </>
+        )}
       </Box>
     </Box>
   );

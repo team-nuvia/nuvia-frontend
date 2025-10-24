@@ -19,7 +19,7 @@ import { memo, useEffect, useMemo, useState } from 'react';
 
 const guestMenu = [
   {
-    label: '구독하기',
+    label: '요금제',
     to: '/pricing',
   },
   {
@@ -33,7 +33,7 @@ const memberMenu = [
     to: '/dashboard',
   },
   {
-    label: '구독하기',
+    label: '요금제',
     to: '/pricing',
   },
 ];
@@ -69,7 +69,7 @@ const Header: React.FC<HeaderProps> = () => {
   });
 
   const memberProfileMenu: MenuOption[] = [
-    { label: '나의 프로필', to: '/dashboard/user' },
+    { label: '나의 프로필', to: '/user' },
     {
       label: '로그아웃',
       request: async () => {
@@ -83,17 +83,6 @@ const Header: React.FC<HeaderProps> = () => {
     setCommonMenus(user ? memberMenu : guestMenu);
     setMenus(user ? memberProfileMenu : guestProfileMenu);
   }, [user]);
-
-  // useEffect(() => {
-  //   if (isSuccess) {
-  //     if (!user) {
-  //       addNotice!('로그아웃 되었습니다.', 'success');
-  //       if (!pathname.startsWith('/auth/login')) {
-  //         router?.push(`/auth/login?redirect=${encodeURIComponent(pathname)}&action=view`);
-  //       }
-  //     }
-  //   }
-  // }, [isSuccess, user, router, pathname]);
 
   useEffect(() => {
     if (y > 30) {

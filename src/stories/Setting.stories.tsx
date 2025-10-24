@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
-import Setting from '../components/template/Setting';
+import Setting from '../components/template/dashboard/user/PersonalSetting';
 
 const meta = {
   component: Setting,

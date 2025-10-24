@@ -101,20 +101,23 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [mode]);
 
-  const changeTheme = useCallback((newMode: ThemeMode) => {
-    setMode(newMode);
+  const changeTheme = useCallback(
+    (newMode: ThemeMode) => {
+      setMode(newMode);
 
-    // 로컬스토리지에 저장
-    if (typeof window !== 'undefined') {
-      if (user) {
-        localStorage.setItem(`theme-mode`, newMode);
+      // 로컬스토리지에 저장
+      if (typeof window !== 'undefined') {
+        if (user) {
+          localStorage.setItem(`theme-mode`, newMode);
+        }
       }
-    }
 
-    // 즉시 테마 적용
-    const effectiveTheme = getEffectiveTheme(newMode);
-    setTheme(effectiveTheme === 'dark' ? darkTheme : lightTheme);
-  }, []);
+      // 즉시 테마 적용
+      const effectiveTheme = getEffectiveTheme(newMode);
+      setTheme(effectiveTheme === 'dark' ? darkTheme : lightTheme);
+    },
+    [user],
+  );
 
   const toggleTheme = useCallback(() => {
     const currentEffectiveTheme = getEffectiveTheme(mode);

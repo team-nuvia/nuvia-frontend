@@ -25,6 +25,7 @@ const queryKeys = {
     list: () => ['organizations', 'list'] as const,
     role: (id?: number) => ['organizations', 'role', id] as const,
     detail: (id?: number) => ['organizations', 'role', id] as const,
+    settings: (orgId?: number) => ['organizations', 'settings', orgId] as const,
   },
   notification: {
     list: () => ['notification', 'list'] as const,

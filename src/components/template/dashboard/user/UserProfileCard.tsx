@@ -13,7 +13,7 @@ const UserProfileCard: React.FC<UserProfileCardProps> = ({ user }) => {
   const router = useAuthStore((state) => state.router)!;
 
   function handleEditProfile() {
-    router.push('/dashboard/user/settings');
+    router.push('/user/settings');
   }
 
   return (
@@ -27,6 +27,8 @@ const UserProfileCard: React.FC<UserProfileCardProps> = ({ user }) => {
               fontSize: '3rem',
               bgcolor: theme.palette.primary.main,
             }}
+            src={user?.profileImageUrl ?? undefined}
+            alt={user?.name}
           >
             {user?.name?.charAt(0) || <AccountCircle />}
           </Avatar>
@@ -68,7 +70,7 @@ const UserProfileCard: React.FC<UserProfileCardProps> = ({ user }) => {
             fullWidth
             size="large"
             onClick={handleEditProfile}
-            onMouseEnter={() => router.prefetch('/dashboard/user/settings')}
+            onMouseEnter={() => router.prefetch('/user/settings')}
           >
             프로필 편집
           </ActionButton>

@@ -1,6 +1,6 @@
 import { GetMeResponse } from '@/models/GetMeResponse';
 import { CalendarToday, Person } from '@mui/icons-material';
-import { Box, Card, Chip, Container, Grid, Stack, Typography } from '@mui/material';
+import { Box, Chip, Container, Grid, Stack, Typography } from '@mui/material';
 import { DateFormat } from '@util/dateFormat';
 
 interface AccountOverviewProps {
@@ -11,7 +11,7 @@ const AccountOverview: React.FC<AccountOverviewProps> = ({ user }) => {
     <Container maxWidth="md">
       <Grid container spacing={3}>
         <Grid size={{ xs: 12, sm: 6 }}>
-          <Card elevation={1} sx={{ p: 3 }}>
+          <Box sx={{ p: 3 }}>
             <Stack direction="row" alignItems="center" spacing={2} mb={2}>
               <Box
                 sx={{
@@ -59,11 +59,11 @@ const AccountOverview: React.FC<AccountOverviewProps> = ({ user }) => {
                             <Chip label={getRoleLabel(user?.role)} color={getRoleColor(user?.role)} size="small" />
                           </Box> */}
             </Stack>
-          </Card>
+          </Box>
         </Grid>
 
         <Grid size={{ xs: 12, sm: 6 }}>
-          <Card elevation={1} sx={{ p: 3 }}>
+          <Box sx={{ p: 3 }}>
             <Stack direction="row" alignItems="center" spacing={2} mb={2}>
               <Box
                 sx={{
@@ -103,7 +103,7 @@ const AccountOverview: React.FC<AccountOverviewProps> = ({ user }) => {
                 <Chip label="활성" color="success" size="small" />
               </Box>
             </Stack>
-          </Card>
+          </Box>
         </Grid>
       </Grid>
     </Container>

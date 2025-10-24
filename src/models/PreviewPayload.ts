@@ -13,7 +13,7 @@ export interface PreviewPayload {
   author: {
     id: number;
     name: string;
-    profileUrl: string | null;
+    profileImage: string | null;
   };
   estimatedTime: number;
   totalResponses: number;

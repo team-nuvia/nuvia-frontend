@@ -61,7 +61,6 @@ const Preview: React.FC<PreviewProps> = ({ survey, handleClose, isDemo = false, 
       sx={{
         overflow: 'hidden',
         transition: 'all 0.3s ease',
-        height: 'calc(100% - 2rem)',
         p: isFullscreen ? 0 : 2,
         backgroundColor: 'background.paper',
         boxShadow: isFullscreen ? 'none' : theme.shadows[24],
@@ -73,7 +72,7 @@ const Preview: React.FC<PreviewProps> = ({ survey, handleClose, isDemo = false, 
           left: isFullscreen ? 0 : 15,
           right: isFullscreen ? 0 : 15,
           bottom: isFullscreen ? 0 : 15,
-          zIndex: 1000,
+          zIndex: 2000,
         }),
       }}
       onKeyDown={handleKeyDown}

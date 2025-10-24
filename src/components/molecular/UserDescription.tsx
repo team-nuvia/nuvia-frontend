@@ -21,10 +21,10 @@ const UserDescription: React.FC<UserDescriptionProps> = ({
 }) => {
   if (isLoading) {
     return (
-      <Stack direction="row" alignItems="center" justifyContent={isVisible ? 'flex-start' : 'center'} gap={2} mb={2}>
+      <Stack direction="row" alignItems="center" justifyContent="flex-start" gap={2} mb={2}>
         <Skeleton variant="circular" width={35} height={35} />
         {isVisible && (
-          <Stack direction="column" justifyContent="center" gap={0.5}>
+          <Stack direction="column" justifyContent="center" gap={0.5} sx={{ whiteSpace: 'nowrap' }}>
             <Skeleton variant="rounded" width={140} height={14} />
             <Stack direction="row" alignItems="center" gap={0.5}>
               <Skeleton variant="rounded" width={38} height={14} />
@@ -37,10 +37,17 @@ const UserDescription: React.FC<UserDescriptionProps> = ({
   }
 
   return (
-    <Stack direction="row" alignItems="center" justifyContent={isVisible ? 'flex-start' : 'center'} gap={2} mb={2}>
+    <Stack direction="row" alignItems="center" justifyContent="flex-start" gap={2} px={0.5} mb={2}>
       <Avatar src={profileImage ?? 'https://github.com/shadcn.png'} sx={{ width: 35, height: 35 }} />
       {isVisible && (
-        <Stack direction="column" justifyContent="center" gap={0.5}>
+        <Stack
+          direction="column"
+          justifyContent="center"
+          gap={0.5}
+          sx={{
+            whiteSpace: 'nowrap',
+          }}
+        >
           <CommonText lineHeight={1} fontSize={nameSize} thickness="bold">
             {name}
           </CommonText>

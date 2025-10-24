@@ -25,7 +25,7 @@ export const Default: Story = {
       author: {
         id: 1,
         name: 'John Doe',
-        profileUrl: 'https://via.placeholder.com/150',
+        profileImage: 'https://via.placeholder.com/150',
       },
       description: '저희 서비스에 대한 솔직한 의견을 들려주세요. 소중한 피드백을 바탕으로 더 나은 서비스를 제공하겠습니다.',
       expiresAt: new Date('2025-07-05'),

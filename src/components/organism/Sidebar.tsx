@@ -90,12 +90,14 @@ const Sidebar: React.FC<SidebarProps> = () => {
     if (currentOrganization?.target === SubscriptionTargetType.Organization) {
       menus.push(teamMenu);
     }
-    menus.push({
-      label: '설정',
-      name: 'settings',
-      to: '/dashboard/settings',
-      startIcon: <SettingsOutlinedIcon />,
-    });
+    if (roleAtLeast(UserRole.Admin, currentOrganization?.role)) {
+      menus.push({
+        label: '설정',
+        name: 'settings',
+        to: '/dashboard/settings',
+        startIcon: <SettingsOutlinedIcon />,
+      });
+    }
 
     return menus.filter(Boolean);
   }, [currentOrganization, teamFeatures]);
@@ -109,45 +111,49 @@ const Sidebar: React.FC<SidebarProps> = () => {
   }
 
   return (
-    <Box sx={{ width: '100%', maxWidth: isCollapsed ? 80 : 250, transition: 'all 0.3s ease' }}>
+    <Box
+      bgcolor="background.paper"
+      sx={{
+        width: '100%',
+        maxWidth: isCollapsed ? 80 : 250,
+        transition: 'all 0.3s ease',
+        borderRightWidth: 1,
+        borderRightColor: (theme) => theme.palette.divider,
+        borderRightStyle: 'solid',
+      }}
+    >
       <Stack
         width="100%"
         minWidth={isCollapsed ? 80 : 250}
         maxWidth={isCollapsed ? 80 : 250}
-        height="100%"
-        bgcolor="background.paper"
         gap={3}
+        position="sticky"
+        top={64}
         sx={{
-          py: 5,
-          borderRightWidth: 1,
-          borderRightColor: (theme) => theme.palette.divider,
-          borderRightStyle: 'solid',
           transition: 'all 0.3s ease',
-          position: 'relative',
           overflowX: 'hidden',
           zIndex: 999,
         }}
       >
-        <Stack px={2}>
-          <Stack direction="row" justifyContent={isCollapsed ? 'center' : 'flex-end'} alignItems="center" flexWrap="wrap" gap={2} mb={2}>
-            {/* 접기/펼치기 토글 버튼 */}
-            <Tooltip title={isCollapsed ? '사이드바 펼치기' : '사이드바 접기'} placement="right" arrow>
-              <IconButton
-                onClick={toggleCollapse}
-                size="small"
-                sx={{
-                  p: 0.5,
-                  color: 'text.secondary',
-                  '&:hover': {
-                    backgroundColor: 'action.hover',
-                  },
-                }}
-              >
-                {isCollapsed ? <MenuOpenIcon sx={{ rotate: '180deg' }} /> : <MenuOpenIcon />}
-              </IconButton>
-            </Tooltip>
-          </Stack>
-
+        <Stack direction="row" justifyContent={isCollapsed ? 'center' : 'flex-end'} alignItems="center" flexWrap="wrap" gap={2} mb={2} px={2}>
+          {/* 접기/펼치기 토글 버튼 */}
+          <Tooltip title={isCollapsed ? '사이드바 펼치기' : '사이드바 접기'} placement="right" arrow>
+            <IconButton
+              onClick={toggleCollapse}
+              size="small"
+              sx={{
+                p: 0.5,
+                color: 'text.secondary',
+                '&:hover': {
+                  backgroundColor: 'action.hover',
+                },
+              }}
+            >
+              {isCollapsed ? <MenuOpenIcon sx={{ rotate: '180deg' }} /> : <MenuOpenIcon />}
+            </IconButton>
+          </Tooltip>
+        </Stack>
+        <Stack direction="row" justifyContent="flex-start" alignItems="center" flexWrap="wrap" gap={2} mb={2} px={2}>
           {/* 사용자 카드 - 접힌 상태에서는 아이콘만 */}
           <UserCard
             name={user?.currentOrganization?.name ?? ''}

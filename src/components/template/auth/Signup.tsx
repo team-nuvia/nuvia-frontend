@@ -7,6 +7,8 @@ import { BRAND_NAME } from '@common/variables';
 import CommonText from '@components/atom/CommonText';
 import ActionForm from '@components/molecular/ActionForm';
 import BrandHead from '@components/molecular/BrandHead';
+import PrivacyContent from '@components/organism/PrivacyContent';
+import TermsContent from '@components/organism/TermsContent';
 import { GlobalDialogContext } from '@context/GlobalDialogContext';
 import { Checkbox, Container, Stack, TextField, useTheme } from '@mui/material';
 import { useMutation } from '@tanstack/react-query';
@@ -14,8 +16,6 @@ import { AxiosError } from 'axios';
 import { useFormik } from 'formik';
 import { Fragment, useContext, useEffect, useLayoutEffect, useState } from 'react';
 import * as Yup from 'yup';
-import Terms from '../Terms';
-import Privacy from '../Privacy';
 
 interface SignupProps {}
 
@@ -127,7 +127,7 @@ const Signup: React.FC<SignupProps> = () => {
   function handleOpenTerms() {
     handleOpenDialog({
       title: '이용약관 확인',
-      content: <Terms />,
+      content: <TermsContent />,
       type: 'info',
       confirmText: '확인',
       cancelText: '닫기',
@@ -144,7 +144,7 @@ const Signup: React.FC<SignupProps> = () => {
   function handleOpenPrivacy() {
     handleOpenDialog({
       title: '개인정보 처리방침 확인',
-      content: <Privacy />,
+      content: <PrivacyContent />,
       type: 'info',
       confirmText: '확인',
       cancelText: '닫기',

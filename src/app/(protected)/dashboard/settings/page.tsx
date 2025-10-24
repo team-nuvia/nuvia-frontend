@@ -1,8 +1,8 @@
-import Setting from '@components/template/Setting';
+import OrganizationSetting from '@components/template/sidebar/OrganizationSetting';
 
 interface PageProps {}
 const Page: React.FC<PageProps> = () => {
-  return <Setting />;
+  return <OrganizationSetting />;
 };
 
 export default Page;

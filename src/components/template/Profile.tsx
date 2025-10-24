@@ -46,7 +46,7 @@ const Profile: React.FC<ProfileProps> = () => {
   };
 
   function handleEditProfile() {
-    router.push('/dashboard/user/settings');
+    router.push('/user/settings');
   }
 
   return (
@@ -69,7 +69,7 @@ const Profile: React.FC<ProfileProps> = () => {
             startIcon={<Settings />}
             size="large"
             onClick={handleEditProfile}
-            onMouseEnter={() => router.prefetch('/dashboard/user/settings')}
+            onMouseEnter={() => router.prefetch('/user/settings')}
           >
             설정
           </ActionButton>
