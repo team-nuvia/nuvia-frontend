@@ -1,5 +1,5 @@
-import { ACCESS_COOKIE_NAME, SESSION_COOKIE_NAME } from '@common/global';
 import { API_URL } from '@common/variables';
+import { CookieNameType } from '@share/enums/cookie-name-type';
 import { cookies } from 'next/headers';
 
 function mergeCookies(existing: string, setCookies: string[]) {
@@ -25,8 +25,8 @@ function mergeCookies(existing: string, setCookies: string[]) {
 
 export async function getUserInformation() {
   const cookieStore = await cookies();
-  const hasSession = cookieStore.has(SESSION_COOKIE_NAME);
-  const hasAccessToken = cookieStore.has(ACCESS_COOKIE_NAME);
+  const hasSession = cookieStore.has(CookieNameType.Session);
+  const hasAccessToken = cookieStore.has(CookieNameType.Access);
 
   if (!hasSession || !hasAccessToken) {
     return null;

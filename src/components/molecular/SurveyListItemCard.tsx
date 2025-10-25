@@ -228,7 +228,11 @@ const SurveyListItemCard: React.FC<SurveyListItemCardProps> = ({ survey }) => {
             </Box>
 
             {/* 제목 및 설명 */}
-            <Typography variant="h6" sx={{ mb: 1, fontWeight: 600, lineHeight: 1.3 }}>
+            <Typography
+              title={survey.title}
+              variant="h6"
+              sx={{ mb: 1, fontWeight: 600, lineHeight: 1.3, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}
+            >
               {survey.title}
             </Typography>
             <Typography

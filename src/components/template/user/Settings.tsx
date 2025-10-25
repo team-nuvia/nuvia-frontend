@@ -12,7 +12,7 @@ import { getUsersMe } from '@api/user/get-users-me';
 import { updateNickname } from '@api/user/setting/update-nickname';
 import ActionButton from '@components/atom/ActionButton';
 import LimitTextField from '@components/atom/LimitTextField';
-import PersonalSetting from '@components/template/dashboard/user/PersonalSetting';
+import PersonalSetting from '@components/template/user/PersonalSetting';
 import { GlobalDialogContext } from '@context/GlobalDialogContext';
 import {
   AccessTime as AccessTimeIcon,

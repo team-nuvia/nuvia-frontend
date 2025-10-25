@@ -9,7 +9,7 @@ export const PUBLIC_PATHS = [
   //
 ];
 export const GUEST_PATHS = ['/auth/login', '/auth/signup', '/auth/forgot-password'];
-export const MEMBER_PATHS = ['/dashboard', '/user'];
+export const MEMBER_PATHS = ['/dashboard', '/user', '/notifications'];
 
 export function isPublicPath(pathname: string) {
   return pathname && PUBLIC_PATHS.some((publicPath) => publicPath === pathname || pathname.startsWith(publicPath));

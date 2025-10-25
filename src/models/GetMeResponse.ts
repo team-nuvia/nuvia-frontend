@@ -9,7 +9,7 @@ export interface GetMeResponse {
   nickname: string;
   role: UserRole;
   provider: SocialProvider;
-  currentOrganization: IOrganization;
+  currentOrganization: Omit<IOrganization, 'role'>;
   termsAgreed: boolean;
   createdAt: Date;
   updatedAt: Date;

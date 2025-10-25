@@ -37,9 +37,9 @@ function renderChart(d: Distribution) {
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={rows} margin={{ top: 8, right: 16, left: -16, bottom: 8 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" interval={0} tick={{ fontSize: 12 }} />
-              <YAxis />
-              <Tooltip />
+              <XAxis dataKey="name" interval={0} tick={{ fontSize: 12 }} unit="점" />
+              <YAxis unit="명" allowDecimals={false} />
+              <Tooltip labelFormatter={(value: string) => (d.type === DataType.Rating ? `${value}점` : value)} />
               <Bar dataKey="count" fill="#3D5AFE" />
             </BarChart>
           </ResponsiveContainer>
@@ -54,7 +54,7 @@ function renderChart(d: Distribution) {
             <BarChart data={rows} margin={{ top: 8, right: 16, left: -16, bottom: 8 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-              <YAxis />
+              <YAxis unit="명" allowDecimals={false} />
               <Tooltip />
               <Bar dataKey="count" fill="#3D5AFE" />
             </BarChart>

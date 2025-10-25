@@ -98,6 +98,7 @@ const NotFound = (props?: NotFoundProps) => {
               variant="contained"
               color="primary"
               onClick={() => router.push('/')}
+              onMouseEnter={() => router.prefetch('/')}
               sx={{
                 px: 4,
                 py: 1.5,
