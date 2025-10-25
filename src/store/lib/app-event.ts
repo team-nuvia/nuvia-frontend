@@ -8,7 +8,8 @@ export const AppEventType = {
   SURVEY_BIN_RESTORED: 'SURVEY_BIN_RESTORED',
   USER_SETTINGS_UPDATED: 'USER_SETTINGS_UPDATED',
   UPDATE_NICKNAME_UPDATED: 'UPDATE_NICKNAME_UPDATED',
+  ORGANIZATION_SETTINGS_UPDATED: 'ORGANIZATION_SETTINGS_UPDATED',
 } as const;
 export type AppEventType = (typeof AppEventType)[keyof typeof AppEventType];
 
-export type AppEvent = { type: AppEventType };
+export type AppEvent = { type: AppEventType; payload?: any };

@@ -1,12 +1,11 @@
 'use client';
 
 import { useAuthStore } from '@/store/auth.store';
+import { BRAND_NAME } from '@common/variables';
 import ActionButton from '@components/atom/ActionButton';
 import BrandHead from '@components/molecular/BrandHead';
-import { BRAND_NAME } from '@common/variables';
 import { Login, PersonAdd, Security } from '@mui/icons-material';
 import { Alert, Box, Card, CardContent, Container, Stack, Typography, useTheme } from '@mui/material';
-import { useRouter } from 'next/navigation';
 
 interface LoginRequiredProps {
   surveyTitle?: string;
@@ -15,7 +14,6 @@ interface LoginRequiredProps {
 
 const LoginRequired: React.FC<LoginRequiredProps> = ({ surveyTitle, onLoginSuccess }) => {
   const theme = useTheme();
-  const user = useAuthStore((state) => state.user);
   const router = useAuthStore((state) => state.router)!;
 
   const handleLogin = () => {

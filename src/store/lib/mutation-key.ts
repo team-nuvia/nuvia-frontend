@@ -1,4 +1,7 @@
 const mutationKeys = {
+  organization: {
+    settings: (subscriptionId?: number) => ['organization', 'settings', subscriptionId] as const,
+  },
   survey: {
     create: () => ['survey', 'create'] as const,
     createAnswer: () => ['survey', 'createAnswer'] as const,

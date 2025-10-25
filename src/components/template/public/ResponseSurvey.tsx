@@ -5,13 +5,29 @@ import mutationKeys from '@/store/lib/mutation-key';
 import { createAnswer } from '@api/survey/create-answer';
 import ActionButton from '@components/atom/ActionButton';
 import CommonText from '@components/atom/CommonText';
+import OutlineStack from '@components/atom/OutlineStack';
 import SurveyProgress from '@components/molecular/SurveyProgress';
 import UserDescription from '@components/molecular/UserDescription';
 import ResponseCard from '@components/organism/ResponseCard';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import { ArrowBack, ArrowForward, Category, CheckCircle, Person, ThumbUp } from '@mui/icons-material';
 import SaveIcon from '@mui/icons-material/Save';
-import { Alert, Box, Card, CardContent, Chip, CircularProgress, Container, Divider, Fade, Grid, Paper, Stack, Typography } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  CircularProgress,
+  Container,
+  Divider,
+  Fade,
+  Grid,
+  Paper,
+  Stack,
+  Typography,
+} from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { TimeIcon } from '@mui/x-date-pickers/icons';
 import { AnswerStatus } from '@share/enums/answer-status';
@@ -22,7 +38,21 @@ import { isEmpty } from '@util/isEmpty';
 import { isNil } from '@util/isNil';
 import { AxiosError } from 'axios';
 import { AnimatePresence, motion } from 'framer-motion';
+import Link from 'next/link';
 import { useContext, useEffect, useMemo, useState } from 'react';
+
+const ReportModal = ({ survey }: { survey: PreviewPayload }) => {
+  return (
+    <Stack direction="row" gap={0.5} justifyContent="center" alignItems="center">
+      <Typography variant="caption" color="grey.500">
+        부적절한 설문 또는 내용을 발견하셨다면 신고해 주세요. 신고는 검토 후 처리됩니다.
+      </Typography>
+      <Typography component={Link} href={`/survey/view/${survey.hashedUniqueKey}/report`} variant="caption" passHref>
+        보고서
+      </Typography>
+    </Stack>
+  );
+};
 
 // // --- Start Answer Schema ---
 // const AnswerStartSchema = Yup.object().shape({
@@ -340,113 +370,50 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false,
   const isLastQuestion = currentStep === questions.length - 1;
 
   if (isSubmitted && !currentQuestion) {
+  // if (true) {
     return (
-      <Container maxWidth="md" sx={{ py: 8 }}>
-        <motion.div
-          key={currentStep}
-          initial={{ opacity: 0, scale: 0.9, y: 50 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.9, y: -50 }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
-        >
-          <Card
-            sx={{
-              textAlign: 'center',
-              p: { xs: 4, md: 8 },
-              background: `linear-gradient(135deg, ${theme.palette.primary.light}, ${theme.palette.secondary.light})`,
-              borderRadius: 4,
-              boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
-            }}
-          >
-            <motion.div
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ delay: 0.3, type: 'spring', stiffness: 150, damping: 10 }}
-            >
-              <CheckCircle color="success" sx={{ fontSize: 80, color: 'white', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))' }} />
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.6 }}>
+      <Container maxWidth="md" sx={{ py: 8, height: '100%' }}>
+        <Stack>
+          <OutlineStack gap={3} sx={{ textAlign: 'center', p: { xs: 6, md: 8 } }}>
+            <Stack gap={1} mb={5}>
               <Typography
-                variant="h3"
+                variant="h4"
                 sx={{
-                  mb: 3,
                   fontWeight: 700,
-                  color: 'white',
                   fontSize: { xs: '2rem', md: '3rem' },
-                  textShadow: '0 2px 10px rgba(0,0,0,0.3)',
                 }}
               >
                 응답이 완료되었습니다!
               </Typography>
-
               <Typography
-                variant="h6"
                 sx={{
-                  mb: 5,
-                  color: 'rgba(255,255,255,0.95)',
-                  fontSize: { xs: '1.1rem', md: '1.3rem' },
                   fontWeight: 400,
                   letterSpacing: '0.5px',
                 }}
               >
                 소중한 의견을 주셔서 감사합니다
               </Typography>
-            </motion.div>
+            </Stack>
 
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7, duration: 0.5 }}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: { xs: 'column', sm: 'row' },
-                  justifyContent: 'center',
-                  gap: { xs: 2, sm: 3 },
-                  mb: 6,
-                  alignItems: 'center',
-                }}
-              >
-                <Chip
-                  icon={<Person />}
-                  label={`총 ${survey.totalResponses + (autoSaved ? 0 : 1)}명 참여`}
-                  sx={{
-                    backgroundColor: 'rgba(255,255,255,0.25)',
-                    color: 'white',
-                    fontWeight: 600,
-                    fontSize: '0.9rem',
-                    height: 40,
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255,255,255,0.3)',
-                    '& .MuiChip-icon': {
-                      color: 'white',
-                    },
-                  }}
-                />
-                <Chip
-                  icon={<ThumbUp />}
-                  label="피드백 반영 예정"
-                  sx={{
-                    backgroundColor: 'rgba(255,255,255,0.25)',
-                    color: 'white',
-                    fontWeight: 600,
-                    fontSize: '0.9rem',
-                    height: 40,
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255,255,255,0.3)',
-                    '& .MuiChip-icon': {
-                      color: 'white',
-                    },
-                  }}
-                />
-              </Box>
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9, duration: 0.5 }}>
-              <ActionButton size="xlarge" variant="contained" shape="rounded" endIcon={<ArrowForward />} onClick={() => router.push('/')}>
+            <Box>
+              <ActionButton size="large" variant="contained" shape="rounded" endIcon={<ArrowForward />} onClick={() => router.push('/')}>
                 홈으로 돌아가기
               </ActionButton>
-            </motion.div>
-          </Card>
-        </motion.div>
+            </Box>
+          </OutlineStack>
+
+          {/* 추가 안내 문구 */}
+          <Stack mt={3} gap={1} sx={{ textAlign: 'center', flex: 1 }}>
+            <Typography variant="body2" color="text.secondary">
+              설문조사 결과는 담당자가 취합하여 활용할 예정입니다.
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              참여해주신 모든 분들께 감사드리며, 더 나은 서비스를 위해 노력하겠습니다.
+            </Typography>
+          </Stack>
+        </Stack>
+        <Divider sx={{ my: 3 }} />
+        <ReportModal survey={survey} />
       </Container>
     );
   }
@@ -586,9 +553,10 @@ const ResponseSurvey: React.FC<ResponseSurveyProps> = ({ survey, isDemo = false,
       {/* 하단 정보 */}
       <Box sx={{ mt: 6, textAlign: 'center' }}>
         <Divider sx={{ mb: 3 }} />
-        <Typography variant="caption" color="text.secondary">
+        <Typography variant="caption" color="grey.500">
           이 설문은 Nuvia로 제작되었습니다 • 모든 응답은 안전하게 보호됩니다
         </Typography>
+        <ReportModal survey={survey} />
       </Box>
     </Container>
   );

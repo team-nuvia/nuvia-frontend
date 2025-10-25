@@ -100,11 +100,3 @@ export const QUESTION_TYPE_ICONS: {
   ...QUESTION_DEFAULT_TYPE_ICON,
   ...QUESTION_DEFAULT_DATA_TYPE_ICON,
 };
-
-/* Cookie Name */
-export const SESSION_COOKIE_NAME = 'x-session';
-export const ACCESS_COOKIE_NAME = 'x-access-token';
-export const REFRESH_COOKIE_NAME = 'x-refresh-token';
-
-export const SUBMISSION_HASH_COOKIE_NAME = 'x-submission-hash';
-export const JWS_COOKIE_NAME = 'x-jws-token';

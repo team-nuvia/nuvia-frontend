@@ -291,6 +291,9 @@ const Notification = () => {
                 router.push('/notifications');
                 setAnchorElNotification(null);
               }}
+              onMouseEnter={() => {
+                router.prefetch('/notifications');
+              }}
             >
               전체 보기
             </ActionButton>

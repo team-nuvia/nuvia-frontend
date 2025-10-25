@@ -4,6 +4,7 @@ import GoogleAnalytics from '@components/GoogleAnalytics';
 import Providers from '@context/providers';
 import { InitColorSchemeScript } from '@mui/material';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import type { Metadata, Viewport } from 'next';
 import { Noto_Sans_KR } from 'next/font/google';
 
@@ -38,11 +39,30 @@ export const metadata: Metadata = {
     description: '설문을 쉽고 빠르게 생성하고 관리하세요. 직관적인 인터페이스로 누구나 쉽게 설문을 만들고 응답을 분석할 수 있습니다.',
     type: 'website',
     locale: 'ko_KR',
+    images: [
+      {
+        url: `${process.env.NEXT_PUBLIC_SITE_URL}/nuvia_logo_with_text.png`,
+        width: 600,
+        height: 600,
+        alt: `${BRAND_NAME} - 빠르고 간편한 설문 플랫폼`,
+      },
+    ],
+    url: process.env.NEXT_PUBLIC_SITE_URL || 'https://app.nuvia.kro.kr',
   },
   twitter: {
     card: 'summary_large_image',
     title: `${BRAND_NAME} - 빠르고 간편한 설문 플랫폼`,
-    description: '설문을 쉽고 빠르게 생성하고 관리하세요.',
+    description: '설문을 쉽고 빠르게 생성하고 관리하세요. 직관적인 인터페이스로 누구나 쉽게 설문을 만들고 응답을 분석할 수 있습니다.',
+    images: [
+      {
+        url: `${process.env.NEXT_PUBLIC_SITE_URL}/nuvia_logo_with_text.png`,
+        width: 600,
+        height: 600,
+        alt: `${BRAND_NAME} - 빠르고 간편한 설문 플랫폼`,
+      },
+    ],
+    site: 'https://app.nuvia.kro.kr',
+    creator: 'nuvia',
   },
   robots: { index: true, follow: true },
   manifest: '/favicon/site.webmanifest',
@@ -70,6 +90,7 @@ export default function RootLayout({
         <link rel="manifest" href="/favicon/site.webmanifest" />
       </head>
       <body className={notoSansKR.className}>
+        <SpeedInsights />
         <InitColorSchemeScript defaultMode="system" attribute="class" modeStorageKey="theme-mode" />
         {measurementId && <GoogleAnalytics measurementId={measurementId} />}
         <AppRouterCacheProvider>

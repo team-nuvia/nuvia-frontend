@@ -26,3 +26,4 @@ cat .gitmodules
 # Sync is important since this will let git know to follow the new updated url
 git submodule sync
 git submodule update --init --recursive
+git submodule update --remote --merge

@@ -1,4 +1,4 @@
-import Settings from '@components/template/dashboard/user/Settings';
+import Settings from '@components/template/user/Settings';
 
 interface PageProps {}
 const Page: React.FC<PageProps> = () => {

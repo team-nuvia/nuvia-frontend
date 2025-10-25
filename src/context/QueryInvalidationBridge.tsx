@@ -1,15 +1,25 @@
 'use client';
 
+import { useAuthStore } from '@/store/auth.store';
 import { useEventBus } from '@/store/event-bus.store';
 import { AppEventType } from '@/store/lib/app-event';
 import queryKeys from '@/store/lib/query-key';
+import { getUsersMe } from '@api/user/get-users-me';
 import { SurveyStatus, SurveyStatusList } from '@share/enums/survey-status';
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
 export function QueryInvalidationBridge() {
   const qc = useQueryClient();
   const subscribe = useEventBus((s) => s.subscribe);
+  const setUser = useAuthStore((s) => s.actions.setUser);
+  /* 서버사이드 유저 데이터 -> 클라이언트에서 업데이트 (보조 장치) */
+  const { mutate: updateUserMutation } = useMutation({
+    mutationFn: getUsersMe,
+    onSuccess: (data) => {
+      setUser(data.payload);
+    },
+  });
 
   useEffect(() => {
     return subscribe((e) => {
@@ -56,6 +66,14 @@ export function QueryInvalidationBridge() {
             qc.invalidateQueries({ queryKey: queryKeys.survey.list(status as SurveyStatus) });
           }
           qc.invalidateQueries({ queryKey: queryKeys.survey.metadata() });
+          qc.invalidateQueries({ queryKey: queryKeys.organization.settings() });
+          break;
+        }
+        case AppEventType.ORGANIZATION_SETTINGS_UPDATED: {
+          qc.invalidateQueries({ queryKey: queryKeys.organization.settings(e.payload?.subscriptionId) });
+          qc.invalidateQueries({ queryKey: queryKeys.organization.list() });
+          qc.invalidateQueries({ queryKey: queryKeys.notification.list() });
+          updateUserMutation();
           break;
         }
         case AppEventType.SURVEY_BIN_RESTORED: {

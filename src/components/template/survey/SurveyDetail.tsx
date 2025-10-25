@@ -2,28 +2,31 @@
 
 import NotFound from '@/app/(survey-view)/survey/view/[hash]/not-found';
 import { GetSurveyDetailResponse } from '@/models/GetSurveyDetailResponse';
+import { useAuthStore } from '@/store/auth.store';
 import mutationKeys from '@/store/lib/mutation-key';
 import { refreshJws } from '@api/auth/refresh-jws';
 import { startAnswer } from '@api/survey/start-answer';
 import { validateFirstSurveyAnswer } from '@api/survey/validate-first-answer';
 import { RenderPageTag } from '@common/enums';
 import ActionButton from '@components/atom/ActionButton';
+import OutlineBox from '@components/atom/OutlineBox';
 import { GlobalSnackbarContext } from '@context/GlobalSnackbar';
 import { PlayArrow, QuestionMark, Timer } from '@mui/icons-material';
-import { Box, Card, Chip, Container, Typography, useTheme } from '@mui/material';
+import { Alert, Chip, Container, Stack, Typography } from '@mui/material';
 import { QuestionType } from '@share/enums/question-type';
 import { useMutation } from '@tanstack/react-query';
 import { AxiosError, CanceledError } from 'axios';
-import { motion } from 'framer-motion';
 import { useContext, useLayoutEffect, useMemo, useState } from 'react';
 import ResponseSurvey from '../public/ResponseSurvey';
 import ExpiredAnswer from './ExpiredAnswer';
 import LoginRequired from './LoginRequired';
+import { SurveyStatus } from '@share/enums/survey-status';
+import { LocalizationManager } from '@util/LocalizationManager';
 
 export default function SurveyDetail({ survey }: { survey: GetSurveyDetailResponse }) {
-  const theme = useTheme();
   const { addNotice } = useContext(GlobalSnackbarContext);
   const [renderPageTag, setRenderPageTag] = useState<RenderPageTag | null>(null);
+  const setUser = useAuthStore((state) => state.actions.setUser);
   const { mutate: validateFirstAnswerMutation } = useMutation({
     mutationKey: mutationKeys.survey.validateFirstAnswer(),
     mutationFn: () => validateFirstSurveyAnswer(survey.id as number),
@@ -45,6 +48,7 @@ export default function SurveyDetail({ survey }: { survey: GetSurveyDetailRespon
           // 응답자 이전 소유자로 인한 예외 (이어서 갱신 필요)
           case 'LoginRequiredForAnswerExceptionDto':
             setRenderPageTag(RenderPageTag.Login);
+            setUser(null);
             addNotice(error.response?.data.message, 'warning');
             break;
           case 'AnswerOwnerMigratedExceptionDto':
@@ -225,113 +229,35 @@ export default function SurveyDetail({ survey }: { survey: GetSurveyDetailRespon
   if (renderPageTag !== RenderPageTag.AnswerContinue) {
     return (
       <Container maxWidth="md" sx={{ py: 8 }}>
-        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: 'easeOut' }}>
-          <Card
-            sx={{
-              textAlign: 'center',
-              p: { xs: 4, md: 8 },
-              background: `linear-gradient(135deg, ${theme.palette.primary.light}, ${theme.palette.secondary.light})`,
-              borderRadius: 4,
-              boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
-              backdropFilter: 'blur(20px)',
-            }}
-          >
-            <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.2, duration: 0.5 }}>
-              <Typography
-                variant="h3"
-                sx={{
-                  mb: 2,
-                  fontWeight: 700,
-                  color: 'white',
-                  fontSize: { xs: '2rem', md: '2.5rem' },
-                  textShadow: '0 2px 10px rgba(0,0,0,0.3)',
-                }}
-              >
-                {survey.title}
+        <OutlineBox sx={{ textAlign: 'center', p: { xs: 6, md: 8 } }}>
+          <Typography variant="h4" sx={{ mb: 3, fontWeight: 700 }}>
+            {survey.title}
+          </Typography>
+
+          <Typography variant="h6" sx={{ mb: 6, color: 'text.secondary', maxWidth: '600px', mx: 'auto' }}>
+            {survey.description}
+          </Typography>
+
+          <Stack direction={{ xs: 'column', sm: 'row' }} gap={3} sx={{ mb: 6, justifyContent: 'center' }}>
+            <Chip icon={<QuestionMark />} label={`총 ${survey.questions.length}개 문항`} variant="outlined" color="primary" />
+            <Chip icon={<Timer />} label={`약 ${survey.estimatedTime}분 소요`} variant="outlined" color="secondary" />
+          </Stack>
+
+          {survey.status !== SurveyStatus.Active ? (
+            <Alert severity="warning">
+              <Typography variant="body2">
+                현재 설문 상태가 <b>{LocalizationManager.translate(survey.status)}</b> 상태입니다.
               </Typography>
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.5 }}>
-              <Typography
-                variant="h6"
-                sx={{
-                  mb: 4,
-                  color: 'rgba(255,255,255,0.9)',
-                  fontSize: { xs: '1rem', md: '1.2rem' },
-                  fontWeight: 400,
-                  lineHeight: 1.6,
-                }}
-              >
-                {survey.description}
-              </Typography>
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.5 }}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: { xs: 'column', sm: 'row' },
-                  justifyContent: 'center',
-                  gap: { xs: 2, sm: 3 },
-                  mb: 6,
-                  alignItems: 'center',
-                }}
-              >
-                <Chip
-                  icon={<QuestionMark />}
-                  label={`총 ${survey.questions.length}개 문항`}
-                  sx={{
-                    backgroundColor: 'rgba(255,255,255,0.25)',
-                    color: 'white',
-                    fontWeight: 600,
-                    fontSize: '0.9rem',
-                    height: 40,
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255,255,255,0.3)',
-                    '& .MuiChip-icon': {
-                      color: 'white',
-                    },
-                  }}
-                />
-                <Chip
-                  icon={<Timer />}
-                  label={`약 ${survey.estimatedTime}분 소요`}
-                  sx={{
-                    backgroundColor: 'rgba(255,255,255,0.25)',
-                    color: 'white',
-                    fontWeight: 600,
-                    fontSize: '0.9rem',
-                    height: 40,
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255,255,255,0.3)',
-                    '& .MuiChip-icon': {
-                      color: 'white',
-                    },
-                  }}
-                />
-              </Box>
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.8, duration: 0.5 }}>
-              <ActionButton size="xlarge" variant="contained" shape="rounded" endIcon={<PlayArrow />} onClick={handleStartAnswer}>
-                {startButtonText}
-              </ActionButton>
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1, duration: 0.5 }}>
-              <Typography
-                variant="caption"
-                color="textSecondary"
-                sx={{
-                  mt: 4,
-                  fontSize: '0.85rem',
-                }}
-              >
-                모든 응답은 익명으로 처리되며 안전하게 보호됩니다
-              </Typography>
-            </motion.div>
-          </Card>
-        </motion.div>
+            </Alert>
+          ) : (
+            <ActionButton size="large" variant="contained" shape="rounded" endIcon={<PlayArrow />} onClick={handleStartAnswer}>
+              {startButtonText}
+            </ActionButton>
+          )}
+          <Typography variant="caption" sx={{ mt: 4, color: 'text.disabled', display: 'block' }}>
+            모든 응답은 익명으로 처리되며 안전하게 보호됩니다
+          </Typography>
+        </OutlineBox>
       </Container>
     );
   }

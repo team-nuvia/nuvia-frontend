@@ -1,10 +1,9 @@
-// import axios, { AxiosResponse } from 'axios';
-import { ACCESS_COOKIE_NAME, REFRESH_COOKIE_NAME, SESSION_COOKIE_NAME } from '@common/global';
 import { API_URL } from '@common/variables';
 import { isGuestPath, isMemberPath } from '@util/guard';
 import { ResponseCookie } from 'next/dist/compiled/@edge-runtime/cookies';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
+import { CookieNameType } from '../share/enums/cookie-name-type';
 
 async function setCookies(result: Response) {
   const cookieList = result.headers.getSetCookie() ?? [];
@@ -28,9 +27,9 @@ async function setCookies(result: Response) {
 
 async function clearCookie() {
   const cookieStore = await cookies();
-  cookieStore.delete(SESSION_COOKIE_NAME);
-  cookieStore.delete(ACCESS_COOKIE_NAME);
-  cookieStore.delete(REFRESH_COOKIE_NAME);
+  cookieStore.delete(CookieNameType.Session);
+  cookieStore.delete(CookieNameType.Access);
+  cookieStore.delete(CookieNameType.Refresh);
 }
 
 async function forceLogout(url: URL) {
@@ -106,9 +105,9 @@ export async function middleware(req: NextRequest, res: NextResponse) {
   const cookieStore = await cookies();
 
   // 세션 쿠키(예: 'session' 또는 'access_token') 존재 여부만 빠르게 체크
-  const accessToken = cookieStore.get(ACCESS_COOKIE_NAME)?.value;
-  const session = cookieStore.get(SESSION_COOKIE_NAME)?.value;
-  const refreshToken = cookieStore.get(REFRESH_COOKIE_NAME)?.value;
+  const accessToken = cookieStore.get(CookieNameType.Access)?.value;
+  const session = cookieStore.get(CookieNameType.Session)?.value;
+  const refreshToken = cookieStore.get(CookieNameType.Refresh)?.value;
   const redirect = url.pathname;
 
   if (!accessToken || !session || !refreshToken) {
@@ -142,6 +141,7 @@ export async function middleware(req: NextRequest, res: NextResponse) {
     if (verifiedSession === null) {
       return forceLogout(url);
     }
+
     if ((verifiedSession as { verified: boolean })?.verified && isGuestPath(pathname)) {
       url.pathname = '/dashboard';
       url.search = '';

@@ -6,10 +6,10 @@ import { Settings } from '@mui/icons-material';
 import { Box, Container, Grid, Paper, Tab, Tabs, Typography } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import AccountOverview from './dashboard/user/AccountOverview';
-import LatestActive from './dashboard/user/LatestActive';
-import Security from './dashboard/user/Security';
-import UserProfileCard from './dashboard/user/UserProfileCard';
+import AccountOverview from './user/AccountOverview';
+import LatestActive from './user/LatestActive';
+import Security from './user/Security';
+import UserProfileCard from './user/UserProfileCard';
 
 interface ProfileProps {}
 
