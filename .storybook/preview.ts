@@ -1,6 +1,6 @@
 import type { Preview } from '@storybook/nextjs-vite';
 
-import { ThemeProvider, CssBaseline } from '@mui/material';
+import { CssBaseline, ThemeProvider } from '@mui/material';
 import { withThemeFromJSXProvider } from '@storybook/addon-themes';
 import { darkTheme, lightTheme } from '@util/theme';
 

@@ -24,6 +24,8 @@ const eslintConfig = [
       'react/no-unknown-property': 'off',
       'react/no-unescaped-entities': 'off',
       'react-hooks/exhaustive-deps': 'off',
+      '@typescript-eslint/no-namespace': 'off',
+      '@typescript-eslint/no-require-imports': 'off',
     },
   },
   {

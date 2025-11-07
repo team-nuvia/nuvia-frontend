@@ -1,3 +1,4 @@
+import { useAuthStore } from '@/store/auth.store';
 import CommonText from '@components/atom/CommonText';
 import CTAButton from '@components/atom/CTAButton';
 import { BaseSection } from '@components/organism/BaseSection';
@@ -6,6 +7,7 @@ import { Box, Container, Stack, useTheme } from '@mui/material';
 export const FinalCTASection = () => {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
+  const user = useAuthStore((state) => state.user);
 
   return (
     <Box
@@ -82,7 +84,7 @@ export const FinalCTASection = () => {
             </CommonText>
 
             {/* CTA 버튼 */}
-            <CTAButton invert label="지금 시작하기" />
+            <CTAButton invert label="지금 시작하기" path={user ? '/dashboard' : '/auth/login'} size="xlarge" shape="rounded" />
 
             {/* 추가 정보 */}
             <CommonText
