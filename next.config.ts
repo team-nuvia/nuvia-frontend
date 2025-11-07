@@ -3,6 +3,8 @@ import path from 'path';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  reactCompiler: true,
+  // transpilePackages: ['@mui/material', '@mui/system', '@mui/icons-material'],
   pageExtensions: ['tsx', 'ts', 'jsx', 'js'],
   // async rewrites() {
   //   return [
@@ -14,6 +16,11 @@ const nextConfig: NextConfig = {
   // },
   turbopack: {
     root: path.join(path.resolve()),
+    // rules: {
+    //   '@mui/material': {
+    //     loaders: [{ loader: 'next-swc', options: { transpileOnly: true } }],
+    //   },
+    // },
   },
   images: {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],

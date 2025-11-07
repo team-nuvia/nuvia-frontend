@@ -2,6 +2,7 @@ import CommonText from '@components/atom/CommonText';
 import CTAButton from '@components/atom/CTAButton';
 import Showbox from '@components/atom/Showbox';
 import { BaseSection } from '@components/organism/BaseSection';
+import { AttachMoney } from '@mui/icons-material';
 import { Box, Stack, useTheme } from '@mui/material';
 
 export const PricingTeaserSection = () => {
@@ -21,7 +22,7 @@ export const PricingTeaserSection = () => {
             </CommonText>
           </Showbox>
           <Showbox>
-            <CTAButton />
+            <CTAButton startIcon={<AttachMoney />} label="요금제 보기" path="/pricing" shape="rounded" variant="outlined" size="xlarge" />
           </Showbox>
         </Stack>
       </BaseSection>

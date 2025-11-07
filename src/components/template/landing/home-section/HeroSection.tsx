@@ -1,3 +1,4 @@
+import { useAuthStore } from '@/store/auth.store';
 import CommonText from '@components/atom/CommonText';
 import CTAButton from '@components/atom/CTAButton';
 import Showbox from '@components/atom/Showbox';
@@ -5,6 +6,8 @@ import { Box, Container, Stack, useTheme } from '@mui/material';
 
 export const HeroSection = () => {
   const theme = useTheme();
+  const user = useAuthStore((state) => state.user);
+
   return (
     <Box
       component="section"
@@ -33,8 +36,13 @@ export const HeroSection = () => {
           </Showbox>
           <Showbox>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-              <CTAButton label="무료로 설문 만들기" />
-              {/* <CTAButton label="데모 보기" path="/demo" invert /> */}
+              <CTAButton
+                label="무료로 설문 만들기"
+                path={user ? '/dashboard/survey/create' : '/auth/login'}
+                size="xlarge"
+                shape="rounded"
+                variant="outlined"
+              />
             </Stack>
           </Showbox>
         </Stack>

@@ -5,7 +5,7 @@ import { getVerify } from '@api/auth/get-verify';
 import { getVerifySession } from '@api/auth/get-verify-session';
 import { logout } from '@api/auth/logout';
 import { getUsersMe } from '@api/user/get-users-me';
-import { isGuestPath, isMemberPath } from '@util/guard';
+import { isGuestPath, isMemberPath, isPublicPath } from '@util/guard';
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import { VariantType } from 'notistack';
 import { create } from 'zustand';
@@ -41,6 +41,11 @@ export const useAuthStore = create(
           push: (path: string) => {
             const user = get().user;
             const addNotice = get().addNotice!;
+            if (isPublicPath(path)) {
+              router.push(path);
+              return;
+            }
+
             if (user) {
               if (isGuestPath(path)) {
                 addNotice('접근 불가한 페이지입니다.', 'warning');
